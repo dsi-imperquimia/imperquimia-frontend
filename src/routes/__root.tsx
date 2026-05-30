@@ -1,10 +1,36 @@
 import "@styles/styles.css";
 
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
-import { AppNavbar } from "@/components/layout/AppNavbar";
-import { AppSidebar } from "@/components/layout/AppSidebar";
+import type { AuthState } from "@modules/auth/store/authStore";
+import { authStore } from "@modules/auth/store/authStore";
+import { STORAGE_KEY } from "@modules/auth/const/StorageKey";
+import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import { createServerFn } from "@tanstack/react-start";
+import { getCookie } from "@tanstack/react-start/server";
 
-export const Route = createRootRoute({
+const getAuthFromCookie = createServerFn({ method: "GET" }).handler(
+  (): AuthState => {
+    const raw = getCookie(STORAGE_KEY);
+    if (!raw) return { isAuthenticated: false, user: null, accessToken: null };
+    try {
+      return JSON.parse(decodeURIComponent(raw)) as AuthState;
+    } catch {
+      return { isAuthenticated: false, user: null, accessToken: null };
+    }
+  },
+);
+
+interface RouterContext {
+  auth: AuthState;
+}
+
+export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async () => {
+    const auth =
+      typeof window === "undefined"
+        ? await getAuthFromCookie() // SSR: lee cookie del request
+        : authStore.state; // cliente: usa store ya hidratado desde localStorage
+    return { auth };
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -18,20 +44,12 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
       <body className="h-screen overflow-hidden bg-white font-sans antialiased">
-        <div className="flex h-full">
-          <AppSidebar />
-          <div className="flex min-w-0 flex-1 flex-col">
-            <AppNavbar />
-            <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
-              {children}
-            </main>
-          </div>
-        </div>
+        {children}
         <Scripts />
       </body>
     </html>
