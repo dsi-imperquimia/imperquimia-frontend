@@ -1,5 +1,6 @@
 import logo from "@/assets/iq_isologo_1.png";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { authActions } from "@modules/auth/store/authStore";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BarChart2,
   ChevronDown,
@@ -42,12 +43,18 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export function AppSidebar() {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     Analytics: true,
   });
 
   const toggleExpand = (label: string) =>
     setExpanded((prev) => ({ ...prev, [label]: !prev[label] }));
+
+  function handleLogout() {
+    authActions.logout();
+    void navigate({ to: "/login" });
+  }
 
   return (
     <aside className="flex h-full w-60 shrink-0 flex-col border-r border-gray-100 bg-white">
@@ -73,7 +80,7 @@ export function AppSidebar() {
 
       <div className="border-t border-gray-100 py-2">
         <BottomAction icon={HelpCircle} label="Help & Information" />
-        <BottomAction icon={LogOut} label="Log out" />
+        <BottomAction icon={LogOut} label="Log out" onClick={handleLogout} />
       </div>
     </aside>
   );
@@ -121,7 +128,7 @@ function CollapsibleItem({
         onClick={onToggle}
         className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
       >
-        <item.icon size={18} className="flex-shrink-0" />
+        <item.icon size={18} className="shrink-0" />
         <span className="flex-1 text-left">{item.label}</span>
         <ChevronDown
           size={16}
@@ -155,13 +162,18 @@ function CollapsibleItem({
 function BottomAction({
   icon: Icon,
   label,
+  onClick,
 }: {
   icon: React.ElementType;
   label: string;
+  onClick?: () => void;
 }) {
   return (
-    <button className="mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
-      <Icon size={18} className="flex-shrink-0" />
+    <button
+      onClick={onClick}
+      className="mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+    >
+      <Icon size={18} className="shrink-0" />
       <span>{label}</span>
     </button>
   );
