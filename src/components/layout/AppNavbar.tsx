@@ -1,5 +1,5 @@
 import { useRouterState } from "@tanstack/react-router";
-import { Bell, Home, PanelLeft, Search } from "lucide-react";
+import { Home, PanelLeft } from "lucide-react";
 import { UserDropdown } from "./UserDropdown";
 
 interface AppNavbarProps {
@@ -37,12 +37,6 @@ export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        <button className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900">
-          <Search size={18} />
-        </button>
-        <button className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900">
-          <Bell size={18} />
-        </button>
         <UserDropdown />
       </div>
     </header>
