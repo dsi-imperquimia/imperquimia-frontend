@@ -1,3 +1,4 @@
+import { NotFound } from "@components/errorpages/NotFound";
 import type { AuthState } from "@modules/auth/store/authStore";
 import { authStore } from "@modules/auth/store/authStore";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
@@ -13,6 +14,7 @@ export function getRouter() {
     context: {
       auth: authStore.state,
     },
+    defaultNotFoundComponent: () => <NotFound />,
   });
 
   // Keep router context in sync with in-memory store on client-side state changes.
