@@ -5,7 +5,6 @@ import {
   BarChart2,
   ChevronDown,
   ChevronRight,
-  HelpCircle,
   LayoutDashboard,
   ListChecks,
   LogOut,
@@ -79,8 +78,11 @@ export function AppSidebar() {
       </nav>
 
       <div className="border-t border-gray-100 py-2">
-        <BottomAction icon={HelpCircle} label="Help & Information" />
-        <BottomAction icon={LogOut} label="Log out" onClick={handleLogout} />
+        <BottomAction
+          icon={LogOut}
+          label="Cerrar sesión"
+          onClick={handleLogout}
+        />
       </div>
     </aside>
   );
