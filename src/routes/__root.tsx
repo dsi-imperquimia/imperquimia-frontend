@@ -1,12 +1,15 @@
 import "@styles/styles.css";
 
+import { queryClient } from "@lib/queryClient";
 import { STORAGE_KEY } from "@modules/auth/const/StorageKey";
 import type { AuthState } from "@modules/auth/store/authStore";
 import { authStore } from "@modules/auth/store/authStore";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
+  type RouterContext,
 } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
@@ -22,10 +25,6 @@ const getAuthFromCookie = createServerFn({ method: "GET" }).handler(
     }
   },
 );
-
-interface RouterContext {
-  auth: AuthState;
-}
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
@@ -62,6 +61,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="h-screen overflow-hidden bg-white font-sans antialiased">
         {children}
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
         <Scripts />
       </body>
     </html>
