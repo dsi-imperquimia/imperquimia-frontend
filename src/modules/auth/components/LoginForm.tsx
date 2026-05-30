@@ -5,9 +5,8 @@ import { TextField } from "@heroui/react/textfield";
 import { loginRequest } from "@modules/auth/api/authApi";
 import { authActions } from "@modules/auth/store/authStore";
 import { useNavigate } from "@tanstack/react-router";
+import { AtSign, Eye, EyeOff, KeyRound } from "lucide-react";
 import { useState } from "react";
-import { LuEye, LuEyeOff } from "react-icons/lu";
-import { MdAlternateEmail, MdKey } from "react-icons/md";
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -39,7 +38,7 @@ export function LoginForm() {
           <Label htmlFor="email">Correo electrónico</Label>
           <InputGroup variant="secondary">
             <InputGroup.Prefix>
-              <MdAlternateEmail className="size-4 text-muted" />
+              <AtSign className="size-4 text-muted" />
             </InputGroup.Prefix>
             <InputGroup.Input
               id="email"
@@ -56,7 +55,7 @@ export function LoginForm() {
           <Label htmlFor="password">Contraseña</Label>
           <InputGroup variant="secondary">
             <InputGroup.Prefix>
-              <MdKey className="size-4 text-muted" />
+              <KeyRound className="size-4 text-muted" />
             </InputGroup.Prefix>
             <InputGroup.Input
               id="password"
@@ -78,9 +77,9 @@ export function LoginForm() {
                 onPress={() => setIsVisiblePassword(!isVisiblePassword)}
               >
                 {isVisiblePassword ? (
-                  <LuEye className="size-4" />
+                  <Eye className="size-4" />
                 ) : (
-                  <LuEyeOff className="size-4" />
+                  <EyeOff className="size-4" />
                 )}
               </Button>
             </InputGroup.Suffix>

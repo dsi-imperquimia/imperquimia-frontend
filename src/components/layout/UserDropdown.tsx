@@ -1,7 +1,7 @@
 import { Avatar, Dropdown, Label } from "@heroui/react";
 import { useAuth } from "@modules/auth/store/authStore";
 import { useNavigate } from "@tanstack/react-router";
-import { LuLogOut, LuSettings } from "react-icons/lu";
+import { LogOut, Settings } from "lucide-react";
 
 export function UserDropdown() {
   const { user, logout } = useAuth();
@@ -47,7 +47,7 @@ export function UserDropdown() {
           <Dropdown.Item id="settings" textValue="Settings">
             <div className="flex w-full items-center justify-between gap-2">
               <Label>Configuración</Label>
-              <LuSettings className="size-3.5 text-muted" />
+              <Settings className="size-3.5 text-muted" />
             </div>
           </Dropdown.Item>
           <Dropdown.Item
@@ -58,7 +58,7 @@ export function UserDropdown() {
           >
             <div className="flex w-full items-center justify-between gap-2">
               <Label>Cerrar sesión</Label>
-              <LuLogOut className="size-3.5 text-danger" />
+              <LogOut className="size-3.5 text-danger" />
             </div>
           </Dropdown.Item>
         </Dropdown.Menu>
