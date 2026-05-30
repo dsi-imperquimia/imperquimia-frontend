@@ -1,5 +1,6 @@
 import "@styles/styles.css";
 
+import { Toast } from "@heroui/react/toast";
 import { queryClient } from "@lib/queryClient";
 import { STORAGE_KEY } from "@modules/auth/const/StorageKey";
 import type { AuthState } from "@modules/auth/store/authStore";
@@ -60,7 +61,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="h-screen overflow-hidden bg-white font-sans antialiased">
-        {children}
+        <Toast.Provider placement="top end" />
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>
