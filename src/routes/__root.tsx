@@ -1,9 +1,13 @@
 import "@styles/styles.css";
 
+import { STORAGE_KEY } from "@modules/auth/const/StorageKey";
 import type { AuthState } from "@modules/auth/store/authStore";
 import { authStore } from "@modules/auth/store/authStore";
-import { STORAGE_KEY } from "@modules/auth/const/StorageKey";
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  HeadContent,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie } from "@tanstack/react-start/server";
 
@@ -37,7 +41,15 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Imperquimia" },
     ],
-    links: [{ rel: "icon", href: "/favicon-16x16.png" }],
+    links: [
+      { rel: "icon", href: "/favicon-16x16.png" },
+      { rel: "preconnect", href: "https://fonts.googleapis.com" },
+      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap",
+      },
+    ],
   }),
   shellComponent: RootDocument,
 });
