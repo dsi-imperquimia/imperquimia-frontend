@@ -1,7 +1,7 @@
 import { Button } from "@heroui/react/button";
 import { Link } from "@tanstack/react-router";
+import { FiHome } from "react-icons/fi";
 import { GrPaint } from "react-icons/gr";
-import { TbHome } from "react-icons/tb";
 
 export function NotFound() {
   return (
@@ -18,7 +18,7 @@ export function NotFound() {
       <Link to="/">
         <Button className="bg-red-600">
           Volver al Inicio
-          <TbHome />
+          <FiHome />
         </Button>
       </Link>
     </div>
