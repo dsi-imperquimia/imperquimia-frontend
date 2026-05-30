@@ -23,6 +23,9 @@
       "@styles/*": [
         "./src/styles/*"
       ],
+      "@modules/*": [
+        "./src/modules/*"
+      ],
       "@/*": [
         "./src/*"
       ],
