@@ -1,5 +1,6 @@
 import { useRouterState } from "@tanstack/react-router";
-import { Home, PanelLeft } from "lucide-react";
+import { FiHome } from "react-icons/fi";
+import { LuPanelLeft } from "react-icons/lu";
 import { UserDropdown } from "./UserDropdown";
 
 interface AppNavbarProps {
@@ -27,11 +28,11 @@ export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
         className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
         aria-label="Toggle sidebar"
       >
-        <PanelLeft size={20} />
+        <LuPanelLeft size={20} />
       </button>
 
       <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-        <Home size={16} className="text-gray-400" />
+        <FiHome size={16} className="text-gray-400" />
         <span className="text-gray-400">/</span>
         <span>{title}</span>
       </div>
