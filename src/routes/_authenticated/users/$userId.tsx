@@ -11,7 +11,6 @@ export const Route = createFileRoute("/_authenticated/users/$userId")({
     stringify: ({ userId }) => ({ userId: userId.toString() }),
   },
   loader: async ({ params }) => {
-    console.log("loader", params);
     const { userId } = params;
     return await getUser(userId).catch(handleApiError);
   },
