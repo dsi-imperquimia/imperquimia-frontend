@@ -2,9 +2,8 @@ import "@styles/styles.css";
 
 import { Toast } from "@heroui/react/toast";
 import { queryClient } from "@lib/queryClient";
-import { STORAGE_KEY } from "@modules/auth/const/StorageKey";
-import type { AuthState } from "@modules/auth/store/authStore";
 import { authStore } from "@modules/auth/store/authStore";
+import { getAuth } from "@modules/auth/utils/get-auth-store";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
   HeadContent,
@@ -12,26 +11,12 @@ import {
   createRootRouteWithContext,
   type RouterContext,
 } from "@tanstack/react-router";
-import { createServerFn } from "@tanstack/react-start";
-import { getCookie } from "@tanstack/react-start/server";
-
-const getAuthFromCookie = createServerFn({ method: "GET" }).handler(
-  (): AuthState => {
-    const raw = getCookie(STORAGE_KEY);
-    if (!raw) return { isAuthenticated: false, user: null, accessToken: null };
-    try {
-      return JSON.parse(decodeURIComponent(raw)) as AuthState;
-    } catch {
-      return { isAuthenticated: false, user: null, accessToken: null };
-    }
-  },
-);
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
     const auth =
       typeof window === "undefined"
-        ? await getAuthFromCookie() // SSR: lee cookie del request
+        ? await getAuth() // SSR: lee cookie del request
         : authStore.state; // cliente: usa store ya hidratado desde localStorage
     return { auth };
   },
