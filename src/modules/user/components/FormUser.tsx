@@ -20,12 +20,7 @@ export function FormUser({ user: userInit }: Props) {
   const [isVisiblePassword, setIsVisiblePassword] = useState(false);
 
   const form = useForm({
-    defaultValues: userInit ?? {
-      name: "Leonel",
-      lastName: "Henríquez",
-      email: "hf18014@ues.edu.sv",
-      password: "12345678",
-    },
+    defaultValues: userInit ?? {},
     onSubmit: async ({ value, formApi }) => {
       const user = await storeUser(value).catch((error) => {
         formApi.setErrorMap(
