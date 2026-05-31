@@ -1,12 +1,12 @@
 import { Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
-import { cn } from "@modules/core/utils";
+import { cn } from "@modules/core/utils/utils";
 import { listUsers } from "@modules/user/api/listusers";
 import type { User } from "@modules/user/types/user";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { RefreshCw, UserPlus } from "lucide-react";
+import { Edit, RefreshCw, UserPlus } from "lucide-react";
 import { useEffect } from "react";
 
 export const Route = createFileRoute("/_authenticated/users/")({
@@ -73,7 +73,14 @@ function RouteComponent() {
                     <Table.Cell>{user.name}</Table.Cell>
                     <Table.Cell>{user.lastName}</Table.Cell>
                     <Table.Cell>{user.email}</Table.Cell>
-                    <Table.Cell></Table.Cell>
+                    <Table.Cell>
+                      <Link to={`/users/$userId`} params={{ userId: user.id }}>
+                        <Button size="sm">
+                          <Edit className="mr-1" />
+                          Editar
+                        </Button>
+                      </Link>
+                    </Table.Cell>
                   </Table.Row>
                 )}
               </Table.Collection>

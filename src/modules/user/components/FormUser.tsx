@@ -3,7 +3,7 @@ import { InputField } from "@components/fields/InputField";
 import { PasswordInputField } from "@components/fields/PasswordInputField";
 import { Button } from "@heroui/react/button";
 import { toast } from "@heroui/react/toast";
-import { parseErrorApiUseForm } from "@modules/core/parseErrorApi";
+import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { User } from "lucide-react";
