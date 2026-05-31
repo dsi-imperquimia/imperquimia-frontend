@@ -1,13 +1,12 @@
+import { EmailInputField } from "@components/fields/EmailInputField";
+import { InputField } from "@components/fields/InputField";
+import { PasswordInputField } from "@components/fields/PasswordInputField";
 import { Button } from "@heroui/react/button";
-import { FieldError } from "@heroui/react/field-error";
-import { InputGroup } from "@heroui/react/input-group";
-import { Label } from "@heroui/react/label";
-import { TextField } from "@heroui/react/textfield";
 import { toast } from "@heroui/react/toast";
 import { parseErrorApiUseForm } from "@modules/core/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
-import { AtSign, Eye, EyeOff, KeyRound, User } from "lucide-react";
+import { User } from "lucide-react";
 import { useState } from "react";
 import { storeUser } from "../api/store-user";
 import type { User as UserType } from "../types/user";
@@ -61,29 +60,20 @@ export function FormUser({ user: userInit }: Props) {
           }}
         >
           {(field) => (
-            <TextField
-              className="flex flex-col gap-1"
-              isInvalid={!field.state.meta.isValid}
-            >
-              <Label htmlFor={field.name}>Nombre</Label>
-              <InputGroup variant="secondary">
-                <InputGroup.Prefix>
-                  <User className="size-4 text-muted" />
-                </InputGroup.Prefix>
-                <InputGroup.Input
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  type="text"
-                  placeholder="Ingresa el nombre"
-                />
-              </InputGroup>
-              {!field.state.meta.isValid && (
-                <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
-              )}
-            </TextField>
+            <InputField
+              label="Nombre"
+              type="text"
+              placeholder="Ingresa el nombre"
+              startContent={<User className="size-4 text-muted" />}
+              value={field.state.value as string}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
 
@@ -98,29 +88,20 @@ export function FormUser({ user: userInit }: Props) {
           }}
         >
           {(field) => (
-            <TextField
-              className="flex flex-col gap-1"
-              isInvalid={!field.state.meta.isValid}
-            >
-              <Label htmlFor={field.name}>Apellido</Label>
-              <InputGroup variant="secondary">
-                <InputGroup.Prefix>
-                  <User className="size-4 text-muted" />
-                </InputGroup.Prefix>
-                <InputGroup.Input
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  type="text"
-                  placeholder="Ingresa el apellido"
-                />
-              </InputGroup>
-              {!field.state.meta.isValid && (
-                <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
-              )}
-            </TextField>
+            <InputField
+              label="Apellido"
+              type="text"
+              placeholder="Ingresa el apellido"
+              startContent={<User className="size-4 text-muted" />}
+              value={field.state.value as string}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
 
@@ -136,29 +117,16 @@ export function FormUser({ user: userInit }: Props) {
           }}
         >
           {(field) => (
-            <TextField
-              className="flex flex-col gap-1"
-              isInvalid={!field.state.meta.isValid}
-            >
-              <Label htmlFor={field.name}>Correo electrónico</Label>
-              <InputGroup variant="secondary">
-                <InputGroup.Prefix>
-                  <AtSign className="size-4 text-muted" />
-                </InputGroup.Prefix>
-                <InputGroup.Input
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  type="email"
-                  placeholder="Ingresa el correo"
-                />
-              </InputGroup>
-              {!field.state.meta.isValid && (
-                <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
-              )}
-            </TextField>
+            <EmailInputField
+              value={field.state.value as string}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
 
@@ -173,43 +141,16 @@ export function FormUser({ user: userInit }: Props) {
           }}
         >
           {(field) => (
-            <TextField
-              className="flex flex-col gap-1"
-              isInvalid={!field.state.meta.isValid}
-            >
-              <Label htmlFor={field.name}>Contraseña</Label>
-              <InputGroup variant="secondary">
-                <InputGroup.Prefix>
-                  <KeyRound className="size-4 text-muted" />
-                </InputGroup.Prefix>
-                <InputGroup.Input
-                  id={field.name}
-                  name={field.name}
-                  value={field.state.value}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  onBlur={field.handleBlur}
-                  type={isVisiblePassword ? "text" : "password"}
-                  placeholder="Ingresa la contraseña"
-                />
-                <InputGroup.Suffix className="pr-0">
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="ghost"
-                    onPress={() => setIsVisiblePassword(!isVisiblePassword)}
-                  >
-                    {isVisiblePassword ? (
-                      <Eye className="size-4" />
-                    ) : (
-                      <EyeOff className="size-4" />
-                    )}
-                  </Button>
-                </InputGroup.Suffix>
-              </InputGroup>
-              {!field.state.meta.isValid && (
-                <FieldError>{field.state.meta.errors.join(", ")}</FieldError>
-              )}
-            </TextField>
+            <PasswordInputField
+              value={field.state.value as string}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+            />
           )}
         </form.Field>
       </div>
