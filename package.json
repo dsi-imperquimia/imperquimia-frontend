@@ -19,6 +19,8 @@
     "@heroui/styles": "^3.1.0",
     "@tailwindcss/vite": "~4.3.0",
     "@tanstack/react-devtools": "~0.10.5",
+    "@tanstack/react-form": "^1.33.0",
+    "@tanstack/react-query": "^5.100.14",
     "@tanstack/react-router": "~1.170.10",
     "@tanstack/react-router-devtools": "~1.167.0",
     "@tanstack/react-router-ssr-query": "~1.167.1",
@@ -27,10 +29,12 @@
     "@tanstack/router-plugin": "~1.168.13",
     "@tanstack/store": "~0.11.0",
     "axios": "^1.16.1",
+    "clsx": "^2.1.1",
     "lucide-react": "~1.17.0",
     "nitro": "npm:nitro-nightly@latest",
     "react": "~19.2.6",
     "react-dom": "~19.2.6",
+    "tailwind-merge": "^3.6.0",
     "tailwindcss": "~4.3.0"
   },
   "devDependencies": {

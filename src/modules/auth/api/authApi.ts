@@ -1,5 +1,5 @@
 import { http } from "@lib/http";
-import type { User } from "@modules/auth/types";
+import type { User } from "@modules/user/types/user";
 import axios from "axios";
 
 interface LoginResponse {

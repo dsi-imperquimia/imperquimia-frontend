@@ -2,13 +2,13 @@ import logo from "@/assets/iq_isologo_1.png";
 import { authActions } from "@modules/auth/store/authStore";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
-  BarChart2,
   ChevronDown,
   ChevronRight,
   LayoutDashboard,
   ListChecks,
   LogOut,
   Settings,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -29,12 +29,11 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
   {
-    label: "Analytics",
-    icon: BarChart2,
+    label: "Usuarios",
+    icon: Users,
     children: [
-      { label: "Overview", to: "/analytics/overview" },
-      { label: "Reports", to: "/analytics/reports" },
-      { label: "Conversions", to: "/analytics/conversions" },
+      { label: "Lista de usuarios", to: "/users" },
+      { label: "Crear usuario", to: "/users/create" },
     ],
   },
   { label: "Tracker", icon: ListChecks, to: "/tracker", badge: "New" },

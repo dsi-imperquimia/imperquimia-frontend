@@ -1,4 +1,4 @@
-import type { User } from "@modules/auth/types";
+import type { User } from "@modules/user/types/user";
 import { useSelector } from "@tanstack/react-store";
 import { Store } from "@tanstack/store";
 import { STORAGE_KEY } from "../const/StorageKey";
