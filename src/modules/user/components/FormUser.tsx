@@ -3,6 +3,7 @@ import { FieldError } from "@heroui/react/field-error";
 import { InputGroup } from "@heroui/react/input-group";
 import { Label } from "@heroui/react/label";
 import { TextField } from "@heroui/react/textfield";
+import { toast } from "@heroui/react/toast";
 import { parseErrorApiUseForm } from "@modules/core/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
@@ -31,8 +32,12 @@ export function FormUser({ user: userInit }: Props) {
         formApi.setErrorMap(
           parseErrorApiUseForm(error, "Error al guardar usuario"),
         );
-        navigate({ to: `/users/${user?.id}` });
       });
+
+      toast.success("Usuario guardado correctamente");
+
+      if (!(userInit?.id === undefined && user?.id)) return;
+      navigate({ to: `/users/${user?.id}` });
     },
   });
 
