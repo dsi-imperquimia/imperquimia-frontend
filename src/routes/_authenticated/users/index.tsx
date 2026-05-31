@@ -3,6 +3,7 @@ import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
 import { cn } from "@modules/core/utils/utils";
 import { listUsers } from "@modules/user/api/listusers";
+import DialogDeleteUser from "@modules/user/components/DialogDeleteUser";
 import type { User } from "@modules/user/types/user";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -14,12 +15,17 @@ export const Route = createFileRoute("/_authenticated/users/")({
 });
 
 function RouteComponent() {
+  const { user: authUser } = Route.useRouteContext()?.auth ?? {};
   const { data, isPending, error, refetch, isRefetching } = useQuery<User>({
     queryKey: ["users"],
     queryFn: listUsers,
   });
 
   const items = (data || []) as User[];
+
+  const handleDeleteSuccess = () => {
+    refetch();
+  };
 
   useEffect(() => {
     if (!error) return;
@@ -74,12 +80,23 @@ function RouteComponent() {
                     <Table.Cell>{user.lastName}</Table.Cell>
                     <Table.Cell>{user.email}</Table.Cell>
                     <Table.Cell>
-                      <Link to={`/users/$userId`} params={{ userId: user.id }}>
-                        <Button size="sm">
-                          <Edit className="mr-1" />
-                          Editar
-                        </Button>
-                      </Link>
+                      <div className="inline-flex items-center gap-2 justify-end">
+                        <Link
+                          to={`/users/$userId`}
+                          params={{ userId: user.id }}
+                        >
+                          <Button size="sm">
+                            <Edit className="mr-1" />
+                            Editar
+                          </Button>
+                        </Link>
+                        {user.id !== authUser?.id && (
+                          <DialogDeleteUser
+                            user={user}
+                            onDeleteSuccess={handleDeleteSuccess}
+                          />
+                        )}
+                      </div>
                     </Table.Cell>
                   </Table.Row>
                 )}
