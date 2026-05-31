@@ -7,7 +7,6 @@ import { parseErrorApiUseForm } from "@modules/core/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { User } from "lucide-react";
-import { useState } from "react";
 import { storeUser } from "../api/store-user";
 import type { User as UserType } from "../types/user";
 
@@ -17,7 +16,6 @@ interface Props {
 
 export function FormUser({ user: userInit }: Props) {
   const navigate = useNavigate();
-  const [isVisiblePassword, setIsVisiblePassword] = useState(false);
 
   const form = useForm({
     defaultValues: userInit ?? {},
