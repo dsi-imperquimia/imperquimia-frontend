@@ -3,7 +3,7 @@ import type { User } from "@modules/user/types/user";
 
 export async function storeUser(user: Partial<User>) {
   const request = user.id
-    ? http.put<User>(`/users/${user.id}`, user)
+    ? http.patch<User>(`/users/${user.id}`, user)
     : http.post<User>("/users", user);
 
   const { data } = await request;

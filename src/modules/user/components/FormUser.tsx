@@ -15,6 +15,7 @@ interface Props {
 }
 
 export function FormUser({ user: userInit }: Props) {
+  const isEdit = Boolean(userInit?.id);
   const navigate = useNavigate();
 
   const form = useForm({
@@ -127,6 +128,7 @@ export function FormUser({ user: userInit }: Props) {
           name="password"
           validators={{
             onChange: ({ value }) => {
+              if (isEdit && !value) return undefined; // Permitir no cambiar contraseña en edición
               if (!value) return "La contraseña es requerida";
               if (value.length < 8) return "Mínimo 8 caracteres";
               return undefined;
