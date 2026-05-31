@@ -1,3 +1,4 @@
+import { ErrorComponent } from "@components/errorpages/ErrorComponent";
 import { NotFound } from "@components/errorpages/NotFound";
 import { queryClient } from "@lib/queryClient";
 import type { AuthState } from "@modules/auth/store/authStore";
@@ -18,6 +19,7 @@ export function getRouter() {
       queryClient: queryClient,
     },
     defaultNotFoundComponent: () => <NotFound />,
+    defaultErrorComponent: (props) => <ErrorComponent {...props} />,
   });
 
   // Keep router context in sync with in-memory store on client-side state changes.
