@@ -1,12 +1,12 @@
-import { devtools } from '@tanstack/devtools-vite'
-import { defineConfig } from 'vite'
+import { devtools } from "@tanstack/devtools-vite";
+import { defineConfig } from "vite";
 
-import { tanstackStart } from '@tanstack/react-start/plugin/vite'
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 
-import babel from '@rolldown/plugin-babel'
-import tailwindcss from '@tailwindcss/vite'
-import viteReact, { reactCompilerPreset } from '@vitejs/plugin-react'
-import { nitro } from 'nitro/vite'
+import babel from "@rolldown/plugin-babel";
+import tailwindcss from "@tailwindcss/vite";
+import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
@@ -19,8 +19,8 @@ const config = defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
   ],
   server: {
-    allowedHosts: ['imperquimia.local'],
+    allowedHosts: ["imperquimia.local", "localhost", "localhost:3001"],
   },
-})
+});
 
-export default config
+export default config;
