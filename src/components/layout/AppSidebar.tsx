@@ -2,8 +2,10 @@ import logo from "@/assets/iq_isologo_1.png";
 import { authActions } from "@modules/auth/store/authStore";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
+  BriefcaseBusiness,
   ChevronDown,
   ChevronRight,
+  IdCardLanyard,
   LayoutDashboard,
   ListChecks,
   LogOut,
@@ -34,6 +36,22 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Lista de usuarios", to: "/users" },
       { label: "Crear usuario", to: "/users/create" },
+    ],
+  },
+  {
+    label: "Empleados",
+    icon: BriefcaseBusiness,
+    children: [
+      { label: "Lista de empleados", to: "/empleados" },
+      { label: "Crear empleado", to: "/empleados/create" },
+    ],
+  },
+  {
+    label: "Cargos de empleado",
+    icon: IdCardLanyard,
+    children: [
+      { label: "Lista de cargos", to: "/cargo-empleado" },
+      { label: "Crear cargo", to: "/cargo-empleado/create" },
     ],
   },
   { label: "Tracker", icon: ListChecks, to: "/tracker", badge: "New" },
