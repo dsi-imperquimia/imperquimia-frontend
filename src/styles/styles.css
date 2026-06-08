@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 @import "@heroui/styles";
+@import "./theme.css";
 
 @theme {
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
