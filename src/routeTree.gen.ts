@@ -22,6 +22,9 @@ import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_
 import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
+import { Route as AuthenticatedUsersRolesIndexRouteImport } from './routes/_authenticated/users/roles/index'
+import { Route as AuthenticatedUsersRolesCreateRouteImport } from './routes/_authenticated/users/roles/create'
+import { Route as AuthenticatedUsersRolesRoleIdRouteImport } from './routes/_authenticated/users/roles/$roleId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -95,6 +98,24 @@ const AuthenticatedCargoEmpleadoCargoIdRoute =
     path: '/cargo-empleado/$cargoId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedUsersRolesIndexRoute =
+  AuthenticatedUsersRolesIndexRouteImport.update({
+    id: '/users/roles/',
+    path: '/users/roles/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersRolesCreateRoute =
+  AuthenticatedUsersRolesCreateRouteImport.update({
+    id: '/users/roles/create',
+    path: '/users/roles/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersRolesRoleIdRoute =
+  AuthenticatedUsersRolesRoleIdRouteImport.update({
+    id: '/users/roles/$roleId',
+    path: '/users/roles/$roleId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -109,6 +130,9 @@ export interface FileRoutesByFullPath {
   '/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
+  '/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
+  '/users/roles/': typeof AuthenticatedUsersRolesIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -123,6 +147,9 @@ export interface FileRoutesByTo {
   '/cargo-empleado': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
+  '/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
+  '/users/roles': typeof AuthenticatedUsersRolesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -139,6 +166,9 @@ export interface FileRoutesById {
   '/_authenticated/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
+  '/_authenticated/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
+  '/_authenticated/users/roles/': typeof AuthenticatedUsersRolesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -155,6 +185,9 @@ export interface FileRouteTypes {
     | '/cargo-empleado/'
     | '/empleados/'
     | '/users/'
+    | '/users/roles/$roleId'
+    | '/users/roles/create'
+    | '/users/roles/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -169,6 +202,9 @@ export interface FileRouteTypes {
     | '/cargo-empleado'
     | '/empleados'
     | '/users'
+    | '/users/roles/$roleId'
+    | '/users/roles/create'
+    | '/users/roles'
   id:
     | '__root__'
     | '/_authenticated'
@@ -184,6 +220,9 @@ export interface FileRouteTypes {
     | '/_authenticated/cargo-empleado/'
     | '/_authenticated/empleados/'
     | '/_authenticated/users/'
+    | '/_authenticated/users/roles/$roleId'
+    | '/_authenticated/users/roles/create'
+    | '/_authenticated/users/roles/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -284,6 +323,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCargoEmpleadoCargoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/users/roles/': {
+      id: '/_authenticated/users/roles/'
+      path: '/users/roles'
+      fullPath: '/users/roles/'
+      preLoaderRoute: typeof AuthenticatedUsersRolesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/roles/create': {
+      id: '/_authenticated/users/roles/create'
+      path: '/users/roles/create'
+      fullPath: '/users/roles/create'
+      preLoaderRoute: typeof AuthenticatedUsersRolesCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/roles/$roleId': {
+      id: '/_authenticated/users/roles/$roleId'
+      path: '/users/roles/$roleId'
+      fullPath: '/users/roles/$roleId'
+      preLoaderRoute: typeof AuthenticatedUsersRolesRoleIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -299,6 +359,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCargoEmpleadoIndexRoute: typeof AuthenticatedCargoEmpleadoIndexRoute
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedUsersRolesRoleIdRoute: typeof AuthenticatedUsersRolesRoleIdRoute
+  AuthenticatedUsersRolesCreateRoute: typeof AuthenticatedUsersRolesCreateRoute
+  AuthenticatedUsersRolesIndexRoute: typeof AuthenticatedUsersRolesIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -314,6 +377,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCargoEmpleadoIndexRoute: AuthenticatedCargoEmpleadoIndexRoute,
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedUsersRolesRoleIdRoute: AuthenticatedUsersRolesRoleIdRoute,
+  AuthenticatedUsersRolesCreateRoute: AuthenticatedUsersRolesCreateRoute,
+  AuthenticatedUsersRolesIndexRoute: AuthenticatedUsersRolesIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
