@@ -4,6 +4,17 @@ import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router";
 import { AppNavbar } from "@/components/layout/AppNavbar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 
+function NotFound() {
+  return (
+    <div className="flex items-center justify-center p-6">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900">404</h1>
+        <p className="mt-2 text-lg text-gray-600">Página no encontrada</p>
+      </div>
+    </div>
+  );
+}
+
 export const Route = createRootRoute({
   head: () => ({
     meta: [
@@ -14,6 +25,7 @@ export const Route = createRootRoute({
     links: [{ rel: "icon", href: "/favicon-16x16.png" }],
   }),
   shellComponent: RootDocument,
+  notFoundComponent: NotFound,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
