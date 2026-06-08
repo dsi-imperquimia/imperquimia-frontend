@@ -54,6 +54,13 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Crear cargo", to: "/cargo-empleado/create" },
     ],
   },
+  {
+    label: "Asignaciones",
+    icon: IdCardLanyard,
+    children: [
+      { label: "Habilidades", to: "/empleados/habilidades" },
+    ],
+  },
   { label: "Tracker", icon: ListChecks, to: "/tracker", badge: "New" },
   { label: "Settings", icon: Settings, to: "/settings", hasArrow: true },
 ];
