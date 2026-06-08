@@ -14,14 +14,18 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedEmpleadosIndexRouteImport } from './routes/_authenticated/empleados/index'
+import { Route as AuthenticatedCotizacionesIndexRouteImport } from './routes/_authenticated/cotizaciones/index'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
 import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
 import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
 import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
+import { Route as AuthenticatedCotizacionesCreateRouteImport } from './routes/_authenticated/cotizaciones/create'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
+import { Route as AuthenticatedCotizacionesCotizacionIdViewRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/view'
+import { Route as AuthenticatedCotizacionesCotizacionIdEditRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/edit'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -46,6 +50,12 @@ const AuthenticatedEmpleadosIndexRoute =
   AuthenticatedEmpleadosIndexRouteImport.update({
     id: '/empleados/',
     path: '/empleados/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCotizacionesIndexRoute =
+  AuthenticatedCotizacionesIndexRouteImport.update({
+    id: '/cotizaciones/',
+    path: '/cotizaciones/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedCargoEmpleadoIndexRoute =
@@ -83,6 +93,12 @@ const AuthenticatedDemoStoreRoute = AuthenticatedDemoStoreRouteImport.update({
   path: '/demo/store',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCotizacionesCreateRoute =
+  AuthenticatedCotizacionesCreateRouteImport.update({
+    id: '/cotizaciones/create',
+    path: '/cotizaciones/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCargoEmpleadoCreateRoute =
   AuthenticatedCargoEmpleadoCreateRouteImport.update({
     id: '/cargo-empleado/create',
@@ -95,34 +111,54 @@ const AuthenticatedCargoEmpleadoCargoIdRoute =
     path: '/cargo-empleado/$cargoId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedCotizacionesCotizacionIdViewRoute =
+  AuthenticatedCotizacionesCotizacionIdViewRouteImport.update({
+    id: '/cotizaciones/$cotizacionId/view',
+    path: '/cotizaciones/$cotizacionId/view',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCotizacionesCotizacionIdEditRoute =
+  AuthenticatedCotizacionesCotizacionIdEditRouteImport.update({
+    id: '/cotizaciones/$cotizacionId/edit',
+    path: '/cotizaciones/$cotizacionId/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
+  '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
   '/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
+  '/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
+  '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
+  '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
   '/cargo-empleado': typeof AuthenticatedCargoEmpleadoIndexRoute
+  '/cotizaciones': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
+  '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -131,14 +167,18 @@ export interface FileRoutesById {
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/_authenticated/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
+  '/_authenticated/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/_authenticated/demo/store': typeof AuthenticatedDemoStoreRoute
   '/_authenticated/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/_authenticated/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/users/create': typeof AuthenticatedUsersCreateRoute
   '/_authenticated/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
+  '/_authenticated/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
+  '/_authenticated/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -147,28 +187,36 @@ export interface FileRouteTypes {
     | '/login'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
+    | '/cotizaciones/create'
     | '/demo/store'
     | '/empleados/$empleadoId'
     | '/empleados/create'
     | '/users/$userId'
     | '/users/create'
     | '/cargo-empleado/'
+    | '/cotizaciones/'
     | '/empleados/'
     | '/users/'
+    | '/cotizaciones/$cotizacionId/edit'
+    | '/cotizaciones/$cotizacionId/view'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
+    | '/cotizaciones/create'
     | '/demo/store'
     | '/empleados/$empleadoId'
     | '/empleados/create'
     | '/users/$userId'
     | '/users/create'
     | '/cargo-empleado'
+    | '/cotizaciones'
     | '/empleados'
     | '/users'
+    | '/cotizaciones/$cotizacionId/edit'
+    | '/cotizaciones/$cotizacionId/view'
   id:
     | '__root__'
     | '/_authenticated'
@@ -176,14 +224,18 @@ export interface FileRouteTypes {
     | '/_authenticated/'
     | '/_authenticated/cargo-empleado/$cargoId'
     | '/_authenticated/cargo-empleado/create'
+    | '/_authenticated/cotizaciones/create'
     | '/_authenticated/demo/store'
     | '/_authenticated/empleados/$empleadoId'
     | '/_authenticated/empleados/create'
     | '/_authenticated/users/$userId'
     | '/_authenticated/users/create'
     | '/_authenticated/cargo-empleado/'
+    | '/_authenticated/cotizaciones/'
     | '/_authenticated/empleados/'
     | '/_authenticated/users/'
+    | '/_authenticated/cotizaciones/$cotizacionId/edit'
+    | '/_authenticated/cotizaciones/$cotizacionId/view'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -228,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmpleadosIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cotizaciones/': {
+      id: '/_authenticated/cotizaciones/'
+      path: '/cotizaciones'
+      fullPath: '/cotizaciones/'
+      preLoaderRoute: typeof AuthenticatedCotizacionesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cargo-empleado/': {
       id: '/_authenticated/cargo-empleado/'
       path: '/cargo-empleado'
@@ -270,6 +329,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDemoStoreRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cotizaciones/create': {
+      id: '/_authenticated/cotizaciones/create'
+      path: '/cotizaciones/create'
+      fullPath: '/cotizaciones/create'
+      preLoaderRoute: typeof AuthenticatedCotizacionesCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cargo-empleado/create': {
       id: '/_authenticated/cargo-empleado/create'
       path: '/cargo-empleado/create'
@@ -284,6 +350,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCargoEmpleadoCargoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/cotizaciones/$cotizacionId/view': {
+      id: '/_authenticated/cotizaciones/$cotizacionId/view'
+      path: '/cotizaciones/$cotizacionId/view'
+      fullPath: '/cotizaciones/$cotizacionId/view'
+      preLoaderRoute: typeof AuthenticatedCotizacionesCotizacionIdViewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/cotizaciones/$cotizacionId/edit': {
+      id: '/_authenticated/cotizaciones/$cotizacionId/edit'
+      path: '/cotizaciones/$cotizacionId/edit'
+      fullPath: '/cotizaciones/$cotizacionId/edit'
+      preLoaderRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -291,14 +371,18 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedCargoEmpleadoCargoIdRoute: typeof AuthenticatedCargoEmpleadoCargoIdRoute
   AuthenticatedCargoEmpleadoCreateRoute: typeof AuthenticatedCargoEmpleadoCreateRoute
+  AuthenticatedCotizacionesCreateRoute: typeof AuthenticatedCotizacionesCreateRoute
   AuthenticatedDemoStoreRoute: typeof AuthenticatedDemoStoreRoute
   AuthenticatedEmpleadosEmpleadoIdRoute: typeof AuthenticatedEmpleadosEmpleadoIdRoute
   AuthenticatedEmpleadosCreateRoute: typeof AuthenticatedEmpleadosCreateRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedUsersCreateRoute: typeof AuthenticatedUsersCreateRoute
   AuthenticatedCargoEmpleadoIndexRoute: typeof AuthenticatedCargoEmpleadoIndexRoute
+  AuthenticatedCotizacionesIndexRoute: typeof AuthenticatedCotizacionesIndexRoute
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedCotizacionesCotizacionIdEditRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRoute
+  AuthenticatedCotizacionesCotizacionIdViewRoute: typeof AuthenticatedCotizacionesCotizacionIdViewRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -306,14 +390,20 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCargoEmpleadoCargoIdRoute:
     AuthenticatedCargoEmpleadoCargoIdRoute,
   AuthenticatedCargoEmpleadoCreateRoute: AuthenticatedCargoEmpleadoCreateRoute,
+  AuthenticatedCotizacionesCreateRoute: AuthenticatedCotizacionesCreateRoute,
   AuthenticatedDemoStoreRoute: AuthenticatedDemoStoreRoute,
   AuthenticatedEmpleadosEmpleadoIdRoute: AuthenticatedEmpleadosEmpleadoIdRoute,
   AuthenticatedEmpleadosCreateRoute: AuthenticatedEmpleadosCreateRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedUsersCreateRoute: AuthenticatedUsersCreateRoute,
   AuthenticatedCargoEmpleadoIndexRoute: AuthenticatedCargoEmpleadoIndexRoute,
+  AuthenticatedCotizacionesIndexRoute: AuthenticatedCotizacionesIndexRoute,
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedCotizacionesCotizacionIdEditRoute:
+    AuthenticatedCotizacionesCotizacionIdEditRoute,
+  AuthenticatedCotizacionesCotizacionIdViewRoute:
+    AuthenticatedCotizacionesCotizacionIdViewRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

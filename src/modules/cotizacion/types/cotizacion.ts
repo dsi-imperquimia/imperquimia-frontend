@@ -1,0 +1,73 @@
+import type { Material } from "@modules/material/types/material";
+
+export type EstadoCotizacion = "ACTIVA" | "DESACTIVADA";
+
+export interface DetalleInput {
+  materialId: number;
+  cantidad: number;
+}
+
+export interface CreateCotizacion {
+  descripcion: string;
+  cliente: string;
+  detalles: DetalleInput[];
+}
+
+export interface UpdateCotizacion extends CreateCotizacion {
+  estado: EstadoCotizacion;
+}
+
+export interface UserCotizacionList {
+  lastName: string;
+}
+
+export interface UserCotizacionDetalle {
+  id: number;
+  name: string;
+  lastName: string;
+  email: string;
+}
+
+export interface DetalleCotizacion {
+  id: number;
+  cotizacionId: number;
+  materialId: number;
+  cantidad: string;
+  unidad: string;
+  costoUnitario: string;
+  subTotal: string;
+  totalIva: string;
+  total: string;
+  createdAt: string;
+  updatedAt: string;
+  material: Material;
+}
+
+export interface CotizacionList {
+  id: number;
+  descripcion: string;
+  cliente: string;
+  userId: number;
+  subTotal: string;
+  totalIva: string;
+  total: string;
+  estado: EstadoCotizacion;
+  createdAt: string;
+  updatedAt: string;
+  user: UserCotizacionList;
+}
+
+export interface CotizacionDetalle {
+  id: number;
+  descripcion: string;
+  cliente: string;
+  userId: number;
+  subTotal: string;
+  totalIva: string;
+  total: string;
+  estado: EstadoCotizacion;
+  createdAt: string;
+  updatedAt: string;
+  user: UserCotizacionDetalle;
+  detalles: DetalleCotizacion[];
+}

@@ -7,6 +7,7 @@ import {
   ChevronRight,
   IdCardLanyard,
   LayoutDashboard,
+  FileText,
   ListChecks,
   LogOut,
   Settings,
@@ -38,6 +39,14 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Crear usuario", to: "/users/create" },
     ],
   },
+  {
+  label: "Cotizaciones",
+  icon: FileText,
+  children: [
+    { label: "Lista de cotizaciones", to: "/cotizaciones" },
+    { label: "Crear cotización", to: "/cotizaciones/create" },
+  ],
+},
   {
     label: "Empleados",
     icon: BriefcaseBusiness,
