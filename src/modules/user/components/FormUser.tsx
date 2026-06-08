@@ -1,20 +1,24 @@
 import { EmailInputField } from "@components/fields/EmailInputField";
 import { InputField } from "@components/fields/InputField";
 import { PasswordInputField } from "@components/fields/PasswordInputField";
+import { SelectedField } from "@components/fields/SelectedField";
 import { Button } from "@heroui/react/button";
+import { ListBox } from "@heroui/react/list-box";
 import { toast } from "@heroui/react/toast";
 import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { User } from "lucide-react";
 import { storeUser } from "../api/store-user";
+import type { Role } from "../types/roles";
 import type { User as UserType } from "../types/user";
 
 interface Props {
   user?: Partial<UserType>;
+  roles?: Role[];
 }
 
-export function FormUser({ user: userInit }: Props) {
+export function FormUser({ user: userInit, roles }: Props) {
   const isEdit = Boolean(userInit?.id);
   const navigate = useNavigate();
 
@@ -125,6 +129,40 @@ export function FormUser({ user: userInit }: Props) {
         </form.Field>
 
         <form.Field
+          name="roleId"
+          validators={{
+            onChange: ({ value }) => {
+              if (!value) return "El cargo es requerido";
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <SelectedField
+              label="Role"
+              placeholder="Elige un role para el usuario"
+              value={field.state.value}
+              onChange={(value) =>
+                field.handleChange(value === "" ? undefined : Number(value))
+              }
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+            >
+              {roles?.map((role) => (
+                <ListBox.Item key={role.id} id={role.id} textValue={role.name}>
+                  {role.name}
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              ))}
+            </SelectedField>
+          )}
+        </form.Field>
+
+        <form.Field
           name="password"
           validators={{
             onChange: ({ value }) => {
@@ -177,6 +215,7 @@ export function FormUser({ user: userInit }: Props) {
           );
         }}
       />
+      <pre>{JSON.stringify(userInit, null, 2)}</pre>
     </form>
   );
 }
