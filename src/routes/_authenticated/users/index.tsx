@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/users/")({
 
 function RouteComponent() {
   const { user: authUser } = Route.useRouteContext()?.auth ?? {};
-  const { data, isPending, error, refetch, isRefetching } = useQuery<User>({
+  const { data, isPending, error, refetch, isRefetching } = useQuery<User[]>({
     queryKey: ["users"],
     queryFn: listUsers,
   });
