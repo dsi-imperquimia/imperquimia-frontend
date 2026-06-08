@@ -63,6 +63,7 @@ function RouteComponent() {
               <Table.Column isRowHeader>Nombre</Table.Column>
               <Table.Column>Apellido</Table.Column>
               <Table.Column>Correo electrónico</Table.Column>
+              <Table.Column>Role</Table.Column>
               <Table.Column>Acciones</Table.Column>
             </Table.Header>
             <Table.Body>
@@ -79,6 +80,7 @@ function RouteComponent() {
                     <Table.Cell>{user.name}</Table.Cell>
                     <Table.Cell>{user.lastName}</Table.Cell>
                     <Table.Cell>{user.email}</Table.Cell>
+                    <Table.Cell>{user.role?.name}</Table.Cell>
                     <Table.Cell>
                       <div className="inline-flex items-center gap-2 justify-end">
                         <Link
