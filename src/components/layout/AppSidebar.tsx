@@ -7,6 +7,8 @@ import {
   ChevronRight,
   IdCardLanyard,
   LayoutDashboard,
+  FileText,
+  ListChecks,
   LogOut,
   ShieldUser,
   UserPlus,
@@ -40,6 +42,14 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Roles", to: "/users/roles", icon: ShieldUser },
     ],
   },
+  {
+  label: "Cotizaciones",
+  icon: FileText,
+  children: [
+    { label: "Lista de cotizaciones", to: "/cotizaciones" },
+    { label: "Crear cotización", to: "/cotizaciones/create" },
+  ],
+},
   {
     label: "Empleados",
     icon: BriefcaseBusiness,
