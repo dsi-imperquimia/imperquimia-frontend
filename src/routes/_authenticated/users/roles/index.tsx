@@ -1,6 +1,7 @@
 import { Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
+import { userActions } from "@modules/auth/store/authStore";
 import { cn } from "@modules/core/utils/utils";
 import { getAllRoles } from "@modules/user/api/roles/get-all";
 import DialogDeleteRole from "@modules/user/components/role/DialogDeleteRole";
@@ -38,12 +39,14 @@ function RouteComponent() {
           >
             <RefreshCw className={cn(isRefetching && "animate-spin")} />
           </Button>
-          <Link to="/users/roles/create">
-            <Button>
-              <UserPlus className="mr-1" />
-              Crear role
-            </Button>
-          </Link>
+          {userActions.hasPermission("ROLE_CREATE") && (
+            <Link to="/users/roles/create">
+              <Button>
+                <UserPlus className="mr-1" />
+                Crear role
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
       <Table>
@@ -67,19 +70,23 @@ function RouteComponent() {
                     <Table.Cell>{role.name}</Table.Cell>
                     <Table.Cell>
                       <div className="inline-flex items-center gap-2 justify-end">
-                        <Link
-                          to={`/users/roles/$roleId`}
-                          params={{ roleId: role.id }}
-                        >
-                          <Button size="sm">
-                            <Edit className="mr-1" />
-                            Editar
-                          </Button>
-                        </Link>
-                        <DialogDeleteRole
-                          role={role}
-                          onDeleteSuccess={refetch}
-                        />
+                        {userActions.hasPermission("ROLE_UPDATE") && (
+                          <Link
+                            to={`/users/roles/$roleId`}
+                            params={{ roleId: role.id }}
+                          >
+                            <Button size="sm">
+                              <Edit className="mr-1" />
+                              Editar
+                            </Button>
+                          </Link>
+                        )}
+                        {userActions.hasPermission("ROLE_DELETE") && (
+                          <DialogDeleteRole
+                            role={role}
+                            onDeleteSuccess={refetch}
+                          />
+                        )}
                       </div>
                     </Table.Cell>
                   </Table.Row>

@@ -1,6 +1,7 @@
 import { Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
+import { userActions } from "@modules/auth/store/authStore";
 import { cn } from "@modules/core/utils/utils";
 import { listCotizaciones } from "@modules/cotizacion/api/list-cotizaciones";
 import type { CotizacionList } from "@modules/cotizacion/types/cotizacion";
@@ -50,13 +51,14 @@ function RouteComponent() {
           >
             <RefreshCw className={cn(isRefetching && "animate-spin")} />
           </Button>
-
-          <Link to="/cotizaciones/create">
-            <Button>
-              <FilePlus className="mr-1" />
-              Crear cotización
-            </Button>
-          </Link>
+          {userActions.hasPermission("COTIZACIONES_CREATE") && (
+            <Link to="/cotizaciones/create">
+              <Button>
+                <FilePlus className="mr-1" />
+                Crear cotización
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -120,15 +122,17 @@ function RouteComponent() {
                           </Button>
                         </Link>
 
-                        <Link
-                          to="/cotizaciones/$cotizacionId/edit"
-                          params={{ cotizacionId: cotizacion.id.toString() }}
-                        >
-                          <Button size="sm">
-                            <Edit className="mr-1" />
-                            Editar
-                          </Button>
-                        </Link>
+                        {userActions.hasPermission("COTIZACIONES_UPDATE") && (
+                          <Link
+                            to="/cotizaciones/$cotizacionId/edit"
+                            params={{ cotizacionId: cotizacion.id.toString() }}
+                          >
+                            <Button size="sm">
+                              <Edit className="mr-1" />
+                              Editar
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     </Table.Cell>
                   </Table.Row>
