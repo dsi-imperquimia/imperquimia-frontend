@@ -13,6 +13,7 @@ import {
   ShieldUser,
   UserPlus,
   Users,
+  Layers,
   Wrench,       
   FolderPlus,   
 } from "lucide-react";
@@ -73,6 +74,15 @@ const NAV_ITEMS: NavItem[] = [
     icon: Wrench,
     children: [
       { label: "Lista de herramientas", to: "/herramientas" },
+    ],
+  },
+  {
+    label: "Materiales",
+    icon: Layers,
+    children: [
+      { label: "Buscar materiales", to: "/materiales" },
+      { label: "Unidades de medición", to: "/materiales/unidades" },
+      { label: "Agregar material", to: "/materiales/reportes" },
     ],
   },
 ];
