@@ -114,7 +114,14 @@ const NAV_ITEMS: NavItem[] = [
   {
     label: "Herramientas",
     icon: Wrench,
-    children: [{ label: "Lista de herramientas", to: "/herramientas" }],
+    children: [
+      {
+        label: "Lista de herramientas",
+        to: "/herramientas",
+        permission: ["HERRAMIENTA_READ"],
+      },
+    ],
+    permission: ["HERRAMIENTA_READ"],
   },
 ];
 
