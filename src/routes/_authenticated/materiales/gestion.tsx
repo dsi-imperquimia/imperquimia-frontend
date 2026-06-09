@@ -6,49 +6,42 @@ import { listMateriales } from "@modules/materiales/api/list-materiales";
 import { storeMaterial } from "@modules/materiales/api/store-material";
 import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import type { Material } from "@modules/materiales/types/material";
-import {
-  filtrarMateriales,
-  getEstadoMaterialLabel,
-  isMaterialDisponible,
-} from "@modules/materiales/components/materiales-utils";
 import { useForm } from "@tanstack/react-form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
-  CheckCircle2,
   DollarSign,
   FileText,
   Link2,
   Package,
-  Pencil,
-  Plus,
-  RefreshCw,
   Ruler,
-  Search,
   Tag,
-  X,
-  XCircle,
+  ArrowLeft,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+
+type MaterialesGestionSearch = {
+  id?: number;
+};
 
 export const Route = createFileRoute("/_authenticated/materiales/gestion")({
+  validateSearch: (search: Record<string, unknown>): MaterialesGestionSearch => {
+    return {
+      id: search.id ? Number(search.id) : undefined,
+    };
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [busqueda, setBusqueda] = useState("");
-  const [editingMaterial, setEditingMaterial] = useState<
-    Partial<Material> | null
-  >(null);
-  const [showForm, setShowForm] = useState(false);
+  const { id } = Route.useSearch();
 
   const {
-    data = [],
+    data: materiales = [],
     isPending,
     error,
-    refetch,
-    isRefetching,
   } = useQuery<Material[]>({
     queryKey: ["materiales"],
     queryFn: listMateriales,
@@ -61,222 +54,50 @@ function RouteComponent() {
     );
   }, [error]);
 
-  function handleNew() {
-    setEditingMaterial(null);
-    setShowForm(true);
+  const editingMaterial = id ? materiales.find((m) => m.id === id) : null;
+
+  if (isPending) {
+    return <div className="p-4 text-center text-gray-500">Cargando datos...</div>;
   }
 
-  function handleEdit(material: Material) {
-    setEditingMaterial(material);
-    setShowForm(true);
+  if (id && !editingMaterial) {
+    return (
+      <div className="space-y-4">
+        <Button variant="ghost" onClick={() => navigate({ to: "/materiales" })}>
+          <ArrowLeft className="mr-2 size-4" /> Volver
+        </Button>
+        <div className="p-4 text-center text-gray-500">Material no encontrado.</div>
+      </div>
+    );
   }
-
-  function handleCloseForm() {
-    setEditingMaterial(null);
-    setShowForm(false);
-  }
-
-  async function handleToggleEstado(material: Material) {
-    try {
-      await storeMaterial({ id: material.id, estado: !material.estado });
-      toast.success(
-        material.estado
-          ? `"${material.nombre}" desactivado`
-          : `"${material.nombre}" activado`,
-      );
-      queryClient.invalidateQueries({ queryKey: ["materiales"] });
-    } catch {
-      toast.danger("Error al cambiar el estado del material.");
-    }
-  }
-
-  const resultados = filtrarMateriales(data, busqueda);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto max-w-2xl space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" isIconOnly onClick={() => navigate({ to: "/materiales" })}>
+          <ArrowLeft className="size-4" />
+        </Button>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Gestión de materiales
+            {editingMaterial ? "Editar material" : "Nuevo material"}
           </h1>
           <p className="text-sm text-gray-500">
-            Agrega, edita y administra los materiales del catálogo.
+            {editingMaterial
+              ? "Modifica los detalles del material seleccionado."
+              : "Ingresa la información para registrar un nuevo material."}
           </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            isIconOnly
-            onClick={() => refetch()}
-            isDisabled={isPending || isRefetching}
-            isPending={isRefetching}
-          >
-            <RefreshCw className={isRefetching ? "animate-spin" : ""} />
-          </Button>
-          <Button onClick={handleNew}>
-            <Plus className="mr-1 size-4" />
-            Nuevo material
-          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_460px]">
-        {/* Lista de materiales */}
-        <section className="space-y-4">
-          <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-            <label
-              className="text-sm font-medium text-gray-700"
-              htmlFor="buscar-material-gestion"
-            >
-              Buscar por nombre, código o descripción
-            </label>
-            <div className="mt-2 flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 focus-within:border-gray-400">
-              <Search className="size-4 text-gray-400" />
-              <input
-                id="buscar-material-gestion"
-                value={busqueda}
-                onChange={(event) => setBusqueda(event.target.value)}
-                placeholder="Ej. MAT-0001, cemento, varilla..."
-                className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
-              />
-            </div>
-          </div>
-
-          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-              <div>
-                <h2 className="text-base font-semibold text-gray-900">
-                  Catálogo de materiales
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {resultados.length} material(es)
-                </p>
-              </div>
-              <Package className="size-5 text-gray-400" />
-            </div>
-
-            {isPending ? (
-              <div className="px-4 py-8 text-center text-sm text-gray-500">
-                Cargando materiales...
-              </div>
-            ) : resultados.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-gray-500">
-                {busqueda.trim()
-                  ? "No se encontraron materiales con ese criterio."
-                  : "No hay materiales registrados. Comienza agregando uno."}
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100">
-                {resultados.map((material) => {
-                  const disponible = isMaterialDisponible(material);
-
-                  return (
-                    <article
-                      key={material.id}
-                      className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div className="min-w-0 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-medium text-gray-900">
-                            {material.nombre}
-                          </h3>
-                          {material.codigo && (
-                            <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
-                              {material.codigo}
-                            </span>
-                          )}
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${
-                              disponible
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-red-50 text-red-700"
-                            }`}
-                          >
-                            {disponible ? (
-                              <CheckCircle2 className="size-3" />
-                            ) : (
-                              <XCircle className="size-3" />
-                            )}
-                            {getEstadoMaterialLabel(material.estado)}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                          <span>
-                            {material.descripcion || "Sin descripción"}
-                          </span>
-                          <span className="font-medium">
-                            Unidad: {material.unidad}
-                          </span>
-                          <span className="font-medium">
-                            ${Number(material.costoUnitario).toFixed(2)}
-                          </span>
-                          {material.fichaTecnica && (
-                            <a
-                              href={material.fichaTecnica}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline"
-                            >
-                              <FileText className="size-3" />
-                              Ficha técnica
-                            </a>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex shrink-0 items-center gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEdit(material)}
-                        >
-                          <Pencil className="mr-1 size-3" />
-                          Editar
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={disponible ? "danger-soft" : "outline"}
-                          onClick={() => handleToggleEstado(material)}
-                        >
-                          {disponible ? "Desactivar" : "Activar"}
-                        </Button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Formulario lateral */}
-        {showForm && (
-          <aside className="h-fit rounded-lg border border-gray-200 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-              <h2 className="font-semibold text-gray-900">
-                {editingMaterial ? "Editar material" : "Nuevo material"}
-              </h2>
-              <Button
-                size="sm"
-                variant="ghost"
-                isIconOnly
-                onClick={handleCloseForm}
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-            <div className="p-4">
-              <MaterialForm
-                material={editingMaterial ?? undefined}
-                onSuccess={() => {
-                  handleCloseForm();
-                  queryClient.invalidateQueries({ queryKey: ["materiales"] });
-                }}
-              />
-            </div>
-          </aside>
-        )}
+      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <MaterialForm
+          key={editingMaterial?.id ?? "new"}
+          material={editingMaterial ?? undefined}
+          onSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["materiales"] });
+            navigate({ to: "/materiales" });
+          }}
+        />
       </div>
     </div>
   );

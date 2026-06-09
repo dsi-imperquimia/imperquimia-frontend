@@ -80,8 +80,7 @@ const NAV_ITEMS: NavItem[] = [
     label: "Materiales",
     icon: Layers,
     children: [
-      { label: "Buscar materiales", to: "/materiales" },
-      { label: "Unidades de medición", to: "/materiales/unidades" },
+      { label: "Lista de materiales", to: "/materiales" },
       { label: "Agregar material", to: "/materiales/gestion" },
     ],
   },

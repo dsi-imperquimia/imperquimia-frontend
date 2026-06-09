@@ -114,7 +114,7 @@ export function MaterialesSearchPanel({
                         Unidad: {material.unidad}
                       </span>
                       <span className="font-medium">
-                        ${Number(material.costoUnitario).toFixed(2)}
+                        Precio: ${Number(material.costoUnitario).toFixed(2)}
                       </span>
                     </div>
                   </div>
