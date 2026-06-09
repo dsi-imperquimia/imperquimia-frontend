@@ -1,28 +1,48 @@
+import { Breadcrumbs } from "@heroui/react/breadcrumbs";
 import { useRouterState } from "@tanstack/react-router";
 import { Home, PanelLeft } from "lucide-react";
+import { NAV_ITEMS } from "./navItems";
 import { UserDropdown } from "./UserDropdown";
 
 interface AppNavbarProps {
   onSidebarToggle?: () => void;
 }
 
-const PAGE_TITLES: Record<string, string> = {
-  "/": "Dashboard",
-  "/users": "Usuarios",
-  "/users/create": "Crear Usuario",
-  "/users/roles": "Roles",
-  "/empleados": "Empleados",
-  "/empleados/create": "Crear Empleado",
-  "/cargo-empleado": "Cargos de Empleado",
-  "/cargo-empleado/create": "Crear Cargo de Empleado",
-  "/tracker": "Tracker",
-  "/settings": "Settings",
-};
+interface Crumb {
+  icon?: React.ElementType;
+  label: string;
+  to?: string;
+}
+
+function getBreadcrumbs(pathname: string): Crumb[] {
+  if (pathname === "/") return [{ label: "Dashboard", to: "/", icon: Home }];
+
+  for (const item of NAV_ITEMS) {
+    if (item.to === pathname) {
+      return [
+        { label: "Dashboard", to: "/", icon: Home },
+        { label: item.label, to: item.to, icon: item.icon },
+      ];
+    }
+    if (item.children) {
+      const child = item.children.find((c) => c.to === pathname);
+      if (child) {
+        return [
+          { label: "Dashboard", to: "/", icon: Home },
+          { label: item.label, to: item.to, icon: item.icon },
+          { label: child.label, to: child.to, icon: child.icon },
+        ];
+      }
+    }
+  }
+
+  return [{ label: "Dashboard", to: "/", icon: Home }];
+}
 
 export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
   const state = useRouterState();
   const pathname = state.location.pathname;
-  const title = PAGE_TITLES[pathname] ?? "Dashboard";
+  const crumbs = getBreadcrumbs(pathname);
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4">
@@ -34,11 +54,14 @@ export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
         <PanelLeft size={20} />
       </button>
 
-      <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-        <Home size={16} className="text-gray-400" />
-        <span className="text-gray-400">/</span>
-        <span>{title}</span>
-      </div>
+      <Breadcrumbs>
+        {crumbs.map((crumb) => (
+          <Breadcrumbs.Item key={crumb.label} href={crumb.to}>
+            {crumb.icon && <crumb.icon size={16} className="mr-1" />}
+            {crumb.label}
+          </Breadcrumbs.Item>
+        ))}
+      </Breadcrumbs>
 
       <div className="ml-auto flex items-center gap-1">
         <UserDropdown />
