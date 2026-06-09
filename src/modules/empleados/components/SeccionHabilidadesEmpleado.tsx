@@ -1,97 +1,137 @@
-import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Select, SelectItem, Button, Card, CardBody, Chip } from "@heroui/react";
-import { ShieldCheck, Save } from "lucide-react";
-import { listHabilidades, updateHabilidadesEmpleado } from "../api/api/habilidadesApi";
-import type { Empleado } from "../types/empleado";
+import { Button, TextArea, Modal } from "@heroui/react";
+import { InputField } from "@components/fields/InputField";
+import { useForm } from "@tanstack/react-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createHabilidad, updateHabilidad } from "../api/habilidadesApi";
+import type { Habilidad } from "../types/habilidad";
+import { useEffect } from "react";
+import { toast } from "@heroui/react/toast";
 
 interface Props {
-  empleado: Empleado;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  habilidad: Habilidad | null;
 }
 
-export function SeccionHabilidadesEmpleado({ empleado }: Props) {
+export function ModalHabilidad({ isOpen, onOpenChange, habilidad }: Props) {
   const queryClient = useQueryClient();
-  
-  // Extraemos las IDs de habilidades que el empleado ya tiene asignadas actualmente
-  const habilidadesIniciales = empleado.habilidades.map(h => h.habilidadId.toString());
-  const [selectedKeys, setSelectedKeys] = useState<Selection>(new Set(habilidadesIniciales));
-
-  // Traer el catálogo de habilidades para el Dropdown (Criterio de aceptación 4 de PBI-88)
-  const { data: catalogo = [] } = useQuery({
-    queryKey: ["habilidades"],
-    queryFn: listHabilidades,
-  });
 
   const mutation = useMutation({
-    mutationFn: (ids: number[]) => updateHabilidadesEmpleado(empleado.id, ids),
-    onSuccess: () => {
-      // Invalida la caché de este empleado específico para refrescar la UI de inmediato (PBI-90)
-      queryClient.invalidateQueries({ queryKey: ["empleado", empleado.id] });
-      alert("Habilidades actualizadas de inmediato.");
+    mutationFn: async (values: { nombre: string; descripcion: string }) => {
+      if (habilidad) {
+        return updateHabilidad(habilidad.id, values);
+      }
+      return createHabilidad(values);
     },
-    onError: () => {
-      alert("No se pudieron actualizar las habilidades.");
+    onSuccess: () => {
+      toast.success(habilidad ? "Habilidad actualizada" : "Habilidad creada con éxito");
+      queryClient.invalidateQueries({ queryKey: ["habilidades"] });
+      onOpenChange(false);
+    },
+    onError: (error: any) => {
+      toast.danger(error.response?.data?.message || "Ocurrió un error con el catálogo.");
     }
   });
 
-  const handleSave = () => {
-    const idsNumericos = Array.from(selectedKeys).map(id => Number(id));
-    mutation.mutate(idsNumericos);
-  };
+  const form = useForm({
+    defaultValues: {
+      nombre: "",
+      descripcion: "",
+    },
+    onSubmit: async ({ value }) => {
+      await mutation.mutateAsync(value);
+    },
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      form.setFieldValue("nombre", habilidad?.nombre ?? "");
+      form.setFieldValue("descripcion", habilidad?.descripcion ?? "");
+    }
+  }, [habilidad, isOpen]);
 
   return (
-    <Card className="shadow-sm border border-slate-100">
-      <CardBody className="p-6 flex flex-col gap-6">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-lg font-bold flex items-center gap-2 text-slate-800">
-            <ShieldCheck className="text-primary" size={20} />
-            Habilidades Profesionales
-          </h3>
-          <p className="text-xs text-slate-400">Asigna y actualiza las destrezas de este perfil en tiempo real.</p>
-        </div>
+    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal.Backdrop>
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            
+            <Modal.Header>
+              <Modal.Heading>
+                {habilidad ? "Editar Habilidad" : "Nueva Habilidad"}
+              </Modal.Heading>
+            </Modal.Header>
 
-        {/* Multi-Select de HeroUI */}
-        <Select
-          label="Seleccionar Habilidades"
-          selectionMode="multiple"
-          placeholder="Seleccione una o varias habilidades..."
-          selectedKeys={selectedKeys}
-          onSelectionChange={setSelectedKeys}
-          variant="bordered"
-          className="w-full"
-        >
-          {catalogo.map((hab) => (
-            <SelectItem key={hab.id} textValue={hab.nombre}>
-              {hab.nombre}
-            </SelectItem>
-          ))}
-        </Select>
+            <Modal.Body>
+              <form
+                id="form-habilidad"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  form.handleSubmit();
+                }}
+                className="flex flex-col gap-4 py-2"
+              >
+                {/* Campo Nombre */}
+                <form.Field
+                  name="nombre"
+                  validators={{
+                    onChange: ({ value }) => !value ? "El nombre es obligatorio" : undefined
+                  }}
+                >
+                  {(field) => (
+                    <InputField
+                      label="Nombre de la Habilidad"
+                      type="text"
+                      placeholder="Ej. NestJS, React, Liderazgo"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      errorMessage={
+                        field.state.meta.errors.length > 0
+                          ? field.state.meta.errors.join(", ")
+                          : undefined
+                      }
+                    />
+                  )}
+                </form.Field>
 
-        {/* Vista previa de asignadas actuales (PBI-89) */}
-        <div className="flex flex-wrap gap-2 min-h-[40px] items-center p-3 bg-slate-50 dark:bg-slate-900 rounded-xl">
-          {empleado.habilidades.length === 0 ? (
-            <span className="text-xs text-slate-400 italic">El empleado no tiene habilidades asignadas.</span>
-          ) : (
-            empleado.habilidades.map((eh) => (
-              <Chip key={eh.habilidadId} variant="flat" color="secondary" size="sm">
-                {eh.habilidad.nombre}
-              </Chip>
-            ))
-          )}
-        </div>
+                {/* Campo Descripción: Ajustado según la firma de tipos de tu HeroUI */}
+                <form.Field name="descripcion">
+                  {(field) => (
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-gray-700">
+                        Descripción (Opcional)
+                      </label>
+                      <TextArea
+                        variant="secondary"
+                        placeholder="Ingresa una breve descripción de la habilidad"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="min-h-[80px] w-full"
+                      />
+                    </div>
+                  )}
+                </form.Field>
+              </form>
+            </Modal.Body>
 
-        <div className="flex justify-end">
-          <Button 
-            color="primary" 
-            size="sm"
-            startContent={<Save size={16} />} 
-            isLoading={mutation.isPending}
-            onPress={handleSave}
-          >
-            Guardar Cambios
-          </Button>
-        </div>
-      </CardBody>
-    </Card>
+            <Modal.Footer>
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancelar
+              </Button>
+              <Button 
+                type="submit" 
+                form="form-habilidad" 
+                isPending={mutation.isPending}
+                className="bg-gray-900 text-white"
+              >
+                Guardar
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
   );
 }

@@ -56,10 +56,12 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Asignaciones",
-    icon: IdCardLanyard,
+    icon: IdCardLanyard, 
     children: [
-      { label: "Habilidades", to: "/empleados/habilidades" },
-    ],
+    { 
+      label: "Catálogo Habilidades", to: "/empleados/habilidades" 
+    },
+  ],
   },
   { label: "Tracker", icon: ListChecks, to: "/tracker", badge: "New" },
   { label: "Settings", icon: Settings, to: "/settings", hasArrow: true },
