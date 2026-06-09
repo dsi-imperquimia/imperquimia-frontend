@@ -34,8 +34,17 @@ function persistAuth(state: AuthState): void {
     // localStorage — for axios interceptor
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
+    const userState = state.user;
+
     // cookie — for SSR to read on page reload
-    const value = encodeURIComponent(JSON.stringify(state));
+    const value = encodeURIComponent(
+      JSON.stringify({
+        ...state,
+        user: {
+          id: userState?.id,
+        },
+      }),
+    );
     const maxAge = state.isAuthenticated ? 24 * 60 * 60 : 0;
     document.cookie = `${STORAGE_KEY}=${value}; path=/; SameSite=Strict; max-age=${maxAge}`;
   } catch {
@@ -57,7 +66,29 @@ export const authActions = {
   },
 };
 
+export const userActions = {
+  hasPermission: (permission: string) => {
+    const state = authStore.state;
+    if (!state.isAuthenticated || !state.user) return false;
+    const allPermissions = [
+      ...(state.user.permissions ?? []),
+      ...(state.user.role?.permissions ?? []),
+    ];
+
+    const findPermission = allPermissions.find(
+      (p) => p.name === permission.toUpperCase(),
+    );
+
+    return findPermission !== undefined;
+  },
+  hasAnyPermission: (permissions: string[]) => {
+    if (permissions.length === 0) return true;
+    const validation = permissions.map((p) => userActions.hasPermission(p));
+    return validation.some((v) => v);
+  },
+};
+
 export function useAuth() {
   const state = useSelector(authStore, (s) => s);
-  return { ...state, ...authActions };
+  return { ...state, ...authActions, ...userActions };
 }

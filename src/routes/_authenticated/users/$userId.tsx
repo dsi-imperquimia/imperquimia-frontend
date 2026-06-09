@@ -1,6 +1,7 @@
 import { Card } from "@heroui/react";
 import { handleApiError } from "@modules/core/utils/handleApiError";
 import { getUser } from "@modules/user/api/get-user";
+import { getAllPermissions } from "@modules/user/api/permission/get-all";
 import { getAllRoles } from "@modules/user/api/roles/get-all";
 import { FormUser } from "@modules/user/components/FormUser";
 import { createFileRoute } from "@tanstack/react-router";
@@ -16,13 +17,14 @@ export const Route = createFileRoute("/_authenticated/users/$userId")({
     return {
       user: await getUser(userId).catch(handleApiError),
       roles: await getAllRoles().catch(handleApiError),
+      permissions: await getAllPermissions().catch(handleApiError),
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { user, roles } = Route.useLoaderData();
+  const { user, roles, permissions } = Route.useLoaderData();
 
   return (
     <Card className="w-full max-w-md" variant="transparent">
@@ -31,7 +33,7 @@ function RouteComponent() {
         Editar usuario
       </Card.Header>
       <Card.Content>
-        <FormUser user={user} roles={roles} />
+        <FormUser user={user} roles={roles} permissions={permissions} />
       </Card.Content>
     </Card>
   );

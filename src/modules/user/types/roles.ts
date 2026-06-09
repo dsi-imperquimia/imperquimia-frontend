@@ -4,8 +4,6 @@ export type Role = {
   id: number;
   name: string;
   description?: string;
-  permissions?: {
-    permission: Permission;
-  }[];
+  permissions?: Permission[];
   permissionsIds?: number[];
 };

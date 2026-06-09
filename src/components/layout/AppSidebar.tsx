@@ -1,20 +1,18 @@
 import logo from "@/assets/iq_isologo_1.png";
-import { authActions } from "@modules/auth/store/authStore";
+import { authActions, userActions } from "@modules/auth/store/authStore";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   BriefcaseBusiness,
   ChevronDown,
   ChevronRight,
+  FileText,
   IdCardLanyard,
   LayoutDashboard,
-  FileText,
-  ListChecks,
   LogOut,
   ShieldUser,
   UserPlus,
   Users,
-  Wrench,       
-  FolderPlus,   
+  Wrench,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -22,6 +20,7 @@ interface SubItem {
   label: string;
   to: string;
   icon?: React.ElementType;
+  permission?: string[];
 }
 
 interface NavItem {
@@ -31,6 +30,7 @@ interface NavItem {
   badge?: string;
   children?: SubItem[];
   hasArrow?: boolean;
+  permission?: string[];
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -39,41 +39,89 @@ const NAV_ITEMS: NavItem[] = [
     label: "Usuarios",
     icon: Users,
     children: [
-      { label: "Lista de usuarios", to: "/users", icon: Users },
-      { label: "Crear usuario", to: "/users/create", icon: UserPlus },
-      { label: "Roles", to: "/users/roles", icon: ShieldUser },
+      {
+        label: "Lista de usuarios",
+        to: "/users",
+        icon: Users,
+        permission: ["USER_READ"],
+      },
+      {
+        label: "Crear usuario",
+        to: "/users/create",
+        icon: UserPlus,
+        permission: ["USER_CREATE"],
+      },
+      {
+        label: "Roles",
+        to: "/users/roles",
+        icon: ShieldUser,
+        permission: ["ROLE_READ"],
+      },
     ],
+    permission: ["USER_READ", "ROLE_READ"],
   },
   {
     label: "Cotizaciones",
     icon: FileText,
     children: [
-      { label: "Lista de cotizaciones", to: "/cotizaciones" },
-      { label: "Crear cotización", to: "/cotizaciones/create" },
+      {
+        label: "Lista de cotizaciones",
+        to: "/cotizaciones",
+        permission: ["COTIZACIONES_READ"],
+      },
+      {
+        label: "Crear cotización",
+        to: "/cotizaciones/create",
+        permission: ["COTIZACIONES_CREATE"],
+      },
     ],
+    permission: ["COTIZACIONES_READ"],
   },
   {
     label: "Empleados",
     icon: BriefcaseBusiness,
     children: [
-      { label: "Lista de empleados", to: "/empleados" },
-      { label: "Crear empleado", to: "/empleados/create" },
+      {
+        label: "Lista de empleados",
+        to: "/empleados",
+        permission: ["EMPLEADO_READ"],
+      },
+      {
+        label: "Crear empleado",
+        to: "/empleados/create",
+        permission: ["EMPLEADO_CREATE"],
+      },
     ],
+    permission: ["EMPLEADO_READ"],
   },
   {
     label: "Cargos de empleado",
     icon: IdCardLanyard,
     children: [
-      { label: "Lista de cargos", to: "/cargo-empleado" },
-      { label: "Crear cargo", to: "/cargo-empleado/create" },
+      {
+        label: "Lista de cargos",
+        to: "/cargo-empleado",
+        permission: ["CARGO_EMPLEADO_READ"],
+      },
+      {
+        label: "Crear cargo",
+        to: "/cargo-empleado/create",
+        permission: ["CARGO_EMPLEADO_CREATE"],
+      },
     ],
+    permission: ["CARGO_EMPLEADO_READ"],
   },
   {
-    label: "Herramientas", 
+    label: "Herramientas",
     icon: Wrench,
     children: [
-      { label: "Lista de herramientas", to: "/herramientas" },
+      {
+        label: "Lista de herramientas",
+        to: "/herramientas",
+        permission: ["HERRAMIENTA_READ"],
+      },
     ],
+    permission: ["HERRAMIENTA_READ"],
   },
 ];
 
@@ -96,8 +144,11 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-2">
-        {NAV_ITEMS.map((item) =>
-          item.children ? (
+        {NAV_ITEMS.map((item) => {
+          if (!userActions.hasAnyPermission(item.permission ?? [])) {
+            return null;
+          }
+          return item.children ? (
             <CollapsibleItem
               key={item.label}
               item={item}
@@ -106,8 +157,8 @@ export function AppSidebar() {
             />
           ) : (
             <SidebarLink key={item.label} item={item} />
-          ),
-        )}
+          );
+        })}
       </nav>
 
       <div className="border-t border-gray-100 py-2">
@@ -178,6 +229,11 @@ function CollapsibleItem({
       {open && (
         <div className="ml-5 mt-0.5 space-y-0.5 border-l border-gray-300 pl-2">
           {item.children!.map((sub) => {
+            console.log(sub.permission);
+            if (!userActions.hasAnyPermission(sub.permission ?? [])) {
+              return null;
+            }
+
             const isActive = state.location.pathname === sub.to;
             return (
               <Link
