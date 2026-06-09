@@ -4,6 +4,7 @@ import { Toast } from "@heroui/react/toast";
 import { queryClient } from "@lib/queryClient";
 import { authStore } from "@modules/auth/store/authStore";
 import { getAuth } from "@modules/auth/utils/get-auth-store";
+import { getUser } from "@modules/user/api/get-user";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
   HeadContent,
@@ -20,6 +21,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       typeof window === "undefined"
         ? await getAuth() // SSR: lee cookie del request
         : authStore.state; // cliente: usa store ya hidratado desde localStorage
+
+    if (auth.user?.id) {
+      auth.user = await getUser(auth.user.id); // carga datos completos del usuario y permisos
+      authStore.setState(() => auth); // actualiza store con datos completos del usuario
+    }
     return { auth };
   },
   head: () => ({

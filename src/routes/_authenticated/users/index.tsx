@@ -1,6 +1,7 @@
 import { Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
+import { userActions } from "@modules/auth/store/authStore";
 import { cn } from "@modules/core/utils/utils";
 import { listUsers } from "@modules/user/api/listusers";
 import DialogDeleteUser from "@modules/user/components/DialogDeleteUser";
@@ -15,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/users/")({
 });
 
 function RouteComponent() {
-  const { user: authUser } = Route.useRouteContext()?.auth ?? {};
+  const { user: authUser } = Route.useRouteContext().auth;
   const { data, isPending, error, refetch, isRefetching } = useQuery<User[]>({
     queryKey: ["users"],
     queryFn: listUsers,
@@ -48,12 +49,14 @@ function RouteComponent() {
           >
             <RefreshCw className={cn(isRefetching && "animate-spin")} />
           </Button>
-          <Link to="/users/create">
-            <Button>
-              <UserPlus className="mr-1" />
-              Crear usuario
-            </Button>
-          </Link>
+          {userActions.hasPermission("USER_CREATE") && (
+            <Link to="/users/create">
+              <Button>
+                <UserPlus className="mr-1" />
+                Crear usuario
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
       <Table>
@@ -83,21 +86,24 @@ function RouteComponent() {
                     <Table.Cell>{user.role?.name}</Table.Cell>
                     <Table.Cell>
                       <div className="inline-flex items-center gap-2 justify-end">
-                        <Link
-                          to={`/users/$userId`}
-                          params={{ userId: user.id }}
-                        >
-                          <Button size="sm">
-                            <Edit className="mr-1" />
-                            Editar
-                          </Button>
-                        </Link>
-                        {user.id !== authUser?.id && (
-                          <DialogDeleteUser
-                            user={user}
-                            onDeleteSuccess={handleDeleteSuccess}
-                          />
+                        {userActions.hasPermission("USER_UPDATE") && (
+                          <Link
+                            to={`/users/$userId`}
+                            params={{ userId: user.id }}
+                          >
+                            <Button size="sm">
+                              <Edit className="mr-1" />
+                              Editar
+                            </Button>
+                          </Link>
                         )}
+                        {user.id !== authUser?.id &&
+                          userActions.hasPermission("USER_DELETE") && (
+                            <DialogDeleteUser
+                              user={user}
+                              onDeleteSuccess={handleDeleteSuccess}
+                            />
+                          )}
                       </div>
                     </Table.Cell>
                   </Table.Row>

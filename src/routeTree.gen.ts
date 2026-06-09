@@ -20,6 +20,7 @@ import { Route as AuthenticatedCotizacionesIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
+import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
 import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
 import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
@@ -94,6 +95,12 @@ const AuthenticatedUsersUserIdRoute =
   AuthenticatedUsersUserIdRouteImport.update({
     id: '/users/$userId',
     path: '/users/$userId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEmpleadosHabilidadesRoute =
+  AuthenticatedEmpleadosHabilidadesRouteImport.update({
+    id: '/empleados/habilidades',
+    path: '/empleados/habilidades',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMaterialesGestionRoute =
@@ -189,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
+  '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
@@ -215,6 +223,7 @@ export interface FileRoutesByTo {
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
+  '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
@@ -243,6 +252,7 @@ export interface FileRoutesById {
   '/_authenticated/demo/store': typeof AuthenticatedDemoStoreRoute
   '/_authenticated/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/_authenticated/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
+  '/_authenticated/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/_authenticated/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/users/create': typeof AuthenticatedUsersCreateRoute
@@ -271,6 +281,7 @@ export interface FileRouteTypes {
     | '/demo/store'
     | '/empleados/$empleadoId'
     | '/empleados/create'
+    | '/empleados/habilidades'
     | '/materiales/gestion'
     | '/users/$userId'
     | '/users/create'
@@ -297,6 +308,7 @@ export interface FileRouteTypes {
     | '/demo/store'
     | '/empleados/$empleadoId'
     | '/empleados/create'
+    | '/empleados/habilidades'
     | '/materiales/gestion'
     | '/users/$userId'
     | '/users/create'
@@ -324,6 +336,7 @@ export interface FileRouteTypes {
     | '/_authenticated/demo/store'
     | '/_authenticated/empleados/$empleadoId'
     | '/_authenticated/empleados/create'
+    | '/_authenticated/empleados/habilidades'
     | '/_authenticated/materiales/gestion'
     | '/_authenticated/users/$userId'
     | '/_authenticated/users/create'
@@ -424,6 +437,13 @@ declare module '@tanstack/react-router' {
       path: '/users/$userId'
       fullPath: '/users/$userId'
       preLoaderRoute: typeof AuthenticatedUsersUserIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/empleados/habilidades': {
+      id: '/_authenticated/empleados/habilidades'
+      path: '/empleados/habilidades'
+      fullPath: '/empleados/habilidades'
+      preLoaderRoute: typeof AuthenticatedEmpleadosHabilidadesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/materiales/gestion': {
@@ -535,6 +555,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDemoStoreRoute: typeof AuthenticatedDemoStoreRoute
   AuthenticatedEmpleadosEmpleadoIdRoute: typeof AuthenticatedEmpleadosEmpleadoIdRoute
   AuthenticatedEmpleadosCreateRoute: typeof AuthenticatedEmpleadosCreateRoute
+  AuthenticatedEmpleadosHabilidadesRoute: typeof AuthenticatedEmpleadosHabilidadesRoute
   AuthenticatedMaterialesGestionRoute: typeof AuthenticatedMaterialesGestionRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedUsersCreateRoute: typeof AuthenticatedUsersCreateRoute
@@ -562,6 +583,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDemoStoreRoute: AuthenticatedDemoStoreRoute,
   AuthenticatedEmpleadosEmpleadoIdRoute: AuthenticatedEmpleadosEmpleadoIdRoute,
   AuthenticatedEmpleadosCreateRoute: AuthenticatedEmpleadosCreateRoute,
+  AuthenticatedEmpleadosHabilidadesRoute:
+    AuthenticatedEmpleadosHabilidadesRoute,
   AuthenticatedMaterialesGestionRoute: AuthenticatedMaterialesGestionRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedUsersCreateRoute: AuthenticatedUsersCreateRoute,
