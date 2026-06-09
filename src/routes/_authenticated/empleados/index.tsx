@@ -87,7 +87,7 @@ function RouteComponent() {
                     <Table.Cell>{empleado.nombreCompleto}</Table.Cell>
                     <Table.Cell>{empleado.dui}</Table.Cell>
                     <Table.Cell>{empleado.nit}</Table.Cell>
-                    <Table.Cell>{empleado.cargoId}</Table.Cell>
+                    <Table.Cell>{empleado.cargo?.nombre}</Table.Cell>
                     <Table.Cell>{empleado.activo ? "Sí" : "No"}</Table.Cell>
                     <Table.Cell>
                       {new Date(empleado.fechaRegistro).toLocaleDateString(
