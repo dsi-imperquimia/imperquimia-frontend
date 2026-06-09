@@ -1,4 +1,10 @@
-import { CheckCircle2, PackageSearch, Search, XCircle } from "lucide-react";
+import {
+  CheckCircle2,
+  PackageSearch,
+  Search,
+  XCircle,
+  Link,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import type { Material } from "../types/material";
 import {
@@ -107,9 +113,7 @@ export function MaterialesSearchPanel({
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                      <span>
-                        {material.descripcion || "Sin descripción"}
-                      </span>
+                      <span>{material.descripcion || "Sin descripción"}</span>
                       <span className="font-medium">
                         Unidad: {material.unidad}
                       </span>
@@ -117,6 +121,22 @@ export function MaterialesSearchPanel({
                         Precio: ${Number(material.costoUnitario).toFixed(2)}
                       </span>
                     </div>
+                    
+                    
+                    {material.fichaTecnica && (
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+                        <span>
+                          <a
+                            href={material.fichaTecnica}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-sm text-blue-600 hover:underline"
+                          >
+                            Ficha técnica
+                          </a>
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {renderAction && (
