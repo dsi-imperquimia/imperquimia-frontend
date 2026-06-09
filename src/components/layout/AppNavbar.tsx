@@ -14,7 +14,7 @@ interface Crumb {
   to?: string;
 }
 
-function getBreadcrumbs(pathname: string): Crumb[] {
+function findCrumbs(pathname: string): Crumb[] | null {
   if (pathname === "/") return [{ label: "Dashboard", to: "/", icon: Home }];
 
   for (const item of NAV_ITEMS) {
@@ -35,8 +35,23 @@ function getBreadcrumbs(pathname: string): Crumb[] {
       }
     }
   }
+  return null;
+}
 
-  return [{ label: "Dashboard", to: "/", icon: Home }];
+function getBreadcrumbs(pathname: string): Crumb[] {
+  const exact = findCrumbs(pathname);
+  if (exact) return exact;
+
+  let path = pathname;
+  while (path) {
+    const lastSlash = path.lastIndexOf("/");
+    if (lastSlash <= 0) break;
+    path = path.slice(0, lastSlash);
+    const crumbs = findCrumbs(path);
+    if (crumbs) return [...crumbs, { label: "Actual" }];
+  }
+
+  return [{ label: "Dashboard", to: "/", icon: Home }, { label: "Actual" }];
 }
 
 export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
