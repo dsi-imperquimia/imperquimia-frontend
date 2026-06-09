@@ -3,6 +3,7 @@ import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
 import { cn } from "@modules/core/utils/utils";
 import { getAllRoles } from "@modules/user/api/roles/get-all";
+import DialogDeleteRole from "@modules/user/components/role/DialogDeleteRole";
 import type { Role } from "@modules/user/types/roles";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -61,20 +62,24 @@ function RouteComponent() {
                 </Table.LoadMore>
               )}
               <Table.Collection items={data}>
-                {(user) => (
-                  <Table.Row key={user.id}>
-                    <Table.Cell>{user.name}</Table.Cell>
+                {(role) => (
+                  <Table.Row key={role.id}>
+                    <Table.Cell>{role.name}</Table.Cell>
                     <Table.Cell>
                       <div className="inline-flex items-center gap-2 justify-end">
                         <Link
                           to={`/users/roles/$roleId`}
-                          params={{ roleId: user.id }}
+                          params={{ roleId: role.id }}
                         >
                           <Button size="sm">
                             <Edit className="mr-1" />
                             Editar
                           </Button>
                         </Link>
+                        <DialogDeleteRole
+                          role={role}
+                          onDeleteSuccess={refetch}
+                        />
                       </div>
                     </Table.Cell>
                   </Table.Row>
