@@ -34,8 +34,17 @@ function persistAuth(state: AuthState): void {
     // localStorage — for axios interceptor
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
+    const userState = state.user;
+
     // cookie — for SSR to read on page reload
-    const value = encodeURIComponent(JSON.stringify(state));
+    const value = encodeURIComponent(
+      JSON.stringify({
+        ...state,
+        user: {
+          id: userState?.id,
+        },
+      }),
+    );
     const maxAge = state.isAuthenticated ? 24 * 60 * 60 : 0;
     document.cookie = `${STORAGE_KEY}=${value}; path=/; SameSite=Strict; max-age=${maxAge}`;
   } catch {
