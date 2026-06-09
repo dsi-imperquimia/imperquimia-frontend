@@ -46,6 +46,8 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
     defaultValues: {
       descripcion: cotizacionInit?.descripcion ?? "",
       cliente: cotizacionInit?.cliente ?? "",
+      phone: cotizacionInit?.phone ?? "",
+      email: cotizacionInit?.email ?? "",
       estado: cotizacionInit?.estado ?? "ACTIVA",
       detalles:
         cotizacionInit?.detalles?.map((detalle) => ({
@@ -97,13 +99,17 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
         cotizacionGuardada = await updateCotizacion(cotizacionInit.id, {
           descripcion: value.descripcion,
           cliente: value.cliente,
-          estado: value.estado as EstadoCotizacion,
+          phone: value.phone,
+          email: value.email,
+          estado: value.estado,
           detalles,
         });
       } else {
         cotizacionGuardada = await createCotizacion({
           descripcion: value.descripcion,
           cliente: value.cliente,
+          phone: value.phone,
+          email: value.email,
           detalles,
         });
       }
@@ -153,8 +159,9 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
           name="descripcion"
           validators={{
             onChange: ({ value }) => {
-              if (!value) return "La descripción es requerida";
-              if (value.length < 3) return "Mínimo 3 caracteres";
+              if (!value.trim()) return "La descripción es requerida";
+              if (value.trim().length < 10) return "Mínimo 10 caracteres";
+              if (value.trim().length > 500) return "Máximo 500 caracteres";
               return undefined;
             },
           }}
@@ -180,8 +187,9 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
           name="cliente"
           validators={{
             onChange: ({ value }) => {
-              if (!value) return "El cliente es requerido";
-              if (value.length < 3) return "Mínimo 3 caracteres";
+              if (!value.trim()) return "El cliente es requerido";
+              if (value.trim().length < 3) return "Mínimo 3 caracteres";
+              if (value.trim().length > 100) return "Máximo 100 caracteres";
               return undefined;
             },
           }}
@@ -191,6 +199,66 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
               label="Cliente"
               type="text"
               placeholder="Ingresa el cliente"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+            />
+          )}
+        </form.Field>
+      </div>
+
+        <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2">
+        <form.Field
+          name="phone"
+          validators={{
+            onChange: ({ value }) => {
+              if (!value.trim()) return "El número de teléfono es requerido";
+              if (!/^\d+$/.test(value.trim())) return "Solo se permiten números";
+              if (value.trim().length !== 8) return "El teléfono debe tener 8 dígitos";
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <InputField
+              label="Teléfono"
+              type="text"
+              placeholder="Ingresa el número de teléfono"
+              value={field.state.value}
+              onChange={(e) => field.handleChange(e.target.value)}
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+            />
+          )}
+        </form.Field>
+
+        <form.Field
+          name="email"
+          validators={{
+            onChange: ({ value }) => {
+              if (!value.trim()) return "El correo electronico es requerido";
+              if (value.trim().length > 150) return "Máximo 150 caracteres";
+              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+                return "Ingrese un correo electrónico válido";
+              }
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <InputField
+              label="Email"
+              type="email"
+              placeholder="Ingresa el correo electronico"
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
@@ -538,10 +606,12 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
           errorMap: state.errorMap,
         })}
         children={({ isSubmitting, errorMap }) => {
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           const error = errorMap.onSubmit || errorMap.onServer;
 
           return (
             <>
+            {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
               {error && (
                 <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
                   {error}

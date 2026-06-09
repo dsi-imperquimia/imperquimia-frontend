@@ -1,4 +1,4 @@
-import type { Material } from "@modules/material/types/material";
+import type { Material } from "@modules/materiales/types/material";
 
 export type EstadoCotizacion = "ACTIVA" | "DESACTIVADA";
 
@@ -10,6 +10,8 @@ export interface DetalleInput {
 export interface CreateCotizacion {
   descripcion: string;
   cliente: string;
+  phone: string;
+  email: string;
   detalles: DetalleInput[];
 }
 
@@ -47,6 +49,8 @@ export interface CotizacionList {
   id: number;
   descripcion: string;
   cliente: string;
+  phone: string;
+  email: string;
   userId: number;
   subTotal: string;
   totalIva: string;
@@ -61,6 +65,8 @@ export interface CotizacionDetalle {
   id: number;
   descripcion: string;
   cliente: string;
+  phone: string;
+  email: string;
   userId: number;
   subTotal: string;
   totalIva: string;
