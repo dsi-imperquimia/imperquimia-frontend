@@ -13,6 +13,8 @@ import {
   type RouterContext,
 } from "@tanstack/react-router";
 
+
+
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
     const auth =

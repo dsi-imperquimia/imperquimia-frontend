@@ -13,6 +13,7 @@ import {
   UserPlus,
   Users,
   Wrench,
+  Layers,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -124,13 +125,17 @@ const NAV_ITEMS: NavItem[] = [
     label: "Herramientas",
     icon: Wrench,
     children: [
-      {
-        label: "Lista de herramientas",
-        to: "/herramientas",
-        permission: ["HERRAMIENTA_READ"],
-      },
+      { label: "Lista de herramientas", to: "/herramientas" },
     ],
     permission: ["HERRAMIENTA_READ"],
+  },
+  {
+    label: "Materiales",
+    icon: Layers,
+    children: [
+      { label: "Lista de materiales", to: "/materiales" },
+      { label: "Agregar material", to: "/materiales/gestion" },
+    ],
   },
 ];
 

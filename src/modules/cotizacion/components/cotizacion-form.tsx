@@ -12,7 +12,7 @@ import { updateCotizacion } from "../api/update-cotizacion";
 import type { CotizacionDetalle, EstadoCotizacion } from "../types/cotizacion";
 
 import type { Material } from "@modules/material/types/material";
-import { listMateriales } from "@modules/material/api/list-materiales";
+import { listMateriales } from "@modules/materiales/api/list-materiales";
 
 interface Props {
   cotizacion?: Partial<CotizacionDetalle>;
