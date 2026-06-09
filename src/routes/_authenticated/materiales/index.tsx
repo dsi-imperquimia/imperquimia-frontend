@@ -55,10 +55,10 @@ function RouteComponent() {
               Unidades
             </Button>
           </Link>
-          <Link to="/materiales/reportes">
+          <Link to="/materiales/gestion">
             <Button>
               <ClipboardList className="mr-1 size-4" />
-              Agregar a reporte
+              Gestionar
             </Button>
           </Link>
         </div>

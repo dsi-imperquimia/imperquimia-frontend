@@ -31,7 +31,7 @@ export function filtrarMateriales(materiales: Material[], busqueda: string) {
   if (!term) return ordered;
 
   return ordered.filter((material) => {
-    const searchable = [material.nombre, material.descripcion]
+    const searchable = [material.nombre, material.descripcion, material.codigo]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();

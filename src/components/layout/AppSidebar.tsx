@@ -82,7 +82,7 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Buscar materiales", to: "/materiales" },
       { label: "Unidades de medición", to: "/materiales/unidades" },
-      { label: "Agregar material", to: "/materiales/reportes" },
+      { label: "Agregar material", to: "/materiales/gestion" },
     ],
   },
 ];

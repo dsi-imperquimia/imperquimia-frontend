@@ -32,7 +32,7 @@ export function MaterialesSearchPanel({
           className="text-sm font-medium text-gray-700"
           htmlFor="buscar-material"
         >
-          Buscar por nombre o descripción
+          Buscar por nombre, código o descripción
         </label>
         <div className="mt-2 flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 focus-within:border-gray-400">
           <Search className="size-4 text-gray-400" />
@@ -40,7 +40,7 @@ export function MaterialesSearchPanel({
             id="buscar-material"
             value={busqueda}
             onChange={(event) => onBusquedaChange(event.target.value)}
-            placeholder="Ej. cemento, varilla, arena..."
+            placeholder="Ej. MAT-0001, cemento, varilla..."
             className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
           />
         </div>
@@ -65,7 +65,7 @@ export function MaterialesSearchPanel({
           </div>
         ) : resultados.length === 0 && hasSearch ? (
           <div className="px-4 py-8 text-center text-sm italic text-gray-500">
-            Herramienta no encontrada, contacte a bodega.
+            Material no encontrado, contacte a bodega.
           </div>
         ) : resultados.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-gray-500">
@@ -86,6 +86,11 @@ export function MaterialesSearchPanel({
                       <h3 className="font-medium text-gray-900">
                         {material.nombre}
                       </h3>
+                      {material.codigo && (
+                        <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                          {material.codigo}
+                        </span>
+                      )}
                       <span
                         className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${
                           disponible
