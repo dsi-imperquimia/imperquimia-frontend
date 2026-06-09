@@ -25,11 +25,11 @@ import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCotizacionesCreateRouteImport } from './routes/_authenticated/cotizaciones/create'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
-import { Route as AuthenticatedHerramientasHerramientaIdViewRouteImport } from './routes/_authenticated/herramientas/$herramientaId/view'
-import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
 import { Route as AuthenticatedUsersRolesIndexRouteImport } from './routes/_authenticated/users/roles/index'
 import { Route as AuthenticatedUsersRolesCreateRouteImport } from './routes/_authenticated/users/roles/create'
 import { Route as AuthenticatedUsersRolesRoleIdRouteImport } from './routes/_authenticated/users/roles/$roleId'
+import { Route as AuthenticatedHerramientasHerramientaIdViewRouteImport } from './routes/_authenticated/herramientas/$herramientaId/view'
+import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
 import { Route as AuthenticatedCotizacionesCotizacionIdViewRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/view'
 import { Route as AuthenticatedCotizacionesCotizacionIdEditRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/edit'
 
@@ -123,18 +123,6 @@ const AuthenticatedCargoEmpleadoCargoIdRoute =
     path: '/cargo-empleado/$cargoId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedHerramientasHerramientaIdViewRoute =
-  AuthenticatedHerramientasHerramientaIdViewRouteImport.update({
-    id: '/herramientas/$herramientaId/view',
-    path: '/herramientas/$herramientaId/view',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedHerramientasHerramientaIdEditRoute =
-  AuthenticatedHerramientasHerramientaIdEditRouteImport.update({
-    id: '/herramientas/$herramientaId/edit',
-    path: '/herramientas/$herramientaId/edit',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedUsersRolesIndexRoute =
   AuthenticatedUsersRolesIndexRouteImport.update({
     id: '/users/roles/',
@@ -151,6 +139,18 @@ const AuthenticatedUsersRolesRoleIdRoute =
   AuthenticatedUsersRolesRoleIdRouteImport.update({
     id: '/users/roles/$roleId',
     path: '/users/roles/$roleId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedHerramientasHerramientaIdViewRoute =
+  AuthenticatedHerramientasHerramientaIdViewRouteImport.update({
+    id: '/herramientas/$herramientaId/view',
+    path: '/herramientas/$herramientaId/view',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedHerramientasHerramientaIdEditRoute =
+  AuthenticatedHerramientasHerramientaIdEditRouteImport.update({
+    id: '/herramientas/$herramientaId/edit',
+    path: '/herramientas/$herramientaId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedCotizacionesCotizacionIdViewRoute =
@@ -435,20 +435,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCargoEmpleadoCargoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/herramientas/$herramientaId/view': {
-      id: '/_authenticated/herramientas/$herramientaId/view'
-      path: '/herramientas/$herramientaId/view'
-      fullPath: '/herramientas/$herramientaId/view'
-      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdViewRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/herramientas/$herramientaId/edit': {
-      id: '/_authenticated/herramientas/$herramientaId/edit'
-      path: '/herramientas/$herramientaId/edit'
-      fullPath: '/herramientas/$herramientaId/edit'
-      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdEditRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/users/roles/': {
       id: '/_authenticated/users/roles/'
       path: '/users/roles'
@@ -468,6 +454,20 @@ declare module '@tanstack/react-router' {
       path: '/users/roles/$roleId'
       fullPath: '/users/roles/$roleId'
       preLoaderRoute: typeof AuthenticatedUsersRolesRoleIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/herramientas/$herramientaId/view': {
+      id: '/_authenticated/herramientas/$herramientaId/view'
+      path: '/herramientas/$herramientaId/view'
+      fullPath: '/herramientas/$herramientaId/view'
+      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdViewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/herramientas/$herramientaId/edit': {
+      id: '/_authenticated/herramientas/$herramientaId/edit'
+      path: '/herramientas/$herramientaId/edit'
+      fullPath: '/herramientas/$herramientaId/edit'
+      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cotizaciones/$cotizacionId/view': {
