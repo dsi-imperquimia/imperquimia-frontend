@@ -112,6 +112,15 @@ const NAV_ITEMS: NavItem[] = [
     permission: ["CARGO_EMPLEADO_READ"],
   },
   {
+    label: "Asignaciones",
+    icon: IdCardLanyard, 
+    children: [
+    { 
+      label: "Catálogo Habilidades", to: "/empleados/habilidades" 
+    },
+  ],
+  },
+  {
     label: "Herramientas",
     icon: Wrench,
     children: [
