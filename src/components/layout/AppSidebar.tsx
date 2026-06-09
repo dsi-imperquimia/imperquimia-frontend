@@ -11,6 +11,7 @@ import {
   LogOut,
   Settings,
   Users,
+  Layers,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -52,6 +53,15 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Lista de cargos", to: "/cargo-empleado" },
       { label: "Crear cargo", to: "/cargo-empleado/create" },
+    ],
+  },
+  {
+    label: "Materiales",
+    icon: Layers,
+    children: [
+      { label: "Buscar materiales", to: "/materiales" },
+      { label: "Unidades de medición", to: "/materiales/unidades" },
+      { label: "Agregar material", to: "/materiales/reportes" },
     ],
   },
   { label: "Tracker", icon: ListChecks, to: "/tracker", badge: "New" },

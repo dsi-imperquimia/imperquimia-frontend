@@ -13,10 +13,13 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedEmpleadosIndexRouteImport } from './routes/_authenticated/empleados/index'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
+import { Route as AuthenticatedMaterialesUnidadesRouteImport } from './routes/_authenticated/materiales/unidades'
+import { Route as AuthenticatedMaterialesReportesRouteImport } from './routes/_authenticated/materiales/reportes'
 import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
 import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
 import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
@@ -42,6 +45,12 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMaterialesIndexRoute =
+  AuthenticatedMaterialesIndexRouteImport.update({
+    id: '/materiales/',
+    path: '/materiales/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEmpleadosIndexRoute =
   AuthenticatedEmpleadosIndexRouteImport.update({
     id: '/empleados/',
@@ -64,6 +73,18 @@ const AuthenticatedUsersUserIdRoute =
   AuthenticatedUsersUserIdRouteImport.update({
     id: '/users/$userId',
     path: '/users/$userId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMaterialesUnidadesRoute =
+  AuthenticatedMaterialesUnidadesRouteImport.update({
+    id: '/materiales/unidades',
+    path: '/materiales/unidades',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMaterialesReportesRoute =
+  AuthenticatedMaterialesReportesRouteImport.update({
+    id: '/materiales/reportes',
+    path: '/materiales/reportes',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedEmpleadosCreateRoute =
@@ -104,10 +125,13 @@ export interface FileRoutesByFullPath {
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
+  '/materiales/reportes': typeof AuthenticatedMaterialesReportesRoute
+  '/materiales/unidades': typeof AuthenticatedMaterialesUnidadesRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
   '/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
+  '/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesByTo {
@@ -118,10 +142,13 @@ export interface FileRoutesByTo {
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
+  '/materiales/reportes': typeof AuthenticatedMaterialesReportesRoute
+  '/materiales/unidades': typeof AuthenticatedMaterialesUnidadesRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
   '/cargo-empleado': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
+  '/materiales': typeof AuthenticatedMaterialesIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRoutesById {
@@ -134,10 +161,13 @@ export interface FileRoutesById {
   '/_authenticated/demo/store': typeof AuthenticatedDemoStoreRoute
   '/_authenticated/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/_authenticated/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
+  '/_authenticated/materiales/reportes': typeof AuthenticatedMaterialesReportesRoute
+  '/_authenticated/materiales/unidades': typeof AuthenticatedMaterialesUnidadesRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/users/create': typeof AuthenticatedUsersCreateRoute
   '/_authenticated/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
+  '/_authenticated/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
 }
 export interface FileRouteTypes {
@@ -150,10 +180,13 @@ export interface FileRouteTypes {
     | '/demo/store'
     | '/empleados/$empleadoId'
     | '/empleados/create'
+    | '/materiales/reportes'
+    | '/materiales/unidades'
     | '/users/$userId'
     | '/users/create'
     | '/cargo-empleado/'
     | '/empleados/'
+    | '/materiales/'
     | '/users/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -164,10 +197,13 @@ export interface FileRouteTypes {
     | '/demo/store'
     | '/empleados/$empleadoId'
     | '/empleados/create'
+    | '/materiales/reportes'
+    | '/materiales/unidades'
     | '/users/$userId'
     | '/users/create'
     | '/cargo-empleado'
     | '/empleados'
+    | '/materiales'
     | '/users'
   id:
     | '__root__'
@@ -179,10 +215,13 @@ export interface FileRouteTypes {
     | '/_authenticated/demo/store'
     | '/_authenticated/empleados/$empleadoId'
     | '/_authenticated/empleados/create'
+    | '/_authenticated/materiales/reportes'
+    | '/_authenticated/materiales/unidades'
     | '/_authenticated/users/$userId'
     | '/_authenticated/users/create'
     | '/_authenticated/cargo-empleado/'
     | '/_authenticated/empleados/'
+    | '/_authenticated/materiales/'
     | '/_authenticated/users/'
   fileRoutesById: FileRoutesById
 }
@@ -221,6 +260,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/materiales/': {
+      id: '/_authenticated/materiales/'
+      path: '/materiales'
+      fullPath: '/materiales/'
+      preLoaderRoute: typeof AuthenticatedMaterialesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/empleados/': {
       id: '/_authenticated/empleados/'
       path: '/empleados'
@@ -247,6 +293,20 @@ declare module '@tanstack/react-router' {
       path: '/users/$userId'
       fullPath: '/users/$userId'
       preLoaderRoute: typeof AuthenticatedUsersUserIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/materiales/unidades': {
+      id: '/_authenticated/materiales/unidades'
+      path: '/materiales/unidades'
+      fullPath: '/materiales/unidades'
+      preLoaderRoute: typeof AuthenticatedMaterialesUnidadesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/materiales/reportes': {
+      id: '/_authenticated/materiales/reportes'
+      path: '/materiales/reportes'
+      fullPath: '/materiales/reportes'
+      preLoaderRoute: typeof AuthenticatedMaterialesReportesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/empleados/create': {
@@ -294,10 +354,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDemoStoreRoute: typeof AuthenticatedDemoStoreRoute
   AuthenticatedEmpleadosEmpleadoIdRoute: typeof AuthenticatedEmpleadosEmpleadoIdRoute
   AuthenticatedEmpleadosCreateRoute: typeof AuthenticatedEmpleadosCreateRoute
+  AuthenticatedMaterialesReportesRoute: typeof AuthenticatedMaterialesReportesRoute
+  AuthenticatedMaterialesUnidadesRoute: typeof AuthenticatedMaterialesUnidadesRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedUsersCreateRoute: typeof AuthenticatedUsersCreateRoute
   AuthenticatedCargoEmpleadoIndexRoute: typeof AuthenticatedCargoEmpleadoIndexRoute
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
+  AuthenticatedMaterialesIndexRoute: typeof AuthenticatedMaterialesIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
 }
 
@@ -309,10 +372,13 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDemoStoreRoute: AuthenticatedDemoStoreRoute,
   AuthenticatedEmpleadosEmpleadoIdRoute: AuthenticatedEmpleadosEmpleadoIdRoute,
   AuthenticatedEmpleadosCreateRoute: AuthenticatedEmpleadosCreateRoute,
+  AuthenticatedMaterialesReportesRoute: AuthenticatedMaterialesReportesRoute,
+  AuthenticatedMaterialesUnidadesRoute: AuthenticatedMaterialesUnidadesRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedUsersCreateRoute: AuthenticatedUsersCreateRoute,
   AuthenticatedCargoEmpleadoIndexRoute: AuthenticatedCargoEmpleadoIndexRoute,
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
+  AuthenticatedMaterialesIndexRoute: AuthenticatedMaterialesIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
 }
 
