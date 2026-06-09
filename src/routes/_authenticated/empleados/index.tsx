@@ -1,6 +1,7 @@
 import { Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
+import { userActions } from "@modules/auth/store/authStore";
 import { cn } from "@modules/core/utils/utils";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import DialogDeleteEmpleado from "@modules/empleados/components/DialogDeleteEmpleado";
@@ -15,8 +16,9 @@ export const Route = createFileRoute("/_authenticated/empleados/")({
 });
 
 function RouteComponent() {
-  const { user: authUser } = Route.useRouteContext()?.auth ?? {};
-  const { data, isPending, error, refetch, isRefetching } = useQuery<Empleado[]>({
+  const { data, isPending, error, refetch, isRefetching } = useQuery<
+    Empleado[]
+  >({
     queryKey: ["empleados"],
     queryFn: listEmpleados,
   });
@@ -49,12 +51,14 @@ function RouteComponent() {
           >
             <RefreshCw className={cn(isRefetching && "animate-spin")} />
           </Button>
-          <Link to="/empleados/create">
-            <Button>
-              <UserPlus className="mr-1" />
-              Crear empleado
-            </Button>
-          </Link>
+          {userActions.hasPermission("EMPLEADO_CREATE") && (
+            <Link to="/empleados/create">
+              <Button>
+                <UserPlus className="mr-1" />
+                Crear empleado
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
       <Table>
@@ -86,20 +90,24 @@ function RouteComponent() {
                     <Table.Cell>{empleado.cargoId}</Table.Cell>
                     <Table.Cell>{empleado.activo ? "Sí" : "No"}</Table.Cell>
                     <Table.Cell>
-                      {new Date(empleado.fechaRegistro).toLocaleDateString("es-ES")}
+                      {new Date(empleado.fechaRegistro).toLocaleDateString(
+                        "es-ES",
+                      )}
                     </Table.Cell>
                     <Table.Cell>
                       <div className="inline-flex items-center gap-2 justify-end">
-                        <Link
-                          to="/empleados/$empleadoId"
-                          params={{ empleadoId: empleado.id }}
-                        >
-                          <Button size="sm">
-                            <Edit className="mr-1" />
-                            Editar
-                          </Button>
-                        </Link>
-                        {empleado.id !== authUser?.id && (
+                        {userActions.hasPermission("EMPLEADO_UPDATE") && (
+                          <Link
+                            to="/empleados/$empleadoId"
+                            params={{ empleadoId: empleado.id }}
+                          >
+                            <Button size="sm">
+                              <Edit className="mr-1" />
+                              Editar
+                            </Button>
+                          </Link>
+                        )}
+                        {userActions.hasPermission("EMPLEADO_DELETE") && (
                           <DialogDeleteEmpleado
                             empleado={empleado}
                             onDeleteSuccess={handleDeleteSuccess}
