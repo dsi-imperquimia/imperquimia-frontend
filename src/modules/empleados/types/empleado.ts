@@ -1,3 +1,4 @@
+import type { Cargo } from "@modules/cargo-empleado/types/cargo";
 import type { HabilidadEmpleado } from "./habilidad";
 
 export interface Empleado {
@@ -5,6 +6,7 @@ export interface Empleado {
   nombreCompleto: string;
   dui: string;
   nit: string;
+  cargo?: Cargo;
   cargoId: number;
   activo: boolean;
   fechaRegistro: Date;
