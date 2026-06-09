@@ -20,8 +20,8 @@ import { Route as AuthenticatedCotizacionesIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
-import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
+import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
 import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
 import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
 import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
@@ -97,16 +97,16 @@ const AuthenticatedUsersUserIdRoute =
     path: '/users/$userId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedEmpleadosHabilidadesRoute =
-  AuthenticatedEmpleadosHabilidadesRouteImport.update({
-    id: '/empleados/habilidades',
-    path: '/empleados/habilidades',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedMaterialesGestionRoute =
   AuthenticatedMaterialesGestionRouteImport.update({
     id: '/materiales/gestion',
     path: '/materiales/gestion',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEmpleadosHabilidadesRoute =
+  AuthenticatedEmpleadosHabilidadesRouteImport.update({
+    id: '/empleados/habilidades',
+    path: '/empleados/habilidades',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedEmpleadosCreateRoute =
@@ -439,18 +439,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersUserIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/empleados/habilidades': {
-      id: '/_authenticated/empleados/habilidades'
-      path: '/empleados/habilidades'
-      fullPath: '/empleados/habilidades'
-      preLoaderRoute: typeof AuthenticatedEmpleadosHabilidadesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/materiales/gestion': {
       id: '/_authenticated/materiales/gestion'
       path: '/materiales/gestion'
       fullPath: '/materiales/gestion'
       preLoaderRoute: typeof AuthenticatedMaterialesGestionRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/empleados/habilidades': {
+      id: '/_authenticated/empleados/habilidades'
+      path: '/empleados/habilidades'
+      fullPath: '/empleados/habilidades'
+      preLoaderRoute: typeof AuthenticatedEmpleadosHabilidadesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/empleados/create': {
