@@ -11,7 +11,7 @@ import { createCotizacion } from "../api/create-cotizacion";
 import { updateCotizacion } from "../api/update-cotizacion";
 import type { CotizacionDetalle, EstadoCotizacion } from "../types/cotizacion";
 
-import type { Material } from "@modules/material/types/material";
+import type { Material } from "@modules/materiales/types/material";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
 
 interface Props {
@@ -350,6 +350,7 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
                                 <Label>Material</Label>
                                 <Select
                                   value={String(
+                                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                                     materialField.state.value ?? "",
                                   )}
                                   onChange={(value) =>
