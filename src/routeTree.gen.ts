@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedHerramientasIndexRouteImport } from './routes/_authenticated/herramientas/index'
 import { Route as AuthenticatedEmpleadosIndexRouteImport } from './routes/_authenticated/empleados/index'
 import { Route as AuthenticatedCotizacionesIndexRouteImport } from './routes/_authenticated/cotizaciones/index'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
@@ -24,6 +25,8 @@ import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCotizacionesCreateRouteImport } from './routes/_authenticated/cotizaciones/create'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
+import { Route as AuthenticatedHerramientasHerramientaIdViewRouteImport } from './routes/_authenticated/herramientas/$herramientaId/view'
+import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
 import { Route as AuthenticatedUsersRolesIndexRouteImport } from './routes/_authenticated/users/roles/index'
 import { Route as AuthenticatedUsersRolesCreateRouteImport } from './routes/_authenticated/users/roles/create'
 import { Route as AuthenticatedUsersRolesRoleIdRouteImport } from './routes/_authenticated/users/roles/$roleId'
@@ -49,6 +52,12 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedHerramientasIndexRoute =
+  AuthenticatedHerramientasIndexRouteImport.update({
+    id: '/herramientas/',
+    path: '/herramientas/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEmpleadosIndexRoute =
   AuthenticatedEmpleadosIndexRouteImport.update({
     id: '/empleados/',
@@ -114,6 +123,18 @@ const AuthenticatedCargoEmpleadoCargoIdRoute =
     path: '/cargo-empleado/$cargoId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedHerramientasHerramientaIdViewRoute =
+  AuthenticatedHerramientasHerramientaIdViewRouteImport.update({
+    id: '/herramientas/$herramientaId/view',
+    path: '/herramientas/$herramientaId/view',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedHerramientasHerramientaIdEditRoute =
+  AuthenticatedHerramientasHerramientaIdEditRouteImport.update({
+    id: '/herramientas/$herramientaId/edit',
+    path: '/herramientas/$herramientaId/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedUsersRolesIndexRoute =
   AuthenticatedUsersRolesIndexRouteImport.update({
     id: '/users/roles/',
@@ -159,9 +180,12 @@ export interface FileRoutesByFullPath {
   '/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
+  '/herramientas/': typeof AuthenticatedHerramientasIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
+  '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
+  '/herramientas/$herramientaId/view': typeof AuthenticatedHerramientasHerramientaIdViewRoute
   '/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
   '/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
   '/users/roles/': typeof AuthenticatedUsersRolesIndexRoute
@@ -180,9 +204,12 @@ export interface FileRoutesByTo {
   '/cargo-empleado': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/cotizaciones': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
+  '/herramientas': typeof AuthenticatedHerramientasIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
+  '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
+  '/herramientas/$herramientaId/view': typeof AuthenticatedHerramientasHerramientaIdViewRoute
   '/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
   '/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
   '/users/roles': typeof AuthenticatedUsersRolesIndexRoute
@@ -203,9 +230,12 @@ export interface FileRoutesById {
   '/_authenticated/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/_authenticated/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
+  '/_authenticated/herramientas/': typeof AuthenticatedHerramientasIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/_authenticated/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
+  '/_authenticated/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
+  '/_authenticated/herramientas/$herramientaId/view': typeof AuthenticatedHerramientasHerramientaIdViewRoute
   '/_authenticated/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
   '/_authenticated/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
   '/_authenticated/users/roles/': typeof AuthenticatedUsersRolesIndexRoute
@@ -226,9 +256,12 @@ export interface FileRouteTypes {
     | '/cargo-empleado/'
     | '/cotizaciones/'
     | '/empleados/'
+    | '/herramientas/'
     | '/users/'
     | '/cotizaciones/$cotizacionId/edit'
     | '/cotizaciones/$cotizacionId/view'
+    | '/herramientas/$herramientaId/edit'
+    | '/herramientas/$herramientaId/view'
     | '/users/roles/$roleId'
     | '/users/roles/create'
     | '/users/roles/'
@@ -247,9 +280,12 @@ export interface FileRouteTypes {
     | '/cargo-empleado'
     | '/cotizaciones'
     | '/empleados'
+    | '/herramientas'
     | '/users'
     | '/cotizaciones/$cotizacionId/edit'
     | '/cotizaciones/$cotizacionId/view'
+    | '/herramientas/$herramientaId/edit'
+    | '/herramientas/$herramientaId/view'
     | '/users/roles/$roleId'
     | '/users/roles/create'
     | '/users/roles'
@@ -269,9 +305,12 @@ export interface FileRouteTypes {
     | '/_authenticated/cargo-empleado/'
     | '/_authenticated/cotizaciones/'
     | '/_authenticated/empleados/'
+    | '/_authenticated/herramientas/'
     | '/_authenticated/users/'
     | '/_authenticated/cotizaciones/$cotizacionId/edit'
     | '/_authenticated/cotizaciones/$cotizacionId/view'
+    | '/_authenticated/herramientas/$herramientaId/edit'
+    | '/_authenticated/herramientas/$herramientaId/view'
     | '/_authenticated/users/roles/$roleId'
     | '/_authenticated/users/roles/create'
     | '/_authenticated/users/roles/'
@@ -310,6 +349,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users/'
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/herramientas/': {
+      id: '/_authenticated/herramientas/'
+      path: '/herramientas'
+      fullPath: '/herramientas/'
+      preLoaderRoute: typeof AuthenticatedHerramientasIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/empleados/': {
@@ -389,6 +435,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCargoEmpleadoCargoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/herramientas/$herramientaId/view': {
+      id: '/_authenticated/herramientas/$herramientaId/view'
+      path: '/herramientas/$herramientaId/view'
+      fullPath: '/herramientas/$herramientaId/view'
+      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdViewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/herramientas/$herramientaId/edit': {
+      id: '/_authenticated/herramientas/$herramientaId/edit'
+      path: '/herramientas/$herramientaId/edit'
+      fullPath: '/herramientas/$herramientaId/edit'
+      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/users/roles/': {
       id: '/_authenticated/users/roles/'
       path: '/users/roles'
@@ -440,9 +500,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCargoEmpleadoIndexRoute: typeof AuthenticatedCargoEmpleadoIndexRoute
   AuthenticatedCotizacionesIndexRoute: typeof AuthenticatedCotizacionesIndexRoute
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
+  AuthenticatedHerramientasIndexRoute: typeof AuthenticatedHerramientasIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedCotizacionesCotizacionIdEditRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   AuthenticatedCotizacionesCotizacionIdViewRoute: typeof AuthenticatedCotizacionesCotizacionIdViewRoute
+  AuthenticatedHerramientasHerramientaIdEditRoute: typeof AuthenticatedHerramientasHerramientaIdEditRoute
+  AuthenticatedHerramientasHerramientaIdViewRoute: typeof AuthenticatedHerramientasHerramientaIdViewRoute
   AuthenticatedUsersRolesRoleIdRoute: typeof AuthenticatedUsersRolesRoleIdRoute
   AuthenticatedUsersRolesCreateRoute: typeof AuthenticatedUsersRolesCreateRoute
   AuthenticatedUsersRolesIndexRoute: typeof AuthenticatedUsersRolesIndexRoute
@@ -462,11 +525,16 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCargoEmpleadoIndexRoute: AuthenticatedCargoEmpleadoIndexRoute,
   AuthenticatedCotizacionesIndexRoute: AuthenticatedCotizacionesIndexRoute,
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
+  AuthenticatedHerramientasIndexRoute: AuthenticatedHerramientasIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedCotizacionesCotizacionIdEditRoute:
     AuthenticatedCotizacionesCotizacionIdEditRoute,
   AuthenticatedCotizacionesCotizacionIdViewRoute:
     AuthenticatedCotizacionesCotizacionIdViewRoute,
+  AuthenticatedHerramientasHerramientaIdEditRoute:
+    AuthenticatedHerramientasHerramientaIdEditRoute,
+  AuthenticatedHerramientasHerramientaIdViewRoute:
+    AuthenticatedHerramientasHerramientaIdViewRoute,
   AuthenticatedUsersRolesRoleIdRoute: AuthenticatedUsersRolesRoleIdRoute,
   AuthenticatedUsersRolesCreateRoute: AuthenticatedUsersRolesCreateRoute,
   AuthenticatedUsersRolesIndexRoute: AuthenticatedUsersRolesIndexRoute,

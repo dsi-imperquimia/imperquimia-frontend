@@ -13,6 +13,8 @@ import {
   ShieldUser,
   UserPlus,
   Users,
+  Wrench,       
+  FolderPlus,   
 } from "lucide-react";
 import { useState } from "react";
 
@@ -43,13 +45,13 @@ const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-  label: "Cotizaciones",
-  icon: FileText,
-  children: [
-    { label: "Lista de cotizaciones", to: "/cotizaciones" },
-    { label: "Crear cotización", to: "/cotizaciones/create" },
-  ],
-},
+    label: "Cotizaciones",
+    icon: FileText,
+    children: [
+      { label: "Lista de cotizaciones", to: "/cotizaciones" },
+      { label: "Crear cotización", to: "/cotizaciones/create" },
+    ],
+  },
   {
     label: "Empleados",
     icon: BriefcaseBusiness,
@@ -64,6 +66,13 @@ const NAV_ITEMS: NavItem[] = [
     children: [
       { label: "Lista de cargos", to: "/cargo-empleado" },
       { label: "Crear cargo", to: "/cargo-empleado/create" },
+    ],
+  },
+  {
+    label: "Herramientas", 
+    icon: Wrench,
+    children: [
+      { label: "Lista de herramientas", to: "/herramientas" },
     ],
   },
 ];
@@ -84,7 +93,6 @@ export function AppSidebar() {
     <aside className="flex h-full w-70 shrink-0 flex-col border-r border-gray-100 bg-white">
       <div className="flex h-14 items-center gap-2.5 border-b border-gray-100 px-4">
         <img src={logo} alt="Imperquimia" className="h-11" />
-        {/* <span className="font-semibold text-gray-900">Imperquimia</span> */}
       </div>
 
       <nav className="flex-1 overflow-y-auto py-2">
