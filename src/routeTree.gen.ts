@@ -27,6 +27,9 @@ import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
 import { Route as AuthenticatedHerramientasHerramientaIdViewRouteImport } from './routes/_authenticated/herramientas/$herramientaId/view'
 import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
+import { Route as AuthenticatedUsersRolesIndexRouteImport } from './routes/_authenticated/users/roles/index'
+import { Route as AuthenticatedUsersRolesCreateRouteImport } from './routes/_authenticated/users/roles/create'
+import { Route as AuthenticatedUsersRolesRoleIdRouteImport } from './routes/_authenticated/users/roles/$roleId'
 import { Route as AuthenticatedCotizacionesCotizacionIdViewRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/view'
 import { Route as AuthenticatedCotizacionesCotizacionIdEditRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/edit'
 
@@ -132,6 +135,24 @@ const AuthenticatedHerramientasHerramientaIdEditRoute =
     path: '/herramientas/$herramientaId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedUsersRolesIndexRoute =
+  AuthenticatedUsersRolesIndexRouteImport.update({
+    id: '/users/roles/',
+    path: '/users/roles/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersRolesCreateRoute =
+  AuthenticatedUsersRolesCreateRouteImport.update({
+    id: '/users/roles/create',
+    path: '/users/roles/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersRolesRoleIdRoute =
+  AuthenticatedUsersRolesRoleIdRouteImport.update({
+    id: '/users/roles/$roleId',
+    path: '/users/roles/$roleId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCotizacionesCotizacionIdViewRoute =
   AuthenticatedCotizacionesCotizacionIdViewRouteImport.update({
     id: '/cotizaciones/$cotizacionId/view',
@@ -165,6 +186,9 @@ export interface FileRoutesByFullPath {
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
   '/herramientas/$herramientaId/view': typeof AuthenticatedHerramientasHerramientaIdViewRoute
+  '/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
+  '/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
+  '/users/roles/': typeof AuthenticatedUsersRolesIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -186,6 +210,9 @@ export interface FileRoutesByTo {
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
   '/herramientas/$herramientaId/view': typeof AuthenticatedHerramientasHerramientaIdViewRoute
+  '/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
+  '/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
+  '/users/roles': typeof AuthenticatedUsersRolesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -209,6 +236,9 @@ export interface FileRoutesById {
   '/_authenticated/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/_authenticated/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
   '/_authenticated/herramientas/$herramientaId/view': typeof AuthenticatedHerramientasHerramientaIdViewRoute
+  '/_authenticated/users/roles/$roleId': typeof AuthenticatedUsersRolesRoleIdRoute
+  '/_authenticated/users/roles/create': typeof AuthenticatedUsersRolesCreateRoute
+  '/_authenticated/users/roles/': typeof AuthenticatedUsersRolesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -232,6 +262,9 @@ export interface FileRouteTypes {
     | '/cotizaciones/$cotizacionId/view'
     | '/herramientas/$herramientaId/edit'
     | '/herramientas/$herramientaId/view'
+    | '/users/roles/$roleId'
+    | '/users/roles/create'
+    | '/users/roles/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -253,6 +286,9 @@ export interface FileRouteTypes {
     | '/cotizaciones/$cotizacionId/view'
     | '/herramientas/$herramientaId/edit'
     | '/herramientas/$herramientaId/view'
+    | '/users/roles/$roleId'
+    | '/users/roles/create'
+    | '/users/roles'
   id:
     | '__root__'
     | '/_authenticated'
@@ -275,6 +311,9 @@ export interface FileRouteTypes {
     | '/_authenticated/cotizaciones/$cotizacionId/view'
     | '/_authenticated/herramientas/$herramientaId/edit'
     | '/_authenticated/herramientas/$herramientaId/view'
+    | '/_authenticated/users/roles/$roleId'
+    | '/_authenticated/users/roles/create'
+    | '/_authenticated/users/roles/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -410,6 +449,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/users/roles/': {
+      id: '/_authenticated/users/roles/'
+      path: '/users/roles'
+      fullPath: '/users/roles/'
+      preLoaderRoute: typeof AuthenticatedUsersRolesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/roles/create': {
+      id: '/_authenticated/users/roles/create'
+      path: '/users/roles/create'
+      fullPath: '/users/roles/create'
+      preLoaderRoute: typeof AuthenticatedUsersRolesCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/roles/$roleId': {
+      id: '/_authenticated/users/roles/$roleId'
+      path: '/users/roles/$roleId'
+      fullPath: '/users/roles/$roleId'
+      preLoaderRoute: typeof AuthenticatedUsersRolesRoleIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cotizaciones/$cotizacionId/view': {
       id: '/_authenticated/cotizaciones/$cotizacionId/view'
       path: '/cotizaciones/$cotizacionId/view'
@@ -446,6 +506,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCotizacionesCotizacionIdViewRoute: typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   AuthenticatedHerramientasHerramientaIdEditRoute: typeof AuthenticatedHerramientasHerramientaIdEditRoute
   AuthenticatedHerramientasHerramientaIdViewRoute: typeof AuthenticatedHerramientasHerramientaIdViewRoute
+  AuthenticatedUsersRolesRoleIdRoute: typeof AuthenticatedUsersRolesRoleIdRoute
+  AuthenticatedUsersRolesCreateRoute: typeof AuthenticatedUsersRolesCreateRoute
+  AuthenticatedUsersRolesIndexRoute: typeof AuthenticatedUsersRolesIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -472,6 +535,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedHerramientasHerramientaIdEditRoute,
   AuthenticatedHerramientasHerramientaIdViewRoute:
     AuthenticatedHerramientasHerramientaIdViewRoute,
+  AuthenticatedUsersRolesRoleIdRoute: AuthenticatedUsersRolesRoleIdRoute,
+  AuthenticatedUsersRolesCreateRoute: AuthenticatedUsersRolesCreateRoute,
+  AuthenticatedUsersRolesIndexRoute: AuthenticatedUsersRolesIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

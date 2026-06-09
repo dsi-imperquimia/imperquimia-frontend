@@ -8,9 +8,13 @@ interface AppNavbarProps {
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "Dashboard",
-  "/analytics/overview": "Overview",
-  "/analytics/reports": "Reports",
-  "/analytics/conversions": "Conversions",
+  "/users": "Usuarios",
+  "/users/create": "Crear Usuario",
+  "/users/roles": "Roles",
+  "/empleados": "Empleados",
+  "/empleados/create": "Crear Empleado",
+  "/cargo-empleado": "Cargos de Empleado",
+  "/cargo-empleado/create": "Crear Cargo de Empleado",
   "/tracker": "Tracker",
   "/settings": "Settings",
 };
@@ -24,7 +28,7 @@ export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4">
       <button
         onClick={onSidebarToggle}
-        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 hidden"
         aria-label="Toggle sidebar"
       >
         <PanelLeft size={20} />

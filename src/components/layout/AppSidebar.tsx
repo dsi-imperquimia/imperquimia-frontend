@@ -10,7 +10,8 @@ import {
   FileText,
   ListChecks,
   LogOut,
-  Settings,
+  ShieldUser,
+  UserPlus,
   Users,
   Wrench,       
   FolderPlus,   
@@ -20,6 +21,7 @@ import { useState } from "react";
 interface SubItem {
   label: string;
   to: string;
+  icon?: React.ElementType;
 }
 
 interface NavItem {
@@ -37,8 +39,9 @@ const NAV_ITEMS: NavItem[] = [
     label: "Usuarios",
     icon: Users,
     children: [
-      { label: "Lista de usuarios", to: "/users" },
-      { label: "Crear usuario", to: "/users/create" },
+      { label: "Lista de usuarios", to: "/users", icon: Users },
+      { label: "Crear usuario", to: "/users/create", icon: UserPlus },
+      { label: "Roles", to: "/users/roles", icon: ShieldUser },
     ],
   },
   {
@@ -72,15 +75,11 @@ const NAV_ITEMS: NavItem[] = [
       { label: "Lista de herramientas", to: "/herramientas" },
     ],
   },
-  { label: "Tracker", icon: ListChecks, to: "/tracker", badge: "New" },
-  { label: "Settings", icon: Settings, to: "/settings", hasArrow: true },
 ];
 
 export function AppSidebar() {
   const navigate = useNavigate();
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({
-    Analytics: true,
-  });
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggleExpand = (label: string) =>
     setExpanded((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -91,7 +90,7 @@ export function AppSidebar() {
   }
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-gray-100 bg-white">
+    <aside className="flex h-full w-70 shrink-0 flex-col border-r border-gray-100 bg-white">
       <div className="flex h-14 items-center gap-2.5 border-b border-gray-100 px-4">
         <img src={logo} alt="Imperquimia" className="h-11" />
       </div>
@@ -129,7 +128,7 @@ function SidebarLink({ item }: { item: NavItem }) {
   return (
     <Link
       to={item.to ?? "/"}
-      className={`mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+      className={`mx-2 flex items-center gap-3 rounded-lg px-3 py-2 text-base font-medium transition-colors ${
         isActive
           ? "bg-gray-100 text-gray-900"
           : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
@@ -162,29 +161,35 @@ function CollapsibleItem({
     <div className="mx-2">
       <button
         onClick={onToggle}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-base font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
       >
         <item.icon size={18} className="shrink-0" />
         <span className="flex-1 text-left">{item.label}</span>
+        {item.badge && (
+          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+            {item.badge}
+          </span>
+        )}
         <ChevronDown
           size={16}
           className={`text-gray-400 transition-transform ${open ? "rotate-0" : "-rotate-90"}`}
         />
       </button>
       {open && (
-        <div className="ml-6 mt-0.5 space-y-0.5 border-l border-gray-100 pl-3">
+        <div className="ml-5 mt-0.5 space-y-0.5 border-l border-gray-300 pl-2">
           {item.children!.map((sub) => {
             const isActive = state.location.pathname === sub.to;
             return (
               <Link
                 key={sub.label}
                 to={sub.to}
-                className={`block rounded-lg px-3 py-1.5 text-sm transition-colors ${
+                className={`flex items-center rounded-lg px-2 py-1.5 text-base transition-colors ${
                   isActive
-                    ? "font-medium text-gray-900"
-                    : "text-gray-500 hover:text-gray-900"
+                    ? "font-medium text-gray-900 bg-gray-100"
+                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-200"
                 }`}
               >
+                {sub.icon && <sub.icon size={16} className="mr-2" />}
                 {sub.label}
               </Link>
             );
@@ -207,7 +212,7 @@ function BottomAction({
   return (
     <button
       onClick={onClick}
-      className="mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+      className="mx-2 flex w-[calc(100%-1rem)] items-center gap-3 rounded-lg px-3 py-2 text-base font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
     >
       <Icon size={18} className="shrink-0" />
       <span>{label}</span>
