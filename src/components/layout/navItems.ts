@@ -84,12 +84,7 @@ export const NAV_ITEMS: NavItem[] = [
         to: "/empleados/habilidades",
       },
     ],
-    permission: [
-      "EMPLEADO_READ",
-      "EMPLEADO_CREATE",
-      "CARGO_EMPLEADO_READ",
-      "CARGO_EMPLEADO_CREATE",
-    ],
+    permission: ["EMPLEADO_READ", "CARGO_EMPLEADO_READ"],
   },
   // {
   //   label: "Cargos de empleado",
