@@ -11,5 +11,3 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
-env
-package-lock.json
