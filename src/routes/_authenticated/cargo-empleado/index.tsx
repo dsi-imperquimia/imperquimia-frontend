@@ -1,10 +1,11 @@
 import { Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
-import { cn } from "@modules/core/utils/utils";
+import { userActions } from "@modules/auth/store/authStore";
 import { listCargos } from "@modules/cargo-empleado/api/list-cargos";
 import DialogDeleteCargo from "@modules/cargo-empleado/components/DialogDeleteCargo";
 import type { Cargo } from "@modules/cargo-empleado/types/cargo";
+import { cn } from "@modules/core/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Edit, RefreshCw, UserPlus } from "lucide-react";
@@ -45,12 +46,14 @@ function RouteComponent() {
           >
             <RefreshCw className={cn(isRefetching && "animate-spin")} />
           </Button>
-          <Link to="/cargo-empleado/create">
-            <Button>
-              <UserPlus className="mr-1" />
-              Crear cargo
-            </Button>
-          </Link>
+          {userActions.hasPermission("CARGO_EMPLEADO_CREATE") && (
+            <Link to="/cargo-empleado/create">
+              <Button>
+                <UserPlus className="mr-1" />
+                Crear cargo
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
       <Table>
@@ -74,19 +77,23 @@ function RouteComponent() {
                     <Table.Cell>{cargo.nombre}</Table.Cell>
                     <Table.Cell>
                       <div className="inline-flex items-center gap-2 justify-end">
-                        <Link
-                          to="/cargo-empleado/$cargoId"
-                          params={{ cargoId: cargo.id }}
-                        >
-                          <Button size="sm">
-                            <Edit className="mr-1" />
-                            Editar
-                          </Button>
-                        </Link>
-                        <DialogDeleteCargo
-                          cargo={cargo}
-                          onDeleteSuccess={handleDeleteSuccess}
-                        />
+                        {userActions.hasPermission("CARGO_EMPLEADO_UPDATE") && (
+                          <Link
+                            to="/cargo-empleado/$cargoId"
+                            params={{ cargoId: cargo.id }}
+                          >
+                            <Button size="sm">
+                              <Edit className="mr-1" />
+                              Editar
+                            </Button>
+                          </Link>
+                        )}
+                        {userActions.hasPermission("CARGO_EMPLEADO_DELETE") && (
+                          <DialogDeleteCargo
+                            cargo={cargo}
+                            onDeleteSuccess={handleDeleteSuccess}
+                          />
+                        )}
                       </div>
                     </Table.Cell>
                   </Table.Row>
