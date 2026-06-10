@@ -46,7 +46,7 @@ return (
         </Card.Header>
 
         <Card.Content className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <div>
               <p className="text-sm text-gray-500">Cliente</p>
               <p className="font-medium">{cotizacion.cliente}</p>
@@ -71,6 +71,16 @@ return (
               <p className="font-medium">
                 {cotizacion.user.name} {cotizacion.user.lastName}
               </p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Teléfono</p>
+              <p className="font-medium">{cotizacion.phone}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500">Email</p>
+              <p className="font-medium">{cotizacion.email}</p>
             </div>
 
             <div>
