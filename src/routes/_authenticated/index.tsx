@@ -1,17 +1,21 @@
 import { NAV_ITEMS } from "@components/layout/navItems";
-import { userActions } from "@modules/auth/store/authStore";
+import { useAuth, userActions } from "@modules/auth/store/authStore";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/")({ component: App });
 
 function App() {
+  const { user } = useAuth();
+
   const Items = NAV_ITEMS.filter(
     (item) => item.to !== undefined && item.to !== "/",
   ).filter((item) => userActions.hasAnyPermission(item.permission ?? []));
 
   return (
     <main className="page-wrap">
-      <h1 className="text-2xl font-bold text-center mb-16">Bienvenido</h1>
+      <h1 className="text-2xl font-bold text-center mb-16">
+        Bienvenido, {user?.name} {user?.lastName}
+      </h1>
       <div className="flex flex-wrap h-full w-full items-center justify-center gap-4">
         {Items.map((item) => (
           <Link
