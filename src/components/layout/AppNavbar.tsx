@@ -1,48 +1,84 @@
+import { Breadcrumbs } from "@heroui/react/breadcrumbs";
 import { useRouterState } from "@tanstack/react-router";
-import { Bell, Home, PanelLeft, Search } from "lucide-react";
+import { Home, PanelLeft } from "lucide-react";
+import { NAV_ITEMS } from "./navItems";
 import { UserDropdown } from "./UserDropdown";
 
 interface AppNavbarProps {
   onSidebarToggle?: () => void;
 }
 
-const PAGE_TITLES: Record<string, string> = {
-  "/": "Dashboard",
-  "/analytics/overview": "Overview",
-  "/analytics/reports": "Reports",
-  "/analytics/conversions": "Conversions",
-  "/tracker": "Tracker",
-  "/settings": "Settings",
-};
+interface Crumb {
+  icon?: React.ElementType;
+  label: string;
+  to?: string;
+}
+
+function findCrumbs(pathname: string): Crumb[] | null {
+  if (pathname === "/") return [{ label: "Dashboard", to: "/", icon: Home }];
+
+  for (const item of NAV_ITEMS) {
+    if (item.to === pathname) {
+      return [
+        { label: "Dashboard", to: "/", icon: Home },
+        { label: item.label, to: item.to, icon: item.icon },
+      ];
+    }
+    if (item.children) {
+      const child = item.children.find((c) => c.to === pathname);
+      if (child) {
+        return [
+          { label: "Dashboard", to: "/", icon: Home },
+          { label: item.label, to: item.to, icon: item.icon },
+          { label: child.label, to: child.to, icon: child.icon },
+        ];
+      }
+    }
+  }
+  return null;
+}
+
+function getBreadcrumbs(pathname: string): Crumb[] {
+  const exact = findCrumbs(pathname);
+  if (exact) return exact;
+
+  let path = pathname;
+  while (path) {
+    const lastSlash = path.lastIndexOf("/");
+    if (lastSlash <= 0) break;
+    path = path.slice(0, lastSlash);
+    const crumbs = findCrumbs(path);
+    if (crumbs) return [...crumbs, { label: "Actual" }];
+  }
+
+  return [{ label: "Dashboard", to: "/", icon: Home }, { label: "Actual" }];
+}
 
 export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
   const state = useRouterState();
   const pathname = state.location.pathname;
-  const title = PAGE_TITLES[pathname] ?? "Dashboard";
+  const crumbs = getBreadcrumbs(pathname);
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4">
       <button
         onClick={onSidebarToggle}
-        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 hidden"
         aria-label="Toggle sidebar"
       >
         <PanelLeft size={20} />
       </button>
 
-      <div className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
-        <Home size={16} className="text-gray-400" />
-        <span className="text-gray-400">/</span>
-        <span>{title}</span>
-      </div>
+      <Breadcrumbs>
+        {crumbs.map((crumb) => (
+          <Breadcrumbs.Item key={crumb.label} href={crumb.to}>
+            {crumb.icon && <crumb.icon size={16} className="mr-1" />}
+            {crumb.label}
+          </Breadcrumbs.Item>
+        ))}
+      </Breadcrumbs>
 
       <div className="ml-auto flex items-center gap-1">
-        <button className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900">
-          <Search size={18} />
-        </button>
-        <button className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900">
-          <Bell size={18} />
-        </button>
         <UserDropdown />
       </div>
     </header>
