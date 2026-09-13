@@ -1,24 +1,41 @@
 import { InputField } from "@components/fields/InputField";
 import { Button } from "@heroui/react/button";
-import { Select, Label, Description, ListBox} from "@heroui/react";
+import { Select, Label, Description, ListBox } from "@heroui/react";
 import { toast } from "@heroui/react/toast";
 import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import { User } from "lucide-react";
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useStore } from "@tanstack/react-store";
 import { listCargos } from "@modules/cargo-empleado/api/list-cargos";
 import { storeEmpleado } from "../api/store-empleado";
 import type { Cargo } from "@modules/cargo-empleado/types/cargo";
 import type { Empleado as EmpleadoType } from "../types/empleado";
+import { SeccionHabilidadesEmpleado } from "./SeccionHabilidadesEmpleado";
 
 interface Props {
   empleado?: Partial<EmpleadoType>;
 }
 
+function formValues(empleado?: Partial<EmpleadoType>) {
+  return {
+    nombreCompleto: empleado?.nombreCompleto ?? "",
+    dui: empleado?.dui ?? "",
+    nit: empleado?.nit ?? "",
+    cargoId: empleado?.cargoId,
+    activo: empleado?.activo ?? true,
+    habilidadesIds:
+      empleado?.habilidades?.map(({ habilidadId }) => habilidadId) ?? [],
+  };
+}
+
 export function FormEmpleado({ empleado: empleadoInit }: Props) {
   const navigate = useNavigate();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [submitError, setSubmitError] = useState<string>();
   const { data: cargos = [], error: cargosError } = useQuery<Cargo[]>({
     queryKey: ["cargo-empleado"],
     queryFn: listCargos,
@@ -31,30 +48,52 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
   }, [cargosError]);
 
   const form = useForm({
-    defaultValues: empleadoInit ?? {},
+    defaultValues: formValues(empleadoInit),
     onSubmit: async ({ value, formApi }) => {
-      const empleado = await storeEmpleado(value).catch((error) => {
-        formApi.setErrorMap(
-          parseErrorApiUseForm(error, "Error al guardar empleado"),
-        );
-      });
+      if (value.cargoId === undefined) return;
+      setSubmitError(undefined);
+      let empleado: EmpleadoType;
+      try {
+        empleado = await storeEmpleado({
+          ...value,
+          id: empleadoInit?.id,
+          cargoId: value.cargoId,
+        });
+      } catch (error) {
+        const errors = parseErrorApiUseForm(error, "Error al guardar empleado");
+        formApi.setErrorMap(errors);
+        setSubmitError(errors.onSubmit.form);
+        return;
+      }
 
+      // El loader se refresca después; sus valores anteriores no deben sobrescribir
+      // la respuesta guardada durante ese intervalo.
+      formApi.reset(formValues(empleado), { keepDefaultValues: true });
       toast.success("Empleado guardado correctamente");
+      void queryClient.invalidateQueries({ queryKey: ["empleados"] });
 
-      if (!(empleadoInit?.id === undefined && empleado?.id)) return;
-      navigate({ to: `/empleados/${empleado?.id}` });
+      if (empleadoInit?.id === undefined) {
+        void navigate({
+          to: "/empleados/$empleadoId",
+          params: { empleadoId: empleado.id },
+        });
+      } else {
+        void router.invalidate();
+      }
     },
   });
 
-  async function handleSubmit(e: React.FormEvent) {
+  const isSaving = useStore(form.store, (state) => state.isSubmitting);
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     e.stopPropagation();
-    form.handleSubmit();
+    void form.handleSubmit();
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-4">
+      <fieldset disabled={isSaving} className="flex flex-col gap-4">
         <form.Field
           name="nombreCompleto"
           validators={{
@@ -71,7 +110,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
               type="text"
               placeholder="Ingresa el nombre completo"
               startContent={<User className="size-4 text-muted" />}
-              value={field.state.value as string}
+              value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
               errorMessage={
@@ -97,7 +136,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
               label="DUI"
               type="text"
               placeholder="Ingresa el DUI"
-              value={field.state.value as string}
+              value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
               errorMessage={
@@ -123,7 +162,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
               label="NIT"
               type="text"
               placeholder="Ingresa el NIT"
-              value={field.state.value as string}
+              value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
               errorMessage={
@@ -139,8 +178,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
           name="cargoId"
           validators={{
             onChange: ({ value }) => {
-              if (value === undefined || value === null )
-                return "El cargo es requerido";
+              if (value === undefined) return "El cargo es requerido";
               return undefined;
             },
           }}
@@ -149,25 +187,32 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
             <div className="space-y-1">
               <Label>Cargo de empleado</Label>
               <Select
-                value={field.state.value}
+                aria-label="Cargo de empleado"
+                value={field.state.value ?? null}
+                isDisabled={isSaving}
                 onChange={(value) => {
-                  console.log("Selected cargo:", value);
-                  field.handleChange(value === "" ? undefined : Number(value))
+                  field.handleChange(
+                    value === "" || value === null ? undefined : Number(value),
+                  );
                 }}
                 placeholder="Selecciona un cargo"
-                variant= "secondary"
+                variant="secondary"
               >
                 <Select.Trigger className="w-full">
-                  <Select.Value  />
+                  <Select.Value />
                   <Select.Indicator />
                 </Select.Trigger>
                 <Description>Elige el cargo asignado al empleado.</Description>
                 <Select.Popover>
                   <ListBox>
                     {cargos.map((cargo) => (
-                      <ListBox.Item key={cargo.id} id={cargo.id} textValue={cargo.nombre}>
+                      <ListBox.Item
+                        key={cargo.id}
+                        id={cargo.id}
+                        textValue={cargo.nombre}
+                      >
                         {cargo.nombre}
-                        <ListBox.ItemIndicator/>
+                        <ListBox.ItemIndicator />
                       </ListBox.Item>
                     ))}
                   </ListBox>
@@ -196,26 +241,39 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
             </label>
           )}
         </form.Field>
-      </div>
+        <form.Field name="habilidadesIds">
+          {(field) => (
+            <SeccionHabilidadesEmpleado
+              value={field.state.value}
+              onChange={field.handleChange}
+              onBlur={field.handleBlur}
+              errorMessage={
+                field.state.meta.errors.length > 0
+                  ? field.state.meta.errors.join(", ")
+                  : undefined
+              }
+              isDisabled={isSaving}
+            />
+          )}
+        </form.Field>
+      </fieldset>
 
       <form.Subscribe
         selector={(state) => ({
           canSubmit: state.canSubmit,
           isSubmitting: state.isSubmitting,
-          errorMap: state.errorMap,
         })}
-        children={({ canSubmit, isSubmitting, errorMap }) => {
-          const error = errorMap.onSubmit || errorMap.onServer;
+        children={({ canSubmit, isSubmitting }) => {
           return (
             <>
-              {error && (
+              {submitError && (
                 <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-                  {error}
+                  {submitError}
                 </p>
               )}
               <Button
                 type="submit"
-                isDisabled={!canSubmit}
+                isDisabled={!canSubmit || isSubmitting}
                 isPending={isSubmitting}
                 className="bg-gray-900"
               >

@@ -13,3 +13,12 @@ export interface Empleado {
   createdAt?: Date;
   habilidades: HabilidadEmpleado[]; // Agregado para cumplir PBI-89
 }
+
+// Contrato de escritura: las relaciones del GET no se envían a Prisma.
+export type GuardarEmpleado = Pick<
+  Empleado,
+  "nombreCompleto" | "dui" | "nit" | "cargoId" | "activo"
+> & {
+  id?: number;
+  habilidadesIds?: number[];
+};
