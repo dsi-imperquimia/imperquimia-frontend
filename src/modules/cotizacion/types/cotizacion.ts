@@ -1,6 +1,9 @@
 import type { Material } from "@modules/materiales/types/material";
 
-export type EstadoCotizacion = "ACTIVA" | "DESACTIVADA";
+export type EstadoCotizacion =
+  | "PENDIENTE"
+  | "APROBADA"
+  | "RECHAZADA";
 
 export interface DetalleInput {
   materialId: number;
@@ -15,9 +18,7 @@ export interface CreateCotizacion {
   detalles: DetalleInput[];
 }
 
-export interface UpdateCotizacion extends CreateCotizacion {
-  estado: EstadoCotizacion;
-}
+export interface UpdateCotizacion extends CreateCotizacion {}
 
 export interface UserCotizacionList {
   lastName: string;
@@ -76,4 +77,18 @@ export interface CotizacionDetalle {
   updatedAt: string;
   user: UserCotizacionDetalle;
   detalles: DetalleCotizacion[];
+  estadoCambiadoPor: UsuarioCambioEstado | null;
+  estadoCambiadoAt: string | null;
+  proyecto: ProyectoCotizacion | null;
+}
+export interface UsuarioCambioEstado {
+  id: number;
+  name: string;
+  lastName: string;
+  email: string;
+}
+export interface ProyectoCotizacion {
+  id: number;
+  nombre: string;
+  estado: string;
 }
