@@ -53,7 +53,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="h-screen overflow-hidden bg-white font-sans antialiased">
+      <body className="min-h-screen overflow-hidden bg-white font-sans antialiased">
         <Toast.Provider placement="top end" />
         <QueryClientProvider client={queryClient}>
           {children}
