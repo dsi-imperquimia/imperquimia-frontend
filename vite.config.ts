@@ -19,7 +19,26 @@ const config = defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
   ],
   server: {
-    allowedHosts: ["imperquimia.local", "localhost", "localhost:3001"],
+    allowedHosts: [
+      "imperquimia.local",
+      "localhost",
+      "localhost:3001",
+      "api.imperquimia.local",
+      "api.imperquimia.site-template.dev",
+      "imperquimia.site-template.dev",
+    ],
+    host: "0.0.0.0",
+    port: 3001,
+  },
+  preview: {
+    allowedHosts: [
+      "localhost",
+      "localhost:3001",
+      "api.imperquimia.site-template.dev",
+      "imperquimia.site-template.dev",
+    ],
+    host: "0.0.0.0",
+    port: 3001,
   },
 });
 
