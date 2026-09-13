@@ -9,7 +9,7 @@ import { useEffect } from "react";
 
 import { createCotizacion } from "../api/create-cotizacion";
 import { updateCotizacion } from "../api/update-cotizacion";
-import type { CotizacionDetalle, EstadoCotizacion } from "../types/cotizacion";
+import type { CotizacionDetalle } from "../types/cotizacion";
 
 import type { Material } from "@modules/materiales/types/material";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
@@ -48,7 +48,6 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
       cliente: cotizacionInit?.cliente ?? "",
       phone: cotizacionInit?.phone ?? "",
       email: cotizacionInit?.email ?? "",
-      estado: cotizacionInit?.estado ?? "ACTIVA",
       detalles:
         cotizacionInit?.detalles?.map((detalle) => ({
           materialId: detalle.materialId.toString(),
@@ -101,7 +100,6 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
           cliente: value.cliente,
           phone: value.phone,
           email: value.email,
-          estado: value.estado,
           detalles,
         });
       } else {
@@ -272,7 +270,7 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
         </form.Field>
       </div>
 
-      {cotizacionInit?.id && (
+      {/* cotizacionInit?.id && (
         <form.Field name="estado">
           {(field) => (
             <div className="w-full max-w-md space-y-1">
@@ -307,7 +305,7 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
             </div>
           )}
         </form.Field>
-      )}
+      ) */}
 
       <form.Field name="detalles" mode="array">
         {() => (
