@@ -79,15 +79,15 @@ export function SeccionHabilidadesEmpleado({
                 value={String(habilidad.id)}
                 aria-label={habilidad.nombre}
               >
-                <Checkbox.Control>
-                  <Checkbox.Indicator />
-                </Checkbox.Control>
                 <Checkbox.Content>
+                  <Checkbox.Control>
+                    <Checkbox.Indicator />
+                  </Checkbox.Control>
                   <Label>{habilidad.nombre}</Label>
-                  {habilidad.descripcion && (
-                    <Description>{habilidad.descripcion}</Description>
-                  )}
                 </Checkbox.Content>
+                {habilidad.descripcion && (
+                  <Description>{habilidad.descripcion}</Description>
+                )}
               </Checkbox>
             ))}
           </div>
