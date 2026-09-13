@@ -18,7 +18,7 @@ export function AppSidebar() {
   }
 
   return (
-    <aside className="flex h-full w-70 shrink-0 flex-col border-r border-gray-100 bg-white">
+    <aside className="flex min-h-screen w-70 shrink-0 flex-col border-r border-gray-100 bg-white">
       <div className="flex h-14 items-center gap-2.5 border-b border-gray-100 px-4">
         <img src={logo} alt="Imperquimia" className="h-11" />
       </div>

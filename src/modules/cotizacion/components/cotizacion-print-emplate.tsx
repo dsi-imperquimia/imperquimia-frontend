@@ -16,11 +16,37 @@ function money(value: string | number) {
 function fechaLarga(date: string) {
   const fecha = new Date(date);
   const meses = [
-    "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO",
-    "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE",
+    "ENERO",
+    "FEBRERO",
+    "MARZO",
+    "ABRIL",
+    "MAYO",
+    "JUNIO",
+    "JULIO",
+    "AGOSTO",
+    "SEPTIEMBRE",
+    "OCTUBRE",
+    "NOVIEMBRE",
+    "DICIEMBRE",
   ];
 
   return `San Salvador, ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
+}
+
+function getEstadoTexto(estado: CotizacionDetalle["estado"]) {
+  switch (estado) {
+    case "PENDIENTE":
+      return "Pendiente de aprobación";
+
+    case "APROBADA":
+      return "Cotización aprobada";
+
+    case "RECHAZADA":
+      return "Cotización rechazada";
+
+    default:
+      return estado;
+  }
 }
 
 export function CotizacionPrintTemplate({ cotizacion }: Props) {
@@ -160,6 +186,32 @@ export function CotizacionPrintTemplate({ cotizacion }: Props) {
               page-break-inside: avoid;
             }
           }
+            .estado-cotizacion {
+              margin: 10px 0 20px 0;
+              padding: 8px 12px;
+              border-radius: 6px;
+              font-weight: bold;
+              text-align: center;
+              border: 1px solid #ddd;
+            }
+
+            .estado-pendiente {
+              background-color: #fef3c7;
+              color: #92400e;
+              border-color: #fcd34d;
+            }
+
+            .estado-aprobada {
+              background-color: #dcfce7;
+              color: #166534;
+              border-color: #86efac;
+            }
+
+            .estado-rechazada {
+              background-color: #fee2e2;
+              color: #991b1b;
+              border-color: #fca5a5;
+            }
         `}
       </style>
 
@@ -167,19 +219,19 @@ export function CotizacionPrintTemplate({ cotizacion }: Props) {
         <img src={LOGO_URL} alt="Imperquimia" />
       </div>
 
-      <div className="fecha-contenedor">
-        {fechaLarga(cotizacion.updatedAt)}
-      </div>
+      <div className="fecha-contenedor">{fechaLarga(cotizacion.updatedAt)}</div>
 
       <div className="info-cliente">
         <p>Señores</p>
         <p className="bold">{cotizacion.cliente}</p>
-        <p><span className="bold">PROYECTO:</span> {cotizacion.descripcion}</p>
+        <p>
+          <span className="bold">PROYECTO:</span> {cotizacion.descripcion}
+        </p>
       </div>
 
       <p style={{ marginBottom: "15px" }}>
-        De acuerdo a su solicitud, nos complace ofertar la distribución y aplicación
-        de los productos que detallamos a continuación.
+        De acuerdo a su solicitud, nos complace ofertar la distribución y
+        aplicación de los productos que detallamos a continuación.
       </p>
 
       <div className="seccion-titulo">PRODUCTOS A EMPLEAR</div>
@@ -226,82 +278,152 @@ export function CotizacionPrintTemplate({ cotizacion }: Props) {
           ))}
 
           <tr>
-            <td colSpan={7} className="right bold">Sumas</td>
+            <td colSpan={7} className="right bold">
+              Sumas
+            </td>
             <td className="right bold">{money(cotizacion.subTotal)}</td>
           </tr>
 
           <tr>
-            <td colSpan={7} className="right bold">IVA 13%</td>
+            <td colSpan={7} className="right bold">
+              IVA 13%
+            </td>
             <td className="right bold">{money(cotizacion.totalIva)}</td>
           </tr>
 
           <tr>
-            <td colSpan={7} className="right bold">TOTAL</td>
+            <td colSpan={7} className="right bold">
+              TOTAL
+            </td>
             <td className="right bold">{money(cotizacion.total)}</td>
           </tr>
         </tbody>
       </table>
 
       <div className="page-break">
-        <div className="seccion-titulo" style={{ marginTop: "0px" }}>NOTA</div>
-        <p style={{ margin: "3px 0" }}>➢ Esta cotización está sujeta a cambios.</p>
-        <p style={{ margin: "3px 0" }}>➢ Se remedirá al principio y/o final del trabajo.</p>
-        <p style={{ margin: "3px 0" }}>➢ Cualquier cambio repercutirá directamente en el costo de la aplicación.</p>
+        <div className="seccion-titulo" style={{ marginTop: "0px" }}>
+          NOTA
+        </div>
+        <p style={{ margin: "3px 0" }}>
+          ➢ Esta cotización está sujeta a cambios.
+        </p>
+        <p style={{ margin: "3px 0" }}>
+          ➢ Se remedirá al principio y/o final del trabajo.
+        </p>
+        <p style={{ margin: "3px 0" }}>
+          ➢ Cualquier cambio repercutirá directamente en el costo de la
+          aplicación.
+        </p>
         <p style={{ margin: "3px 0" }}>➢ Oferta tiene vigencia de 15 días.</p>
         <p className="highlight" style={{ margin: "3px 0" }}>
-          ➢ Cotización realizada sin visita técnica cualquier trabajo extra requerido
-          en el área generar variación en el precio cotizado.
+          ➢ Cotización realizada sin visita técnica cualquier trabajo extra
+          requerido en el área generar variación en el precio cotizado.
         </p>
-        <p className="highlight" style={{ margin: "3px 0" }}>➢ Se remedirá al final.</p>
+        <p className="highlight" style={{ margin: "3px 0" }}>
+          ➢ Se remedirá al final.
+        </p>
 
         <div className="seccion-titulo">ALCANCE DEL TRABAJO</div>
         <p style={{ margin: "5px 0" }}>
-          Todos los trabajos arriba descritos incluyen: mano de obra, materiales y
-          equipo necesario para realizar un buen trabajo.
+          Todos los trabajos arriba descritos incluyen: mano de obra, materiales
+          y equipo necesario para realizar un buen trabajo.
         </p>
 
         <div className="seccion-titulo">TIEMPO DE EJECUCIÓN</div>
         <p style={{ margin: "5px 0" }}>
-          El tiempo de ejecución dependerá de la accesibilidad al área del trabajo y
-          condiciones del clima, teniendo un estimado de 10 días para finalización y
-          entrega de proyecto.
+          El tiempo de ejecución dependerá de la accesibilidad al área del
+          trabajo y condiciones del clima, teniendo un estimado de 10 días para
+          finalización y entrega de proyecto.
         </p>
 
         <div className="seccion-titulo">GARANTÍA</div>
         <p style={{ margin: "5px 0" }}>
-          Impermeabilizantes y Químicos, S. A. de C. V. asegura que en sus trabajos
-          de aplicación de productos impermeabilizantes no emplea material defectuoso,
-          razón por la que garantizamos el trabajo antes descrito por el periodo de
-          5 años para todos los productos a aplicar.{" "}
+          Impermeabilizantes y Químicos, S. A. de C. V. asegura que en sus
+          trabajos de aplicación de productos impermeabilizantes no emplea
+          material defectuoso, razón por la que garantizamos el trabajo antes
+          descrito por el periodo de 5 años para todos los productos a aplicar.{" "}
           <span className="highlight">No aplica a daños por terceros.</span>
         </p>
 
-        <div className="seccion-titulo">APROBACIÓN DE LA OFERTA</div>
-        <p style={{ margin: "5px 0" }}>
-          Por favor devolver debidamente firmada y sellada la presente oferta en
-          muestra de aprobación al correo gimperquimia@gmail.com; requerimos el 60%
-          del valor total anticipado y lo restante al recibir en conformidad el trabajo.
-        </p>
+        {cotizacion.estado === "PENDIENTE" && (
+          <>
+            <div className="seccion-titulo">APROBACIÓN DE LA OFERTA</div>
+
+            <p
+              style={{
+                margin: "5px 0",
+                color: "#b45309",
+                fontWeight: "bold",
+              }}
+            >
+              La presente cotización se encuentra pendiente de aprobación. Para
+              aprobar la oferta, deberá realizarse el proceso correspondiente
+              antes de iniciar la ejecución del proyecto.
+            </p>
+          </>
+        )}
+
+        {cotizacion.estado === "APROBADA" && (
+          <>
+            <div className="seccion-titulo">ESTADO DE LA OFERTA</div>
+
+            <p
+              style={{
+                margin: "5px 0",
+                color: "#15803d",
+                fontWeight: "bold",
+              }}
+            >
+              La presente cotización ha sido aprobada.
+            </p>
+          </>
+        )}
+
+        {cotizacion.estado === "RECHAZADA" && (
+          <>
+            <div className="seccion-titulo">ESTADO DE LA OFERTA</div>
+
+            <p
+              style={{
+                margin: "5px 0",
+                color: "#b91c1c",
+                fontWeight: "bold",
+              }}
+            >
+              La presente cotización ha sido rechazada y no continuará con el
+              proceso de ejecución.
+            </p>
+          </>
+        )}
 
         <div className="firmas-container">
           <div className="firma-box">
             <p style={{ margin: "0 0 15px 0" }}>Atentamente.</p>
-            <br /><br />
-            <p className="bold" style={{ margin: "0" }}>ALEJANDRO DEL PINAL</p>
-            <p style={{ margin: "1px 0", color: "#555" }}>IMPERQUIMIA, S. A. DE C. V.</p>
-            <p style={{ margin: "1px 0", color: "#555" }}>Telefax: + (503) 2263-8859 / 2264-5417</p>
+            <br />
+            <br />
+            <p className="bold" style={{ margin: "0" }}>
+              ALEJANDRO DEL PINAL
+            </p>
+            <p style={{ margin: "1px 0", color: "#555" }}>
+              IMPERQUIMIA, S. A. DE C. V.
+            </p>
+            <p style={{ margin: "1px 0", color: "#555" }}>
+              Telefax: + (503) 2263-8859 / 2264-5417
+            </p>
           </div>
 
           <div className="firma-box center">
             <p style={{ margin: "0 0 15px 0" }}>Aprobado</p>
-            <br /><br />
+            <br />
+            <br />
             <p style={{ margin: "0", color: "#bbb" }}>______________________</p>
             <p style={{ margin: "4px 0 0 0" }}>firma y sello.</p>
           </div>
         </div>
 
         <div className="footer-info">
-          Av. Mejía Lara #11-76; Col. Campestre, San Salvador, El Salvador<br />
+          Av. Mejía Lara #11-76; Col. Campestre, San Salvador, El Salvador
+          <br />
           Telefax: 2263-8859, 2264-5417 | e-mail: gimperquimia@gmail.com
         </div>
       </div>
