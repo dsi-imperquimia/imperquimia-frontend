@@ -9,40 +9,40 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
-import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
-import { Route as AuthenticatedHerramientasIndexRouteImport } from './routes/_authenticated/herramientas/index'
-import { Route as AuthenticatedEmpleadosIndexRouteImport } from './routes/_authenticated/empleados/index'
-import { Route as AuthenticatedCotizacionesIndexRouteImport } from './routes/_authenticated/cotizaciones/index'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
-import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
-import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
-import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
-import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
-import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
-import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
-import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
-import { Route as AuthenticatedCotizacionesCreateRouteImport } from './routes/_authenticated/cotizaciones/create'
-import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
-import { Route as AuthenticatedUsersRolesIndexRouteImport } from './routes/_authenticated/users/roles/index'
-import { Route as AuthenticatedUsersRolesCreateRouteImport } from './routes/_authenticated/users/roles/create'
-import { Route as AuthenticatedUsersRolesRoleIdRouteImport } from './routes/_authenticated/users/roles/$roleId'
-import { Route as AuthenticatedHerramientasHerramientaIdViewRouteImport } from './routes/_authenticated/herramientas/$herramientaId/view'
-import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
-import { Route as AuthenticatedCotizacionesCotizacionIdViewRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/view'
+import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
+import { Route as AuthenticatedCotizacionesIndexRouteImport } from './routes/_authenticated/cotizaciones/index'
+import { Route as AuthenticatedCotizacionesCreateRouteImport } from './routes/_authenticated/cotizaciones/create'
+import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
+import { Route as AuthenticatedEmpleadosIndexRouteImport } from './routes/_authenticated/empleados/index'
+import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
+import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
+import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
+import { Route as AuthenticatedHerramientasIndexRouteImport } from './routes/_authenticated/herramientas/index'
+import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
+import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
+import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
+import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
 import { Route as AuthenticatedCotizacionesCotizacionIdEditRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/edit'
+import { Route as AuthenticatedCotizacionesCotizacionIdViewRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/view'
+import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
+import { Route as AuthenticatedHerramientasHerramientaIdViewRouteImport } from './routes/_authenticated/herramientas/$herramientaId/view'
+import { Route as AuthenticatedUsersRolesIndexRouteImport } from './routes/_authenticated/users/roles/index'
+import { Route as AuthenticatedUsersRolesRoleIdRouteImport } from './routes/_authenticated/users/roles/$roleId'
+import { Route as AuthenticatedUsersRolesCreateRouteImport } from './routes/_authenticated/users/roles/create'
 
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -50,92 +50,10 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
-const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
-  id: '/users/',
-  path: '/users/',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedMaterialesIndexRoute =
-  AuthenticatedMaterialesIndexRouteImport.update({
-    id: '/materiales/',
-    path: '/materiales/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedHerramientasIndexRoute =
-  AuthenticatedHerramientasIndexRouteImport.update({
-    id: '/herramientas/',
-    path: '/herramientas/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedEmpleadosIndexRoute =
-  AuthenticatedEmpleadosIndexRouteImport.update({
-    id: '/empleados/',
-    path: '/empleados/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedCotizacionesIndexRoute =
-  AuthenticatedCotizacionesIndexRouteImport.update({
-    id: '/cotizaciones/',
-    path: '/cotizaciones/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
 const AuthenticatedCargoEmpleadoIndexRoute =
   AuthenticatedCargoEmpleadoIndexRouteImport.update({
     id: '/cargo-empleado/',
     path: '/cargo-empleado/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedUsersCreateRoute =
-  AuthenticatedUsersCreateRouteImport.update({
-    id: '/users/create',
-    path: '/users/create',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedUsersUserIdRoute =
-  AuthenticatedUsersUserIdRouteImport.update({
-    id: '/users/$userId',
-    path: '/users/$userId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedMaterialesGestionRoute =
-  AuthenticatedMaterialesGestionRouteImport.update({
-    id: '/materiales/gestion',
-    path: '/materiales/gestion',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedEmpleadosHabilidadesRoute =
-  AuthenticatedEmpleadosHabilidadesRouteImport.update({
-    id: '/empleados/habilidades',
-    path: '/empleados/habilidades',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedEmpleadosCreateRoute =
-  AuthenticatedEmpleadosCreateRouteImport.update({
-    id: '/empleados/create',
-    path: '/empleados/create',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedEmpleadosEmpleadoIdRoute =
-  AuthenticatedEmpleadosEmpleadoIdRouteImport.update({
-    id: '/empleados/$empleadoId',
-    path: '/empleados/$empleadoId',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedDemoStoreRoute = AuthenticatedDemoStoreRouteImport.update({
-  id: '/demo/store',
-  path: '/demo/store',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedCotizacionesCreateRoute =
-  AuthenticatedCotizacionesCreateRouteImport.update({
-    id: '/cotizaciones/create',
-    path: '/cotizaciones/create',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedCargoEmpleadoCreateRoute =
-  AuthenticatedCargoEmpleadoCreateRouteImport.update({
-    id: '/cargo-empleado/create',
-    path: '/cargo-empleado/create',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedCargoEmpleadoCargoIdRoute =
@@ -144,34 +62,92 @@ const AuthenticatedCargoEmpleadoCargoIdRoute =
     path: '/cargo-empleado/$cargoId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedUsersRolesIndexRoute =
-  AuthenticatedUsersRolesIndexRouteImport.update({
-    id: '/users/roles/',
-    path: '/users/roles/',
+const AuthenticatedCargoEmpleadoCreateRoute =
+  AuthenticatedCargoEmpleadoCreateRouteImport.update({
+    id: '/cargo-empleado/create',
+    path: '/cargo-empleado/create',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedUsersRolesCreateRoute =
-  AuthenticatedUsersRolesCreateRouteImport.update({
-    id: '/users/roles/create',
-    path: '/users/roles/create',
+const AuthenticatedCotizacionesIndexRoute =
+  AuthenticatedCotizacionesIndexRouteImport.update({
+    id: '/cotizaciones/',
+    path: '/cotizaciones/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedUsersRolesRoleIdRoute =
-  AuthenticatedUsersRolesRoleIdRouteImport.update({
-    id: '/users/roles/$roleId',
-    path: '/users/roles/$roleId',
+const AuthenticatedCotizacionesCreateRoute =
+  AuthenticatedCotizacionesCreateRouteImport.update({
+    id: '/cotizaciones/create',
+    path: '/cotizaciones/create',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedHerramientasHerramientaIdViewRoute =
-  AuthenticatedHerramientasHerramientaIdViewRouteImport.update({
-    id: '/herramientas/$herramientaId/view',
-    path: '/herramientas/$herramientaId/view',
+const AuthenticatedDemoStoreRoute = AuthenticatedDemoStoreRouteImport.update({
+  id: '/demo/store',
+  path: '/demo/store',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedEmpleadosIndexRoute =
+  AuthenticatedEmpleadosIndexRouteImport.update({
+    id: '/empleados/',
+    path: '/empleados/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedHerramientasHerramientaIdEditRoute =
-  AuthenticatedHerramientasHerramientaIdEditRouteImport.update({
-    id: '/herramientas/$herramientaId/edit',
-    path: '/herramientas/$herramientaId/edit',
+const AuthenticatedEmpleadosEmpleadoIdRoute =
+  AuthenticatedEmpleadosEmpleadoIdRouteImport.update({
+    id: '/empleados/$empleadoId',
+    path: '/empleados/$empleadoId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEmpleadosCreateRoute =
+  AuthenticatedEmpleadosCreateRouteImport.update({
+    id: '/empleados/create',
+    path: '/empleados/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEmpleadosHabilidadesRoute =
+  AuthenticatedEmpleadosHabilidadesRouteImport.update({
+    id: '/empleados/habilidades',
+    path: '/empleados/habilidades',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedHerramientasIndexRoute =
+  AuthenticatedHerramientasIndexRouteImport.update({
+    id: '/herramientas/',
+    path: '/herramientas/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMaterialesIndexRoute =
+  AuthenticatedMaterialesIndexRouteImport.update({
+    id: '/materiales/',
+    path: '/materiales/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMaterialesGestionRoute =
+  AuthenticatedMaterialesGestionRouteImport.update({
+    id: '/materiales/gestion',
+    path: '/materiales/gestion',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
+  id: '/users/',
+  path: '/users/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedUsersUserIdRoute =
+  AuthenticatedUsersUserIdRouteImport.update({
+    id: '/users/$userId',
+    path: '/users/$userId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersCreateRoute =
+  AuthenticatedUsersCreateRouteImport.update({
+    id: '/users/create',
+    path: '/users/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCotizacionesCotizacionIdEditRoute =
+  AuthenticatedCotizacionesCotizacionIdEditRouteImport.update({
+    id: '/cotizaciones/$cotizacionId/edit',
+    path: '/cotizaciones/$cotizacionId/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedCotizacionesCotizacionIdViewRoute =
@@ -180,10 +156,34 @@ const AuthenticatedCotizacionesCotizacionIdViewRoute =
     path: '/cotizaciones/$cotizacionId/view',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedCotizacionesCotizacionIdEditRoute =
-  AuthenticatedCotizacionesCotizacionIdEditRouteImport.update({
-    id: '/cotizaciones/$cotizacionId/edit',
-    path: '/cotizaciones/$cotizacionId/edit',
+const AuthenticatedHerramientasHerramientaIdEditRoute =
+  AuthenticatedHerramientasHerramientaIdEditRouteImport.update({
+    id: '/herramientas/$herramientaId/edit',
+    path: '/herramientas/$herramientaId/edit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedHerramientasHerramientaIdViewRoute =
+  AuthenticatedHerramientasHerramientaIdViewRouteImport.update({
+    id: '/herramientas/$herramientaId/view',
+    path: '/herramientas/$herramientaId/view',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersRolesIndexRoute =
+  AuthenticatedUsersRolesIndexRouteImport.update({
+    id: '/users/roles/',
+    path: '/users/roles/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersRolesRoleIdRoute =
+  AuthenticatedUsersRolesRoleIdRouteImport.update({
+    id: '/users/roles/$roleId',
+    path: '/users/roles/$roleId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedUsersRolesCreateRoute =
+  AuthenticatedUsersRolesCreateRouteImport.update({
+    id: '/users/roles/create',
+    path: '/users/roles/create',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 
@@ -362,18 +362,18 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated': {
       id: '/_authenticated'
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -383,109 +383,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/users/': {
-      id: '/_authenticated/users/'
-      path: '/users'
-      fullPath: '/users/'
-      preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/materiales/': {
-      id: '/_authenticated/materiales/'
-      path: '/materiales'
-      fullPath: '/materiales/'
-      preLoaderRoute: typeof AuthenticatedMaterialesIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/herramientas/': {
-      id: '/_authenticated/herramientas/'
-      path: '/herramientas'
-      fullPath: '/herramientas/'
-      preLoaderRoute: typeof AuthenticatedHerramientasIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/empleados/': {
-      id: '/_authenticated/empleados/'
-      path: '/empleados'
-      fullPath: '/empleados/'
-      preLoaderRoute: typeof AuthenticatedEmpleadosIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/cotizaciones/': {
-      id: '/_authenticated/cotizaciones/'
-      path: '/cotizaciones'
-      fullPath: '/cotizaciones/'
-      preLoaderRoute: typeof AuthenticatedCotizacionesIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/cargo-empleado/': {
       id: '/_authenticated/cargo-empleado/'
       path: '/cargo-empleado'
       fullPath: '/cargo-empleado/'
       preLoaderRoute: typeof AuthenticatedCargoEmpleadoIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/users/create': {
-      id: '/_authenticated/users/create'
-      path: '/users/create'
-      fullPath: '/users/create'
-      preLoaderRoute: typeof AuthenticatedUsersCreateRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/users/$userId': {
-      id: '/_authenticated/users/$userId'
-      path: '/users/$userId'
-      fullPath: '/users/$userId'
-      preLoaderRoute: typeof AuthenticatedUsersUserIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/materiales/gestion': {
-      id: '/_authenticated/materiales/gestion'
-      path: '/materiales/gestion'
-      fullPath: '/materiales/gestion'
-      preLoaderRoute: typeof AuthenticatedMaterialesGestionRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/empleados/habilidades': {
-      id: '/_authenticated/empleados/habilidades'
-      path: '/empleados/habilidades'
-      fullPath: '/empleados/habilidades'
-      preLoaderRoute: typeof AuthenticatedEmpleadosHabilidadesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/empleados/create': {
-      id: '/_authenticated/empleados/create'
-      path: '/empleados/create'
-      fullPath: '/empleados/create'
-      preLoaderRoute: typeof AuthenticatedEmpleadosCreateRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/empleados/$empleadoId': {
-      id: '/_authenticated/empleados/$empleadoId'
-      path: '/empleados/$empleadoId'
-      fullPath: '/empleados/$empleadoId'
-      preLoaderRoute: typeof AuthenticatedEmpleadosEmpleadoIdRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/demo/store': {
-      id: '/_authenticated/demo/store'
-      path: '/demo/store'
-      fullPath: '/demo/store'
-      preLoaderRoute: typeof AuthenticatedDemoStoreRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/cotizaciones/create': {
-      id: '/_authenticated/cotizaciones/create'
-      path: '/cotizaciones/create'
-      fullPath: '/cotizaciones/create'
-      preLoaderRoute: typeof AuthenticatedCotizacionesCreateRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/cargo-empleado/create': {
-      id: '/_authenticated/cargo-empleado/create'
-      path: '/cargo-empleado/create'
-      fullPath: '/cargo-empleado/create'
-      preLoaderRoute: typeof AuthenticatedCargoEmpleadoCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cargo-empleado/$cargoId': {
@@ -495,39 +397,109 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCargoEmpleadoCargoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/users/roles/': {
-      id: '/_authenticated/users/roles/'
-      path: '/users/roles'
-      fullPath: '/users/roles/'
-      preLoaderRoute: typeof AuthenticatedUsersRolesIndexRouteImport
+    '/_authenticated/cargo-empleado/create': {
+      id: '/_authenticated/cargo-empleado/create'
+      path: '/cargo-empleado/create'
+      fullPath: '/cargo-empleado/create'
+      preLoaderRoute: typeof AuthenticatedCargoEmpleadoCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/users/roles/create': {
-      id: '/_authenticated/users/roles/create'
-      path: '/users/roles/create'
-      fullPath: '/users/roles/create'
-      preLoaderRoute: typeof AuthenticatedUsersRolesCreateRouteImport
+    '/_authenticated/cotizaciones/': {
+      id: '/_authenticated/cotizaciones/'
+      path: '/cotizaciones'
+      fullPath: '/cotizaciones/'
+      preLoaderRoute: typeof AuthenticatedCotizacionesIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/users/roles/$roleId': {
-      id: '/_authenticated/users/roles/$roleId'
-      path: '/users/roles/$roleId'
-      fullPath: '/users/roles/$roleId'
-      preLoaderRoute: typeof AuthenticatedUsersRolesRoleIdRouteImport
+    '/_authenticated/cotizaciones/create': {
+      id: '/_authenticated/cotizaciones/create'
+      path: '/cotizaciones/create'
+      fullPath: '/cotizaciones/create'
+      preLoaderRoute: typeof AuthenticatedCotizacionesCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/herramientas/$herramientaId/view': {
-      id: '/_authenticated/herramientas/$herramientaId/view'
-      path: '/herramientas/$herramientaId/view'
-      fullPath: '/herramientas/$herramientaId/view'
-      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdViewRouteImport
+    '/_authenticated/demo/store': {
+      id: '/_authenticated/demo/store'
+      path: '/demo/store'
+      fullPath: '/demo/store'
+      preLoaderRoute: typeof AuthenticatedDemoStoreRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/herramientas/$herramientaId/edit': {
-      id: '/_authenticated/herramientas/$herramientaId/edit'
-      path: '/herramientas/$herramientaId/edit'
-      fullPath: '/herramientas/$herramientaId/edit'
-      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdEditRouteImport
+    '/_authenticated/empleados/': {
+      id: '/_authenticated/empleados/'
+      path: '/empleados'
+      fullPath: '/empleados/'
+      preLoaderRoute: typeof AuthenticatedEmpleadosIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/empleados/$empleadoId': {
+      id: '/_authenticated/empleados/$empleadoId'
+      path: '/empleados/$empleadoId'
+      fullPath: '/empleados/$empleadoId'
+      preLoaderRoute: typeof AuthenticatedEmpleadosEmpleadoIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/empleados/create': {
+      id: '/_authenticated/empleados/create'
+      path: '/empleados/create'
+      fullPath: '/empleados/create'
+      preLoaderRoute: typeof AuthenticatedEmpleadosCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/empleados/habilidades': {
+      id: '/_authenticated/empleados/habilidades'
+      path: '/empleados/habilidades'
+      fullPath: '/empleados/habilidades'
+      preLoaderRoute: typeof AuthenticatedEmpleadosHabilidadesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/herramientas/': {
+      id: '/_authenticated/herramientas/'
+      path: '/herramientas'
+      fullPath: '/herramientas/'
+      preLoaderRoute: typeof AuthenticatedHerramientasIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/materiales/': {
+      id: '/_authenticated/materiales/'
+      path: '/materiales'
+      fullPath: '/materiales/'
+      preLoaderRoute: typeof AuthenticatedMaterialesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/materiales/gestion': {
+      id: '/_authenticated/materiales/gestion'
+      path: '/materiales/gestion'
+      fullPath: '/materiales/gestion'
+      preLoaderRoute: typeof AuthenticatedMaterialesGestionRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/': {
+      id: '/_authenticated/users/'
+      path: '/users'
+      fullPath: '/users/'
+      preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/$userId': {
+      id: '/_authenticated/users/$userId'
+      path: '/users/$userId'
+      fullPath: '/users/$userId'
+      preLoaderRoute: typeof AuthenticatedUsersUserIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/create': {
+      id: '/_authenticated/users/create'
+      path: '/users/create'
+      fullPath: '/users/create'
+      preLoaderRoute: typeof AuthenticatedUsersCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/cotizaciones/$cotizacionId/edit': {
+      id: '/_authenticated/cotizaciones/$cotizacionId/edit'
+      path: '/cotizaciones/$cotizacionId/edit'
+      fullPath: '/cotizaciones/$cotizacionId/edit'
+      preLoaderRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cotizaciones/$cotizacionId/view': {
@@ -537,11 +509,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCotizacionesCotizacionIdViewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/cotizaciones/$cotizacionId/edit': {
-      id: '/_authenticated/cotizaciones/$cotizacionId/edit'
-      path: '/cotizaciones/$cotizacionId/edit'
-      fullPath: '/cotizaciones/$cotizacionId/edit'
-      preLoaderRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRouteImport
+    '/_authenticated/herramientas/$herramientaId/edit': {
+      id: '/_authenticated/herramientas/$herramientaId/edit'
+      path: '/herramientas/$herramientaId/edit'
+      fullPath: '/herramientas/$herramientaId/edit'
+      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdEditRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/herramientas/$herramientaId/view': {
+      id: '/_authenticated/herramientas/$herramientaId/view'
+      path: '/herramientas/$herramientaId/view'
+      fullPath: '/herramientas/$herramientaId/view'
+      preLoaderRoute: typeof AuthenticatedHerramientasHerramientaIdViewRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/roles/': {
+      id: '/_authenticated/users/roles/'
+      path: '/users/roles'
+      fullPath: '/users/roles/'
+      preLoaderRoute: typeof AuthenticatedUsersRolesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/roles/$roleId': {
+      id: '/_authenticated/users/roles/$roleId'
+      path: '/users/roles/$roleId'
+      fullPath: '/users/roles/$roleId'
+      preLoaderRoute: typeof AuthenticatedUsersRolesRoleIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/users/roles/create': {
+      id: '/_authenticated/users/roles/create'
+      path: '/users/roles/create'
+      fullPath: '/users/roles/create'
+      preLoaderRoute: typeof AuthenticatedUsersRolesCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
