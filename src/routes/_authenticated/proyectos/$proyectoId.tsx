@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
 import { dinero, fecha } from "@modules/proyectos/types/proyectos";
+import { DialogDeleteProyecto } from "@modules/proyectos/components/DialogDeleteProyecto";
+import { userActions } from "@modules/auth/store/authStore";
 
 export const Route = createFileRoute("/_authenticated/proyectos/$proyectoId")({
   component: Detalle,
@@ -47,6 +49,20 @@ function Detalle() {
         </p>
       </div>
       <section className="rounded-xl border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex gap-3">
+          {userActions.hasPermission("PROYECTO_UPDATE") && (
+            <Link
+              className="rounded-lg border border-gray-300 px-4 py-2"
+              to="/proyectos/editar/$proyectoId"
+              params={{ proyectoId }}
+            >
+              Editar proyecto
+            </Link>
+          )}
+          {userActions.hasPermission("PROYECTO_DELETE") && (
+            <DialogDeleteProyecto proyecto={p} />
+          )}
+        </div>
         <h2 className="mb-4 text-lg font-semibold">Información del proyecto</h2>
         <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[

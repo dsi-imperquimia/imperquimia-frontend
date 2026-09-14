@@ -2,6 +2,7 @@ import { Button } from "@heroui/react/button";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { userActions } from "@modules/auth/store/authStore";
 import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { dinero, fecha } from "@modules/proyectos/types/proyectos";
 
@@ -42,6 +43,14 @@ function Proyectos() {
           Actualizar
         </Button>
       </div>
+      {userActions.hasPermission("PROYECTO_CREATE") && (
+        <Link
+          to="/proyectos/create"
+          className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
+        >
+          Crear proyecto
+        </Link>
+      )}
       <div className="flex flex-wrap gap-4 rounded-xl border border-gray-200 bg-white p-4">
         <label className="flex min-w-60 flex-1 flex-col gap-1 text-sm">
           Buscar proyecto
