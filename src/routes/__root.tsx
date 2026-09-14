@@ -1,5 +1,6 @@
 import "@styles/styles.css";
 
+import { RouteProgressBar } from "@components/layout/RouteProgressBar";
 import { Toast } from "@heroui/react/toast";
 import { queryClient } from "@lib/queryClient";
 import { authStore } from "@modules/auth/store/authStore";
@@ -52,6 +53,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="h-screen! overflow-hidden bg-white font-sans antialiased">
+        <RouteProgressBar />
         <Toast.Provider placement="top end" />
         <QueryClientProvider client={queryClient}>
           {children}

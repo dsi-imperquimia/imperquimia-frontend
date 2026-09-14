@@ -1,5 +1,6 @@
 import { ErrorComponent } from "@components/errorpages/ErrorComponent";
 import { NotFound } from "@components/errorpages/NotFound";
+import { Spinner } from "@heroui/react";
 import { queryClient } from "@lib/queryClient";
 import type { AuthState } from "@modules/auth/store/authStore";
 import { authStore } from "@modules/auth/store/authStore";
@@ -13,11 +14,20 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
+    defaultViewTransition: true,
     // Initial context — root beforeLoad overrides with cookie/store value before any render.
     context: {
       auth: authStore.state,
       queryClient: queryClient,
     },
+    // Spinner si un loader tarda más de defaultPendingMs; la barra superior cubre las cargas cortas.
+    defaultPendingMs: 500,
+    defaultPendingMinMs: 300,
+    defaultPendingComponent: () => (
+      <div className="flex h-full min-h-60 items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    ),
     defaultNotFoundComponent: () => <NotFound />,
     defaultErrorComponent: (props) => <ErrorComponent {...props} />,
   });
