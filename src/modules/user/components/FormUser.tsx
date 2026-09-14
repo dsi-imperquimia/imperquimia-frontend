@@ -81,6 +81,7 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
               {(field) => (
                 <InputField
                   label="Nombre"
+                  isRequired
                   type="text"
                   placeholder="Ingresa el nombre"
                   startContent={<User className="size-4 text-muted" />}
@@ -109,6 +110,7 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
               {(field) => (
                 <InputField
                   label="Apellido"
+                  isRequired
                   type="text"
                   placeholder="Ingresa el apellido"
                   startContent={<User className="size-4 text-muted" />}
@@ -137,6 +139,7 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
             >
               {(field) => (
                 <EmailInputField
+                  isRequired
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
@@ -153,7 +156,7 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
               name="roleId"
               validators={{
                 onChange: ({ value }) => {
-                  if (!value) return "El cargo es requerido";
+                  if (!value) return "El role es requerido";
                   return undefined;
                 },
               }}
@@ -161,6 +164,7 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
               {(field) => (
                 <SelectedField
                   label="Role"
+                  isRequired
                   placeholder="Elige un role para el usuario"
                   value={field.state.value}
                   onChange={(value) =>
@@ -200,6 +204,7 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
             >
               {(field) => (
                 <PasswordInputField
+                  isRequired={!isEdit}
                   value={field.state.value}
                   onChange={(e) => field.handleChange(e.target.value)}
                   onBlur={field.handleBlur}
@@ -240,10 +245,10 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
                             );
                           }}
                         >
-                          <Checkbox.Control>
-                            <Checkbox.Indicator />
-                          </Checkbox.Control>
                           <Checkbox.Content>
+                            <Checkbox.Control>
+                              <Checkbox.Indicator />
+                            </Checkbox.Control>
                             <Label>Seleccionar todos los permisos</Label>
                           </Checkbox.Content>
                         </Checkbox>
@@ -292,17 +297,17 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
                                     isDisabled={isSelectedPermission}
                                     className="mt-0"
                                   >
-                                    <Checkbox.Control>
-                                      <Checkbox.Indicator />
-                                    </Checkbox.Control>
                                     <Checkbox.Content>
+                                      <Checkbox.Control>
+                                        <Checkbox.Indicator />
+                                      </Checkbox.Control>
                                       <Label className="mt-0">
                                         {permission.name}
                                       </Label>
-                                      <Description>
-                                        {permission.description}
-                                      </Description>
                                     </Checkbox.Content>
+                                    <Description>
+                                      {permission.description}
+                                    </Description>
                                   </Checkbox>
                                   {isSelectedPermission && (
                                     <p className="text-xs font-medium text-stone-700 mt-1">
@@ -333,8 +338,7 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
         })}
         children={({ canSubmit, isSubmitting, errorMap }) => {
           const error = ((errorMap.onSubmit as any) || errorMap.onServer) as
-            | string
-            | undefined;
+            string | undefined;
           return (
             <>
               {error && (

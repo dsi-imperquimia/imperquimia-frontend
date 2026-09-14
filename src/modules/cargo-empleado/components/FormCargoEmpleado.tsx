@@ -54,6 +54,7 @@ export function FormCargoEmpleado({ cargo: cargoInit }: Props) {
           {(field) => (
             <InputField
               label="Nombre"
+              isRequired
               type="text"
               placeholder="Ingresa el nombre del cargo"
               startContent={<Briefcase className="size-4 text-muted" />}
