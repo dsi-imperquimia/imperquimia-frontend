@@ -1,17 +1,20 @@
+import { DuiInputField } from "@components/fields/DuiInputField";
 import { InputField } from "@components/fields/InputField";
+import { NitInputField } from "@components/fields/NitInputField";
+import { Description, Label, ListBox, Select } from "@heroui/react";
 import { Button } from "@heroui/react/button";
-import { Select, Label, Description, ListBox } from "@heroui/react";
 import { toast } from "@heroui/react/toast";
+import { listCargos } from "@modules/cargo-empleado/api/list-cargos";
+import type { Cargo } from "@modules/cargo-empleado/types/cargo";
+import { isValidDui, isValidNit } from "@modules/core/utils/masks";
 import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useStore } from "@tanstack/react-store";
 import { User } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useStore } from "@tanstack/react-store";
-import { listCargos } from "@modules/cargo-empleado/api/list-cargos";
 import { storeEmpleado } from "../api/store-empleado";
-import type { Cargo } from "@modules/cargo-empleado/types/cargo";
 import type { Empleado as EmpleadoType } from "../types/empleado";
 import { SeccionHabilidadesEmpleado } from "./SeccionHabilidadesEmpleado";
 
@@ -128,16 +131,14 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
           validators={{
             onChange: ({ value }) => {
               if (!value) return "El DUI es requerido";
+              if (!isValidDui(value)) return "DUI inválido";
               return undefined;
             },
           }}
         >
           {(field) => (
-            <InputField
-              label="DUI"
+            <DuiInputField
               isRequired
-              type="text"
-              placeholder="Ingresa el DUI"
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
@@ -155,16 +156,14 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
           validators={{
             onChange: ({ value }) => {
               if (!value) return "El NIT es requerido";
+              if (!isValidNit(value)) return "NIT inválido";
               return undefined;
             },
           }}
         >
           {(field) => (
-            <InputField
-              label="NIT"
+            <NitInputField
               isRequired
-              type="text"
-              placeholder="Ingresa el NIT"
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}
