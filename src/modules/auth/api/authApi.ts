@@ -25,3 +25,8 @@ export async function loginRequest(
     throw err;
   }
 }
+
+export async function getMe(): Promise<User> {
+  const { data } = await http.get<User>("/auth/me");
+  return data;
+}

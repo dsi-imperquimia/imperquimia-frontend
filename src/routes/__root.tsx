@@ -3,9 +3,9 @@ import "@styles/styles.css";
 import { RouteProgressBar } from "@components/layout/RouteProgressBar";
 import { Toast } from "@heroui/react/toast";
 import { queryClient } from "@lib/queryClient";
+import { getMe } from "@modules/auth/api/authApi";
 import { authStore } from "@modules/auth/store/authStore";
 import { getAuth } from "@modules/auth/utils/get-auth-store";
-import { getUser } from "@modules/user/api/get-user";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
   HeadContent,
@@ -21,8 +21,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         ? await getAuth() // SSR: lee cookie del request
         : authStore.state; // cliente: usa store ya hidratado desde localStorage
 
-    if (auth.user?.id) {
-      auth.user = await getUser(auth.user.id); // carga datos completos del usuario y permisos
+    if (auth.accessToken) {
+      auth.user = await getMe(); // carga usuario autenticado y permisos desde /auth/me
       authStore.setState(() => auth); // actualiza store con datos completos del usuario
     }
     return { auth };
