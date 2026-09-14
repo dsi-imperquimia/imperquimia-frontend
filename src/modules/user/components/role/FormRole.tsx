@@ -114,10 +114,10 @@ export function FormRole({ role: roleInit, permissions = [] }: FormRoleProps) {
                     );
                   }}
                 >
-                  <Checkbox.Control>
-                    <Checkbox.Indicator />
-                  </Checkbox.Control>
                   <Checkbox.Content>
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
                     <Label>Seleccionar todos los permisos</Label>
                   </Checkbox.Content>
                 </Checkbox>
@@ -132,13 +132,13 @@ export function FormRole({ role: roleInit, permissions = [] }: FormRoleProps) {
                         key={permission.id}
                         value={permission.id.toString()}
                       >
-                        <Checkbox.Control>
-                          <Checkbox.Indicator />
-                        </Checkbox.Control>
                         <Checkbox.Content>
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
                           <Label>{permission.name}</Label>
-                          <Description>{permission.description}</Description>
                         </Checkbox.Content>
+                        <Description>{permission.description}</Description>
                       </Checkbox>
                     ))}
                   </CheckboxGroup>
