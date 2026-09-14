@@ -1,3 +1,4 @@
+import { queryClient } from "@lib/queryClient";
 import type { User } from "@modules/user/types/user";
 import { useSelector } from "@tanstack/react-store";
 import { Store } from "@tanstack/store";
@@ -57,10 +58,12 @@ export const authStore = new Store<AuthState>(loadPersistedAuth());
 export const authActions = {
   login: (user: User, token: string) => {
     const next: AuthState = { isAuthenticated: true, user, accessToken: token };
+    queryClient.removeQueries({ queryKey: ["auth", "me"] }); // fuerza recarga del nuevo usuario
     authStore.setState(() => next);
     persistAuth(next);
   },
   logout: () => {
+    queryClient.removeQueries({ queryKey: ["auth", "me"] });
     authStore.setState(() => DEFAULT_STATE);
     persistAuth(DEFAULT_STATE);
   },

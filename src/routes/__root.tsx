@@ -3,7 +3,7 @@ import "@styles/styles.css";
 import { RouteProgressBar } from "@components/layout/RouteProgressBar";
 import { Toast } from "@heroui/react/toast";
 import { queryClient } from "@lib/queryClient";
-import { getMe } from "@modules/auth/api/authApi";
+import { authMeQueryOptions, getMe } from "@modules/auth/api/authApi";
 import { authStore } from "@modules/auth/store/authStore";
 import { getAuth } from "@modules/auth/utils/get-auth-store";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -21,11 +21,18 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         ? await getAuth() // SSR: lee cookie del request
         : authStore.state; // cliente: usa store ya hidratado desde localStorage
 
-    if (auth.accessToken) {
-      auth.user = await getMe(); // carga usuario autenticado y permisos desde /auth/me
-      authStore.setState(() => auth); // actualiza store con datos completos del usuario
-    }
-    return { auth };
+    if (!auth.accessToken) return { auth };
+
+    const user =
+      typeof window === "undefined"
+        ? await getMe() // SSR: sin caché, el queryClient es compartido entre requests
+        : await queryClient.query(authMeQueryOptions()); // cliente: reutiliza caché mientras esté fresca
+
+    if (user === auth.user) return { auth };
+
+    const next = { ...auth, user };
+    authStore.setState(() => next); // actualiza store solo si el usuario cambió
+    return { auth: next };
   },
   head: () => ({
     meta: [
