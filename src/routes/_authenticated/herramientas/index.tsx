@@ -112,7 +112,7 @@ function RouteComponent() {
     return (
       <span
         className={cn(
-          "px-2.5 py-0.5 text-xs font-semibold rounded-full border",
+          "inline-flex items-center whitespace-nowrap px-2.5 py-0.5 text-xs font-semibold rounded-full border",
           styles[estado],
         )}
       >
@@ -255,7 +255,7 @@ function RouteComponent() {
               <Table.Collection items={items}>
                 {(herramienta) => (
                   <Table.Row key={herramienta.id}>
-                    <Table.Cell className="font-mono font-bold text-gray-950">
+                    <Table.Cell className="whitespace-nowrap font-mono font-bold text-gray-950">
                       {herramienta.codigoUnico}
                     </Table.Cell>
                     <Table.Cell className="font-medium">

@@ -3,7 +3,6 @@ import {
   PackageSearch,
   Search,
   XCircle,
-  Link,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Material } from "../types/material";

@@ -13,7 +13,6 @@ interface Props {
 }
 
 export function FormCargoEmpleado({ cargo: cargoInit }: Props) {
-  const isEdit = Boolean(cargoInit?.id);
   const navigate = useNavigate();
 
   const form = useForm({
