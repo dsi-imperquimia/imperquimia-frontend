@@ -58,6 +58,7 @@ export function FormRole({ role: roleInit, permissions = [] }: FormRoleProps) {
           {(field) => (
             <InputField
               label="Nombre"
+              isRequired
               type="text"
               placeholder="Ingresa el nombre"
               value={field.state.value}
@@ -84,6 +85,7 @@ export function FormRole({ role: roleInit, permissions = [] }: FormRoleProps) {
           {(field) => (
             <InputField
               label="Descripción"
+              isRequired
               type="text"
               placeholder="Ingresa la descripción"
               value={field.state.value}
