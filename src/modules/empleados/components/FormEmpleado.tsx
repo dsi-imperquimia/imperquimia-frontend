@@ -107,6 +107,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
           {(field) => (
             <InputField
               label="Nombre completo"
+              isRequired
               type="text"
               placeholder="Ingresa el nombre completo"
               startContent={<User className="size-4 text-muted" />}
@@ -134,6 +135,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
           {(field) => (
             <InputField
               label="DUI"
+              isRequired
               type="text"
               placeholder="Ingresa el DUI"
               value={field.state.value}
@@ -160,6 +162,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
           {(field) => (
             <InputField
               label="NIT"
+              isRequired
               type="text"
               placeholder="Ingresa el NIT"
               value={field.state.value}
@@ -185,7 +188,7 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
         >
           {(field) => (
             <div className="space-y-1">
-              <Label>Cargo de empleado</Label>
+              <Label isRequired>Cargo de empleado</Label>
               <Select
                 aria-label="Cargo de empleado"
                 value={field.state.value ?? null}

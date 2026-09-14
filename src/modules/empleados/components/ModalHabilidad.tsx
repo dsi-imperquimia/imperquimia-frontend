@@ -1,4 +1,4 @@
-import { Button, Input, Modal, TextArea } from "@heroui/react"; // 👈 Regresamos a TextArea con 'A' mayúscula
+import { Button, Input, Label, Modal, TextArea } from "@heroui/react"; // 👈 Regresamos a TextArea con 'A' mayúscula
 import { toast } from "@heroui/react/toast";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -83,8 +83,12 @@ export function ModalHabilidad({ isOpen, onOpenChange, habilidad }: Props) {
                   }}
                 >
                   {(field) => (
-                    <div>
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor="habilidad-nombre" isRequired>
+                        Nombre
+                      </Label>
                       <Input
+                        id="habilidad-nombre"
                         className="w-full"
                         placeholder="Nombre de la Habilidad"
                         type="text"
@@ -103,12 +107,16 @@ export function ModalHabilidad({ isOpen, onOpenChange, habilidad }: Props) {
                 {/* Campo Descripción */}
                 <form.Field name="descripcion">
                   {(field) => (
-                    <TextArea
-                      className="h-32 w-full"
-                      placeholder="Descripción (Opcional)"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)} // 👈 Sincronizado nativamente
-                    />
+                    <div className="flex flex-col gap-1">
+                      <Label htmlFor="habilidad-descripcion">Descripción</Label>
+                      <TextArea
+                        id="habilidad-descripcion"
+                        className="h-32 w-full"
+                        placeholder="Descripción (Opcional)"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)} // 👈 Sincronizado nativamente
+                      />
+                    </div>
                   )}
                 </form.Field>
               </form>
