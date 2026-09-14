@@ -120,7 +120,7 @@ describe("Formulario de empleado y habilidades", () => {
     await waitFor(() => expect(mocks.success).toHaveBeenCalledTimes(1));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["empleados"] });
     expect(mocks.invalidate).toHaveBeenCalled();
-    expect(screen.getByRole("checkbox", { name: "Pintura" }).checked).toBe(
+    expect(screen.getByRole<HTMLInputElement>("checkbox", { name: "Pintura" }).checked).toBe(
       true,
     );
   });
@@ -173,7 +173,7 @@ describe("Formulario de empleado y habilidades", () => {
     expect(await screen.findByText("La habilidad ya no existe.")).toBeTruthy();
     expect(mocks.success).not.toHaveBeenCalled();
     expect(
-      screen.getByRole("checkbox", {
+      screen.getByRole<HTMLInputElement>("checkbox", {
         name: "Impermeabilización",
       }).checked,
     ).toBe(true);
@@ -190,7 +190,7 @@ describe("Formulario de empleado y habilidades", () => {
     ).toBeTruthy();
     expect(screen.getByText("1 habilidad seleccionada")).toBeTruthy();
     expect(
-      screen.getByRole("button", {
+      screen.getByRole<HTMLButtonElement>("button", {
         name: "Quitar todas",
       }).disabled,
     ).toBe(true);
