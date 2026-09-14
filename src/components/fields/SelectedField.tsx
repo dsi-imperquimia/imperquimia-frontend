@@ -22,7 +22,13 @@ export function SelectedField({
   ...rest
 }: SelectedFieldProps<any>) {
   return (
-    <Select placeholder="Selecciona un cargo" variant="secondary" {...rest}>
+    <Select
+      placeholder="Selecciona un cargo"
+      variant="secondary"
+      validationBehavior="aria" // solo marca visual (*); la validación la maneja el formulario
+      isInvalid={!!errorMessage} // FieldError solo se muestra si el campo es inválido
+      {...rest}
+    >
       {label && <Label>{label}</Label>}
       <Select.Trigger className="w-full">
         <Select.Value />
