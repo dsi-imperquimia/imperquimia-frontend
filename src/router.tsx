@@ -13,7 +13,7 @@ export function getRouter() {
     routeTree,
     scrollRestoration: true,
     defaultPreload: "intent",
-    defaultPreloadStaleTime: 0,
+    defaultPreloadStaleTime: 1000 * 60 * 1,
     defaultViewTransition: true,
     // Initial context — root beforeLoad overrides with cookie/store value before any render.
     context: {

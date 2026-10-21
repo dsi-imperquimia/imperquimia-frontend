@@ -13,7 +13,6 @@ interface Props {
 }
 
 export function FormCargoEmpleado({ cargo: cargoInit }: Props) {
-  const isEdit = Boolean(cargoInit?.id);
   const navigate = useNavigate();
 
   const form = useForm({
@@ -54,6 +53,7 @@ export function FormCargoEmpleado({ cargo: cargoInit }: Props) {
           {(field) => (
             <InputField
               label="Nombre"
+              isRequired
               type="text"
               placeholder="Ingresa el nombre del cargo"
               startContent={<Briefcase className="size-4 text-muted" />}

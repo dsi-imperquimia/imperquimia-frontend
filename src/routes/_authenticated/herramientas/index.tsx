@@ -248,7 +248,7 @@ function RouteComponent() {
               <Table.Collection items={items}>
                 {(herramienta) => (
                   <Table.Row key={herramienta.id}>
-                    <Table.Cell className="font-mono font-bold text-gray-950">
+                    <Table.Cell className="whitespace-nowrap font-mono font-bold text-gray-950">
                       {herramienta.codigoUnico}
                     </Table.Cell>
                     <Table.Cell className="font-medium">

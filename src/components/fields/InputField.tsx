@@ -15,6 +15,7 @@ export interface InputFieldProps extends InputGroupInputProps {
   endContent?: ReactNode;
   errorMessage?: ReactNode;
   groupVariant?: InputGroupVariants["variant"];
+  isRequired?: boolean;
 }
 
 export function InputField({
@@ -23,6 +24,7 @@ export function InputField({
   endContent,
   errorMessage,
   groupVariant = "secondary",
+  isRequired,
   id,
   ...inputProps
 }: InputFieldProps) {
@@ -30,7 +32,12 @@ export function InputField({
   const inputId = id ?? generatedId;
 
   return (
-    <TextField className="flex flex-col gap-1" isInvalid={!!errorMessage}>
+    <TextField
+      className="flex flex-col gap-1"
+      isInvalid={!!errorMessage}
+      isRequired={isRequired}
+      validationBehavior="aria" // solo marca visual (*); la validación la maneja el formulario
+    >
       {label && <Label htmlFor={inputId}>{label}</Label>}
       <InputGroup variant={groupVariant}>
         {startContent && <InputGroup.Prefix>{startContent}</InputGroup.Prefix>}

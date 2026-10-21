@@ -138,6 +138,20 @@ export const NAV_ITEMS: NavItem[] = [
     permission: ["COTIZACIONES_READ"],
   },
   {
+    label: "Proyectos",
+    icon: BriefcaseBusiness,
+    to: "/proyectos",
+    children: [
+      { label: "Lista de proyectos", to: "/proyectos" },
+      {
+        label: "Crear proyecto",
+        to: "/proyectos/create",
+        permission: ["PROYECTO_CREATE"],
+      },
+    ],
+    permission: ["PROYECTO_READ"],
+  },
+  {
     label: "Herramientas",
     icon: Wrench,
     to: "/herramientas",

@@ -33,22 +33,6 @@ function fechaLarga(date: string) {
   return `San Salvador, ${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
 }
 
-function getEstadoTexto(estado: CotizacionDetalle["estado"]) {
-  switch (estado) {
-    case "PENDIENTE":
-      return "Pendiente de aprobación";
-
-    case "APROBADA":
-      return "Cotización aprobada";
-
-    case "RECHAZADA":
-      return "Cotización rechazada";
-
-    default:
-      return estado;
-  }
-}
-
 export function CotizacionPrintTemplate({ cotizacion }: Props) {
   return (
     <div className="print-template">

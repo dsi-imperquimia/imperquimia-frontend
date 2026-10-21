@@ -190,9 +190,9 @@ export function CotizacionView({ cotizacion }: Props) {
                   </div>
 
                   <Link
-                    to="/proyectos/$id"
+                    to="/proyectos/$proyectoId"
                     params={{
-                      id: cotizacion.proyecto.id.toString(),
+                      proyectoId: cotizacion.proyecto.id.toString(),
                     }}
                   >
                     <Button size="sm" variant="outline">

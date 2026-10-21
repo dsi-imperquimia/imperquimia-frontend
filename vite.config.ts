@@ -10,6 +10,18 @@ import { nitro } from "nitro/vite";
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
+  // Preoptimizar las dependencias descubiertas al cargar el cliente de Start
+  // evita reemplazar sus chunks durante la primera navegacion.
+  optimizeDeps: {
+    include: [
+      "@tanstack/history",
+      "@tanstack/router-core",
+      "@tanstack/router-core/ssr/client",
+      "@tanstack/router-core/ssr/server",
+      "h3-v2",
+      "seroval",
+    ],
+  },
   plugins: [
     devtools(),
     nitro({ rollupConfig: { external: [/^@sentry\//] } }),
@@ -29,6 +41,7 @@ const config = defineConfig({
     ],
     host: "0.0.0.0",
     port: 3001,
+    strictPort: true,
   },
   preview: {
     allowedHosts: [

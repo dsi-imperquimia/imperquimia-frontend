@@ -1,4 +1,6 @@
-import { Button, Input, Modal, TextArea } from "@heroui/react"; // 👈 Regresamos a TextArea con 'A' mayúscula
+import { InputField } from "@components/fields/InputField";
+import { TextAreaField } from "@components/fields/TextAreaField";
+import { Button, Modal } from "@heroui/react";
 import { toast } from "@heroui/react/toast";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -83,31 +85,38 @@ export function ModalHabilidad({ isOpen, onOpenChange, habilidad }: Props) {
                   }}
                 >
                   {(field) => (
-                    <div>
-                      <Input
-                        className="w-full"
-                        placeholder="Nombre de la Habilidad"
-                        type="text"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)} // 👈 Uso de onChange nativo para evitar conflictos
-                      />
-                      {field.state.meta.errors.length > 0 && (
-                        <span className="text-xs text-red-500 mt-1 block">
-                          {field.state.meta.errors.join(", ")}
-                        </span>
-                      )}
-                    </div>
+                    <InputField
+                      label="Nombre"
+                      isRequired
+                      type="text"
+                      placeholder="Nombre de la habilidad"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      errorMessage={
+                        field.state.meta.errors.length > 0
+                          ? field.state.meta.errors.join(", ")
+                          : undefined
+                      }
+                    />
                   )}
                 </form.Field>
 
                 {/* Campo Descripción */}
                 <form.Field name="descripcion">
                   {(field) => (
-                    <TextArea
-                      className="h-32 w-full"
-                      placeholder="Descripción (Opcional)"
+                    <TextAreaField
+                      label="Descripción"
+                      className="h-32"
+                      placeholder="Descripción (opcional)"
                       value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)} // 👈 Sincronizado nativamente
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      errorMessage={
+                        field.state.meta.errors.length > 0
+                          ? field.state.meta.errors.join(", ")
+                          : undefined
+                      }
                     />
                   )}
                 </form.Field>

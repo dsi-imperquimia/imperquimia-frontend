@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@heroui/react/button";
 import { Plus } from "lucide-react";
 import { AlertDialog as Dialog } from "@heroui/react/alert-dialog";
