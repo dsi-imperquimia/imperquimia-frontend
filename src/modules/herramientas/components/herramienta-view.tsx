@@ -1,6 +1,6 @@
 import { Card } from "@heroui/react";
 import { Button } from "@heroui/react/button";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import {
   ArrowLeft,
   Wrench,
@@ -14,7 +14,6 @@ import {
 import type { Herramienta, EstadoHerramienta } from "../types/herramientas";
 import type { MovimientoHerramienta } from "@modules/movimientosHerramientas/types/movimientos";
 import DialogMovimientoHerramienta from "@modules/movimientosHerramientas/components/DialogMovimientoHerramienta";
-import { useRouter } from "@tanstack/react-router";
 
 // El backend retorna movimientos embebidos en findUnique
 interface HerramientaConMovimientos extends Herramienta {
@@ -44,13 +43,6 @@ const ESTADO_STYLES: Record<EstadoHerramienta, string> = {
   MANTENIMIENTO: "bg-amber-50 text-amber-700 border-amber-200",
   DANADA: "bg-rose-50 text-rose-700 border-rose-200",
   DESECHO: "bg-gray-100 text-gray-600 border-gray-300",
-};
-
-const AREA_ICON: Record<string, string> = {
-  BODEGA: "🏠",
-  PROYECTO: "🚧",
-  TALLER: "🔧",
-  DESECHO: "🗑️",
 };
 
 export function HerramientaView({ herramienta }: Props) {
@@ -142,10 +134,10 @@ export function HerramientaView({ herramienta }: Props) {
               </p>
               {herramienta.proyecto ? (
                 <p className="font-semibold text-blue-700">
-                  🚧 {herramienta.proyecto.nombre}
+                  {herramienta.proyecto.nombre}
                 </p>
               ) : (
-                <p className="text-gray-600">🏠 Bodega General</p>
+                <p className="text-gray-600">Bodega General</p>
               )}
             </div>
           </div>
@@ -185,13 +177,10 @@ export function HerramientaView({ herramienta }: Props) {
                     <div className="bg-gray-50 border border-gray-100 rounded-xl p-3.5 space-y-1.5">
                       <div className="flex items-center justify-between flex-wrap gap-1">
                         <p className="text-sm font-semibold text-gray-900">
-                          {AREA_ICON[mov.origen] ?? "📍"}{" "}
                           <span className="text-gray-500 font-normal">
                             {mov.origen}
                           </span>{" "}
-                          →{" "}
-                          {AREA_ICON[mov.destino] ?? "📍"}{" "}
-                          <span className="text-blue-700">{mov.destino}</span>
+                          → <span className="text-blue-700">{mov.destino}</span>
                           {mov.proyectoDestino && (
                             <span className="text-gray-500 font-normal text-xs ml-1">
                               ({mov.proyectoDestino.nombre})
@@ -201,9 +190,7 @@ export function HerramientaView({ herramienta }: Props) {
 
                         <span
                           className={`px-2 py-0.5 text-xs font-semibold rounded-full border ${
-                            ESTADO_STYLES[
-                              mov.estadoHerramienta as EstadoHerramienta
-                            ] ?? ""
+                            ESTADO_STYLES[mov.estadoHerramienta]
                           }`}
                         >
                           {mov.estadoHerramienta.replace("_", " ")}
@@ -212,14 +199,14 @@ export function HerramientaView({ herramienta }: Props) {
 
                       <div className="flex items-center gap-4 text-xs text-gray-500 flex-wrap">
                         <span>
-                          👤 {mov.usuario.name} {mov.usuario.lastName}
+                          {mov.usuario.name} {mov.usuario.lastName}
                         </span>
-                        <span>🕐 {formatDate(mov.fechaMovimiento)}</span>
+                        <span>{formatDate(mov.fechaMovimiento)}</span>
                       </div>
 
                       {mov.observaciones && (
                         <p className="text-xs text-gray-600 bg-white border border-gray-100 rounded-lg px-3 py-2 mt-1">
-                          📝 {mov.observaciones}
+                          {mov.observaciones}
                         </p>
                       )}
                     </div>

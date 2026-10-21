@@ -19,22 +19,16 @@ export const Route = createFileRoute("/_authenticated/herramientas/")({
   component: RouteComponent,
 });
 
-// Helper para formatear las etiquetas con la ortografía correcta (Ñ) y sus símbolos correspondientes
-const getEstadoLabelWithIcon = (estado: EstadoHerramienta | "ACTIVOS") => {
-  const map: Record<
-    EstadoHerramienta | "ACTIVOS",
-    { texto: string; icono: string }
-  > = {
-    ACTIVOS: { texto: "VER TODOS", icono: "✨" },
-    [EstadoHerramienta.DISPONIBLE]: { texto: "DISPONIBLE", icono: "🟢" },
-    [EstadoHerramienta.EN_PROYECTO]: { texto: "EN PROYECTO", icono: "🚧" },
-    [EstadoHerramienta.MANTENIMIENTO]: { texto: "MANTENIMIENTO", icono: "🔧" },
-    [EstadoHerramienta.DANADA]: { texto: "DAÑADA", icono: "🚨" },
-    [EstadoHerramienta.DESECHO]: { texto: "DESECHO", icono: "🗑️" },
+const getEstadoLabel = (estado: EstadoHerramienta | "ACTIVOS") => {
+  const labels: Record<EstadoHerramienta | "ACTIVOS", string> = {
+    ACTIVOS: "VER TODOS",
+    [EstadoHerramienta.DISPONIBLE]: "DISPONIBLE",
+    [EstadoHerramienta.EN_PROYECTO]: "EN PROYECTO",
+    [EstadoHerramienta.MANTENIMIENTO]: "MANTENIMIENTO",
+    [EstadoHerramienta.DANADA]: "DAÑADA",
+    [EstadoHerramienta.DESECHO]: "DESECHO",
   };
-
-  const item = map[estado];
-  return `${item.icono} ${item.texto}`;
+  return labels[estado];
 };
 
 function RouteComponent() {
@@ -112,7 +106,7 @@ function RouteComponent() {
     return (
       <span
         className={cn(
-          "px-2.5 py-0.5 text-xs font-semibold rounded-full border",
+          "inline-flex w-max items-center whitespace-nowrap px-2.5 py-0.5 text-xs font-semibold rounded-full border",
           styles[estado],
         )}
       >
@@ -171,17 +165,16 @@ function RouteComponent() {
             </Select.Trigger>
             <Select.Popover>
               <ListBox>
-                {/* REQUERIMIENTO: Opción explícita formateada con íconos para excluir desecho */}
                 <ListBox.Item
                   key="ACTIVOS"
                   id="ACTIVOS"
                   textValue="Ver todos (Excepto Desecho)"
                 >
-                  {getEstadoLabelWithIcon("ACTIVOS")}
+                  {getEstadoLabel("ACTIVOS")}
                 </ListBox.Item>
                 {Object.values(EstadoHerramienta).map((estado) => (
                   <ListBox.Item key={estado} id={estado} textValue={estado}>
-                    {getEstadoLabelWithIcon(estado)}
+                    {getEstadoLabel(estado)}
                   </ListBox.Item>
                 ))}
               </ListBox>
@@ -221,7 +214,7 @@ function RouteComponent() {
                       id={String(p.id)}
                       textValue={p.nombre}
                     >
-                      🚧 {p.nombre}
+                      {p.nombre}
                     </ListBox.Item>
                   ))}
                 </ListBox>
@@ -265,16 +258,16 @@ function RouteComponent() {
                     <Table.Cell className="text-gray-500">
                       {herramienta.tipo}
                     </Table.Cell>
-                    <Table.Cell>
+                    <Table.Cell className="whitespace-nowrap">
                       {getEstadoBadge(herramienta.estado)}
                     </Table.Cell>
                     <Table.Cell>
                       {herramienta.proyecto ? (
                         <span className="text-blue-700 font-semibold">
-                          🚧 {herramienta.proyecto.nombre}
+                          {herramienta.proyecto.nombre}
                         </span>
                       ) : (
-                        <span className="text-gray-500">🏠 Bodega General</span>
+                        <span className="text-gray-500">Bodega General</span>
                       )}
                     </Table.Cell>
                     <Table.Cell>

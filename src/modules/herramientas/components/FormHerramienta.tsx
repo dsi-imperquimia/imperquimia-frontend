@@ -2,12 +2,14 @@ import React from "react";
 import { useForm } from "@tanstack/react-form";
 import { Button } from "@heroui/react/button";
 import { toast } from "@heroui/react/toast";
-import { Wrench, Tag, Layers } from "lucide-react";
+import { Wrench } from "lucide-react";
 
 import { InputField } from "@components/fields/InputField";
 import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import { createHerramienta } from "../api/createHerramienta";
 import type { Herramienta } from "../types/herramientas";
+import { SelectorTipoHerramienta } from "./SelectorTipoHerramienta";
+import { SelectorMarcaHerramienta } from "./SelectorMarcaHerramienta";
 
 interface Props {
   onSuccess?: (herramienta: Herramienta) => void;
@@ -17,19 +19,21 @@ export function FormHerramienta({ onSuccess }: Props) {
   const form = useForm({
     defaultValues: {
       nombre: "",
-      marca: "",
-      tipo: "",
+      marcaId: 0,
+      tipoId: 0,
     },
     onSubmit: async ({ value, formApi }) => {
       const nuevaHerramienta = await createHerramienta(value).catch((error) => {
         formApi.setErrorMap(
-          parseErrorApiUseForm(error, "Error al dar de alta la herramienta")
+          parseErrorApiUseForm(error, "Error al dar de alta la herramienta"),
         );
       });
 
       if (!nuevaHerramienta) return;
 
-      toast.success(`Herramienta "${nuevaHerramienta.nombre}" registrada con código ${nuevaHerramienta.codigoUnico}`);
+      toast.success(
+        `Herramienta "${nuevaHerramienta.nombre}" registrada con código ${nuevaHerramienta.codigoUnico}`,
+      );
       onSuccess?.(nuevaHerramienta);
     },
   });
@@ -72,19 +76,16 @@ export function FormHerramienta({ onSuccess }: Props) {
         </form.Field>
 
         <form.Field
-          name="marca"
+          name="marcaId"
           validators={{
-            onChange: ({ value }) => (!value ? "La marca es requerida" : undefined),
+            onChange: ({ value }) =>
+              !value ? "Selecciona una marca" : undefined,
           }}
         >
           {(field) => (
-            <InputField
-              label="Marca"
-              type="text"
-              placeholder="Ej. DeWalt, Bosch, Makita"
-              startContent={<Tag className="size-4 text-muted" />}
+            <SelectorMarcaHerramienta
               value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
+              onChange={field.handleChange}
               onBlur={field.handleBlur}
               errorMessage={
                 field.state.meta.errors.length > 0
@@ -96,19 +97,16 @@ export function FormHerramienta({ onSuccess }: Props) {
         </form.Field>
 
         <form.Field
-          name="tipo"
+          name="tipoId"
           validators={{
-            onChange: ({ value }) => (!value ? "El tipo o clasificación es requerido" : undefined),
+            onChange: ({ value }) =>
+              !value ? "El tipo es requerido" : undefined,
           }}
         >
           {(field) => (
-            <InputField
-              label="Tipo de Herramienta"
-              type="text"
-              placeholder="Ej. Eléctrica, Neumática, Manual"
-              startContent={<Layers className="size-4 text-muted" />}
+            <SelectorTipoHerramienta
               value={field.state.value}
-              onChange={(e) => field.handleChange(e.target.value)}
+              onChange={field.handleChange}
               onBlur={field.handleBlur}
               errorMessage={
                 field.state.meta.errors.length > 0
@@ -128,7 +126,11 @@ export function FormHerramienta({ onSuccess }: Props) {
         })}
       >
         {({ canSubmit, isSubmitting, errorMap }) => {
-          const error = errorMap.onSubmit || errorMap.onServer;
+          const serverErrors = errorMap as {
+            onSubmit?: string;
+            onServer?: string;
+          };
+          const error = serverErrors.onSubmit || serverErrors.onServer;
           return (
             <>
               {error && (

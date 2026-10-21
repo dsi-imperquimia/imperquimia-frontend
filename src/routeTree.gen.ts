@@ -23,6 +23,8 @@ import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_
 import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
 import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
 import { Route as AuthenticatedHerramientasIndexRouteImport } from './routes/_authenticated/herramientas/index'
+import { Route as AuthenticatedHerramientasMarcasRouteImport } from './routes/_authenticated/herramientas/marcas'
+import { Route as AuthenticatedHerramientasTiposRouteImport } from './routes/_authenticated/herramientas/tipos'
 import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
@@ -115,6 +117,18 @@ const AuthenticatedHerramientasIndexRoute =
     path: '/herramientas/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedHerramientasMarcasRoute =
+  AuthenticatedHerramientasMarcasRouteImport.update({
+    id: '/herramientas/marcas',
+    path: '/herramientas/marcas',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedHerramientasTiposRoute =
+  AuthenticatedHerramientasTiposRouteImport.update({
+    id: '/herramientas/tipos',
+    path: '/herramientas/tipos',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMaterialesIndexRoute =
   AuthenticatedMaterialesIndexRouteImport.update({
     id: '/materiales/',
@@ -197,6 +211,8 @@ export interface FileRoutesByFullPath {
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
+  '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
+  '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
@@ -224,6 +240,8 @@ export interface FileRoutesByTo {
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
+  '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
+  '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
@@ -253,6 +271,8 @@ export interface FileRoutesById {
   '/_authenticated/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
   '/_authenticated/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/_authenticated/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
+  '/_authenticated/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
+  '/_authenticated/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/_authenticated/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/users/create': typeof AuthenticatedUsersCreateRoute
@@ -282,6 +302,8 @@ export interface FileRouteTypes {
     | '/empleados/$empleadoId'
     | '/empleados/create'
     | '/empleados/habilidades'
+    | '/herramientas/marcas'
+    | '/herramientas/tipos'
     | '/materiales/gestion'
     | '/users/$userId'
     | '/users/create'
@@ -309,6 +331,8 @@ export interface FileRouteTypes {
     | '/empleados/$empleadoId'
     | '/empleados/create'
     | '/empleados/habilidades'
+    | '/herramientas/marcas'
+    | '/herramientas/tipos'
     | '/materiales/gestion'
     | '/users/$userId'
     | '/users/create'
@@ -337,6 +361,8 @@ export interface FileRouteTypes {
     | '/_authenticated/empleados/$empleadoId'
     | '/_authenticated/empleados/create'
     | '/_authenticated/empleados/habilidades'
+    | '/_authenticated/herramientas/marcas'
+    | '/_authenticated/herramientas/tipos'
     | '/_authenticated/materiales/gestion'
     | '/_authenticated/users/$userId'
     | '/_authenticated/users/create'
@@ -460,6 +486,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHerramientasIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/herramientas/marcas': {
+      id: '/_authenticated/herramientas/marcas'
+      path: '/herramientas/marcas'
+      fullPath: '/herramientas/marcas'
+      preLoaderRoute: typeof AuthenticatedHerramientasMarcasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/herramientas/tipos': {
+      id: '/_authenticated/herramientas/tipos'
+      path: '/herramientas/tipos'
+      fullPath: '/herramientas/tipos'
+      preLoaderRoute: typeof AuthenticatedHerramientasTiposRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/materiales/': {
       id: '/_authenticated/materiales/'
       path: '/materiales'
@@ -556,6 +596,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEmpleadosEmpleadoIdRoute: typeof AuthenticatedEmpleadosEmpleadoIdRoute
   AuthenticatedEmpleadosCreateRoute: typeof AuthenticatedEmpleadosCreateRoute
   AuthenticatedEmpleadosHabilidadesRoute: typeof AuthenticatedEmpleadosHabilidadesRoute
+  AuthenticatedHerramientasMarcasRoute: typeof AuthenticatedHerramientasMarcasRoute
+  AuthenticatedHerramientasTiposRoute: typeof AuthenticatedHerramientasTiposRoute
   AuthenticatedMaterialesGestionRoute: typeof AuthenticatedMaterialesGestionRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedUsersCreateRoute: typeof AuthenticatedUsersCreateRoute
@@ -585,6 +627,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEmpleadosCreateRoute: AuthenticatedEmpleadosCreateRoute,
   AuthenticatedEmpleadosHabilidadesRoute:
     AuthenticatedEmpleadosHabilidadesRoute,
+  AuthenticatedHerramientasMarcasRoute: AuthenticatedHerramientasMarcasRoute,
+  AuthenticatedHerramientasTiposRoute: AuthenticatedHerramientasTiposRoute,
   AuthenticatedMaterialesGestionRoute: AuthenticatedMaterialesGestionRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedUsersCreateRoute: AuthenticatedUsersCreateRoute,
