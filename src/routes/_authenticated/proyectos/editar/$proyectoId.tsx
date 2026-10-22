@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { FormProyecto } from "@modules/proyectos/components/FormProyecto";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
+
 export const Route = createFileRoute(
   "/_authenticated/proyectos/editar/$proyectoId",
 )({ component: Editar });
@@ -17,13 +18,16 @@ function Editar() {
   });
   if (!valido) return <p role="alert">Identificador inválido.</p>;
   if (isPending) return <p role="status">Cargando proyecto…</p>;
-  if (isError || !data)
+  if (isError)
     return (
       <div role="alert">
         No se pudo cargar el proyecto.{" "}
         <button onClick={() => refetch()}>Reintentar</button>
       </div>
     );
+  if (data.estado === "CANCELADO") {
+    return <p role="alert">No se puede editar un proyecto cancelado.</p>;
+  }
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Editar proyecto</h1>

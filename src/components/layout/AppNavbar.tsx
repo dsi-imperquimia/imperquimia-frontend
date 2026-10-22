@@ -14,8 +14,25 @@ interface Crumb {
   to?: string;
 }
 
+const PAGE_LABELS: Record<string, string> = {
+  "/users/create": "Crear usuario",
+  "/users/roles/create": "Crear rol",
+  "/empleados/create": "Crear empleado",
+  "/cargo-empleado/create": "Crear cargo",
+  "/cotizaciones/create": "Crear cotización",
+  "/proyectos/create": "Crear proyecto",
+  "/materiales/gestion": "Gestionar materiales",
+};
+
 function findCrumbs(pathname: string): Crumb[] | null {
   if (pathname === "/") return [{ label: "Dashboard", to: "/", icon: Home }];
+
+  const pageLabel = PAGE_LABELS[pathname];
+  if (pageLabel) {
+    const parentPath = pathname.slice(0, pathname.lastIndexOf("/"));
+    const parentCrumbs = findCrumbs(parentPath);
+    if (parentCrumbs) return [...parentCrumbs, { label: pageLabel }];
+  }
 
   for (const item of NAV_ITEMS) {
     if (item.to === pathname) {
