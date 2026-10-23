@@ -69,17 +69,13 @@ export function FormEmpleado({ empleado: empleadoInit }: Props) {
         return;
       }
 
-      // El loader se refresca después; sus valores anteriores no deben sobrescribir
-      // la respuesta guardada durante ese intervalo.
+      // Usa la respuesta guardada antes de navegar o refrescar la vista.
       formApi.reset(formValues(empleado), { keepDefaultValues: true });
       toast.success("Empleado guardado correctamente");
       void queryClient.invalidateQueries({ queryKey: ["empleados"] });
 
       if (empleadoInit?.id === undefined) {
-        void navigate({
-          to: "/empleados/$empleadoId",
-          params: { empleadoId: empleado.id },
-        });
+        void navigate({ to: "/empleados" });
       } else {
         void router.invalidate();
       }

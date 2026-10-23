@@ -120,9 +120,10 @@ describe("Formulario de empleado y habilidades", () => {
     await waitFor(() => expect(mocks.success).toHaveBeenCalledTimes(1));
     expect(invalidate).toHaveBeenCalledWith({ queryKey: ["empleados"] });
     expect(mocks.invalidate).toHaveBeenCalled();
-    expect(screen.getByRole<HTMLInputElement>("checkbox", { name: "Pintura" }).checked).toBe(
-      true,
-    );
+    expect(
+      screen.getByRole<HTMLInputElement>("checkbox", { name: "Pintura" })
+        .checked,
+    ).toBe(true);
   });
 
   it("envía una lista vacía cuando se quitan todas", async () => {
@@ -151,11 +152,46 @@ describe("Formulario de empleado y habilidades", () => {
     );
     await waitFor(() =>
       expect(mocks.navigate).toHaveBeenCalledWith({
-        to: "/empleados/$empleadoId",
-        params: { empleadoId: 41 },
+        to: "/empleados",
       }),
     );
   });
+
+  it.each(["dui", "nit"] as const)(
+    "muestra el %s duplicado y conserva los datos ingresados",
+    async (field) => {
+      const message = `El ${field.toUpperCase()} ya está registrado.`;
+      mocks.post.mockRejectedValueOnce(
+        new AxiosError("Conflict", "409", undefined, undefined, {
+          data: { message: { [field]: [message] } },
+          status: 409,
+          statusText: "Conflict",
+          headers: {},
+          config: {} as never,
+        }),
+      );
+
+      mount({ ...empleado, id: undefined, habilidades: [] });
+      const nombre = screen.getByRole<HTMLInputElement>("textbox", {
+        name: "Nombre completo",
+      });
+      const dui = screen.getByRole<HTMLInputElement>("textbox", {
+        name: "DUI",
+      });
+      const nit = screen.getByRole<HTMLInputElement>("textbox", {
+        name: "NIT",
+      });
+      fireEvent.change(nombre, { target: { value: "Nombre ingresado" } });
+      fireEvent.click(screen.getByRole("button", { name: "Guardar empleado" }));
+
+      expect(await screen.findByText(message)).toBeTruthy();
+      expect(nombre.value).toBe("Nombre ingresado");
+      expect(dui.value).toBe(empleado.dui);
+      expect(nit.value).toBe(empleado.nit);
+      expect(mocks.navigate).not.toHaveBeenCalled();
+      expect(mocks.success).not.toHaveBeenCalled();
+    },
+  );
 
   it("muestra errores del servidor sin anunciar éxito ni perder la selección", async () => {
     mocks.patch.mockRejectedValueOnce(
