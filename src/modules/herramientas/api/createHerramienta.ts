@@ -3,8 +3,8 @@ import type { Herramienta } from "../types/herramientas";
 
 export interface CreateHerramientaInput {
   nombre: string;
-  marca: string;
-  tipo: string;
+  marcaId: number;
+  tipoId: number;
   proyectoId?: number; 
 }
 

@@ -13,7 +13,9 @@ export interface Herramienta {
   codigoUnico: string;
   nombre: string;
   marca: string;
+  marcaId: number;
   tipo: string;
+  tipoId: number;
   estado: EstadoHerramienta;
   proyectoId: number | null;
   proyecto?: Proyecto | null;
@@ -21,6 +23,6 @@ export interface Herramienta {
 
 export interface CreateHerramientaInput {
   nombre: string;
-  marca: string;
-  tipo: string;
+  marcaId: number;
+  tipoId: number;
 }
