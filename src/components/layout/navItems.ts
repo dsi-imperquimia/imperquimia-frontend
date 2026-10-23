@@ -155,8 +155,28 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Herramientas",
     icon: Wrench,
     to: "/herramientas",
-    children: [{ label: "Lista de herramientas", to: "/herramientas" }],
-    permission: ["HERRAMIENTA_READ"],
+    children: [
+      {
+        label: "Lista de herramientas",
+        to: "/herramientas",
+        permission: ["HERRAMIENTA_READ"],
+      },
+      {
+        label: "Tipos de herramientas",
+        to: "/herramientas/tipos",
+        permission: ["HERRAMIENTA_CREATE", "HERRAMIENTA_UPDATE"],
+      },
+      {
+        label: "Marcas de herramientas",
+        to: "/herramientas/marcas",
+        permission: ["HERRAMIENTA_CREATE", "HERRAMIENTA_UPDATE"],
+      },
+    ],
+    permission: [
+      "HERRAMIENTA_READ",
+      "HERRAMIENTA_CREATE",
+      "HERRAMIENTA_UPDATE",
+    ],
   },
   {
     label: "Materiales",

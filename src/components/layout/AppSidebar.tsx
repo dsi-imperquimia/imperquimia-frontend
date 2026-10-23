@@ -109,7 +109,6 @@ function CollapsibleItem({
       {open && (
         <div className="ml-5 mt-0.5 space-y-0.5 border-l border-gray-300 pl-2">
           {item.children!.map((sub) => {
-            console.log(sub.permission);
             if (!userActions.hasAnyPermission(sub.permission ?? [])) {
               return null;
             }

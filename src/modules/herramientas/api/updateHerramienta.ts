@@ -3,8 +3,8 @@ import type { Herramienta } from "../types/herramientas";
 
 export interface UpdateHerramientaInput {
   nombre?: string;
-  marca?: string;
-  tipo?: string;
+  marcaId?: number;
+  tipoId?: number;
 }
 
 export async function updateHerramienta(id: number, payload: UpdateHerramientaInput) {
