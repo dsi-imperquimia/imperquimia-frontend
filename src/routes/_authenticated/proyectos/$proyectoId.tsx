@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
 import { dinero, fecha } from "@modules/proyectos/types/proyectos";
-import { DialogDeleteProyecto } from "@modules/proyectos/components/DialogDeleteProyecto";
+import { DialogCancelarProyecto } from "@modules/proyectos/components/DialogCancelarProyecto";
 import { userActions } from "@modules/auth/store/authStore";
 
 export const Route = createFileRoute("/_authenticated/proyectos/$proyectoId")({
@@ -26,7 +26,7 @@ function Detalle() {
   });
   if (!valido) return <p role="alert">Identificador de proyecto inválido.</p>;
   if (isPending) return <p role="status">Cargando proyecto…</p>;
-  if (isError || !p)
+  if (isError)
     return (
       <div role="alert">
         No se pudo cargar el proyecto. Puede que ya no esté disponible.{" "}
@@ -50,18 +50,20 @@ function Detalle() {
       </div>
       <section className="rounded-xl border border-gray-200 bg-white p-6">
         <div className="mb-4 flex gap-3">
-          {userActions.hasPermission("PROYECTO_UPDATE") && (
-            <Link
-              className="rounded-lg border border-gray-300 px-4 py-2"
-              to="/proyectos/editar/$proyectoId"
-              params={{ proyectoId }}
-            >
-              Editar proyecto
-            </Link>
-          )}
-          {userActions.hasPermission("PROYECTO_DELETE") && (
-            <DialogDeleteProyecto proyecto={p} />
-          )}
+          {p.estado !== "CANCELADO" &&
+            userActions.hasPermission("PROYECTO_UPDATE") && (
+              <Link
+                className="rounded-lg border border-gray-300 px-4 py-2"
+                to="/proyectos/editar/$proyectoId"
+                params={{ proyectoId }}
+              >
+                Editar proyecto
+              </Link>
+            )}
+          {p.estado !== "CANCELADO" &&
+            userActions.hasPermission("PROYECTO_DELETE") && (
+              <DialogCancelarProyecto proyecto={p} />
+            )}
         </div>
         <h2 className="mb-4 text-lg font-semibold">Información del proyecto</h2>
         <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -1,6 +1,7 @@
 import { http } from "@lib/http";
 import type { Proyecto } from "../types/proyectos";
 import { isAxiosError } from "axios";
+
 export interface DatosProyecto {
   nombre: string;
   cliente: string;
@@ -10,10 +11,11 @@ export interface DatosProyecto {
   email: string;
   fechaInicio: string;
   fechaFin: string;
+  detalles: { materialId: number; cantidad: number }[];
 }
 
 export interface ErroresProyecto {
-  campos: Partial<Record<keyof DatosProyecto, string>>;
+  campos: Record<string, string>;
   general?: string;
 }
 
@@ -23,9 +25,19 @@ export async function guardarProyecto(datos: DatosProyecto, id?: number) {
     : await http.post<Proyecto>("/proyectos", datos);
   return data;
 }
-export async function eliminarProyecto(id: number) {
-  await http.delete(`/proyectos/${id}`);
+export async function cancelarProyecto(id: number) {
+  await http.patch(`/proyectos/${id}/cancelar`);
 }
+
+export function errorCancelarProyecto(error: unknown) {
+  const mensaje: unknown = isAxiosError(error)
+    ? error.response?.data?.message
+    : null;
+  return typeof mensaje === "string"
+    ? mensaje
+    : "No se pudo cancelar el proyecto. Inténtalo de nuevo.";
+}
+
 export function errorProyecto(error: unknown) {
   const mensaje: unknown = isAxiosError(error)
     ? error.response?.data?.message
@@ -34,6 +46,10 @@ export function errorProyecto(error: unknown) {
   const campos: ErroresProyecto["campos"] = {};
 
   if (mensaje && typeof mensaje === "object" && !Array.isArray(mensaje)) {
+    const errores = mensaje as Record<string, unknown>;
+    const tieneFilas = Object.keys(errores).some((campo) =>
+      /^detalles\.\d+\.(materialId|cantidad)$/.test(campo),
+    );
     const mensajesPorCampo: Partial<Record<keyof DatosProyecto, string>> = {
       nombre: "Ingresa el nombre del proyecto.",
       cliente: "Ingresa el nombre del cliente.",
@@ -41,9 +57,20 @@ export function errorProyecto(error: unknown) {
       fechaInicio: "Ingresa una fecha de inicio válida en formato AAAA-MM-DD.",
       fechaFin:
         "Ingresa una fecha de fin válida en formato AAAA-MM-DD y que no sea anterior al inicio.",
+      detalles: "Revisa los materiales y sus cantidades.",
     };
 
-    for (const campo of Object.keys(mensaje)) {
+    for (const [campo, valor] of Object.entries(errores)) {
+      if (/^detalles\.\d+\.(materialId|cantidad)$/.test(campo)) {
+        campos[campo] = Array.isArray(valor)
+          ? valor.map(String).join(" · ")
+          : String(valor);
+        continue;
+      }
+      if (campo === "materialId" || campo === "cantidad") {
+        if (!tieneFilas) campos.detalles = "Revisa los materiales y sus cantidades.";
+        continue;
+      }
       const campoTipado = campo as keyof DatosProyecto;
       const mensajeCampo = mensajesPorCampo[campoTipado];
       if (mensajeCampo) {

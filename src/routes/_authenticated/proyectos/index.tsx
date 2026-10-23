@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/proyectos/")({
 });
 function Proyectos() {
   const [busqueda, setBusqueda] = useState("");
-  const [estado, setEstado] = useState("");
+  const [estado, setEstado] = useState("ACTIVO");
   const {
     data = [],
     isPending,
@@ -69,11 +69,13 @@ function Proyectos() {
             onChange={(e) => setEstado(e.target.value)}
           >
             <option value="">Todos</option>
-            {["ACTIVO", "FINALIZADO", "PAGADO", "GARANTIA"].map((e) => (
-              <option key={e} value={e}>
-                {e === "GARANTIA" ? "GARANTÍA" : e}
-              </option>
-            ))}
+            {["ACTIVO", "FINALIZADO", "PAGADO", "GARANTIA", "CANCELADO"].map(
+              (e) => (
+                <option key={e} value={e}>
+                  {e === "GARANTIA" ? "GARANTÍA" : e}
+                </option>
+              ),
+            )}
           </select>
         </label>
       </div>

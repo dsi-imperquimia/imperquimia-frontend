@@ -4,26 +4,28 @@ import { toast } from "@heroui/react/toast";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { eliminarProyecto, errorProyecto } from "../api/guardarProyecto";
+import { cancelarProyecto, errorCancelarProyecto } from "../api/guardarProyecto";
 import type { Proyecto } from "../types/proyectos";
-export function DialogDeleteProyecto({ proyecto }: { proyecto: Proyecto }) {
+
+export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const client = useQueryClient();
   return (
     <AlertDialog>
-      <Button variant="danger">Eliminar</Button>
+      <Button variant="danger">Cancelar proyecto</Button>
       <AlertDialog.Backdrop>
         <AlertDialog.Container>
           <AlertDialog.Dialog>
             <AlertDialog.Header>
-              <AlertDialog.Heading>Eliminar proyecto</AlertDialog.Heading>
+              <AlertDialog.Heading>Cancelar proyecto</AlertDialog.Heading>
             </AlertDialog.Header>
             <AlertDialog.Body>
               <p>
-                ¿Eliminar «{proyecto.nombre}» del listado? No se permite
-                eliminarlo si tiene herramientas o empleados asignados.
+                ¿Cancelar «{proyecto.nombre}»? Permanecerá en el listado para
+                consulta. Antes debes retirar sus herramientas y empleados
+                asignados.
               </p>
               {error && (
                 <p role="alert" className="mt-3 text-red-700">
@@ -33,7 +35,7 @@ export function DialogDeleteProyecto({ proyecto }: { proyecto: Proyecto }) {
             </AlertDialog.Body>
             <AlertDialog.Footer>
               <Button slot="close" variant="tertiary" isDisabled={pending}>
-                Cancelar
+                Volver
               </Button>
               <Button
                 variant="danger"
@@ -43,21 +45,21 @@ export function DialogDeleteProyecto({ proyecto }: { proyecto: Proyecto }) {
                   setPending(true);
                   setError("");
                   try {
-                    await eliminarProyecto(proyecto.id);
+                    await cancelarProyecto(proyecto.id);
                     await client.invalidateQueries({ queryKey: ["proyectos"] });
                     await client.invalidateQueries({
                       queryKey: ["proyectos-filter"],
                     });
-                    toast.success("Proyecto eliminado");
+                    toast.success("Proyecto cancelado");
                     await navigate({ to: "/proyectos" });
                   } catch (e) {
-                    setError(errorProyecto(e));
+                    setError(errorCancelarProyecto(e));
                   } finally {
                     setPending(false);
                   }
                 }}
               >
-                Eliminar proyecto
+                Confirmar cancelación
               </Button>
             </AlertDialog.Footer>
           </AlertDialog.Dialog>
