@@ -34,7 +34,10 @@ const claveDetalle = (index: number, campo: CampoDetalle) =>
 function etiquetaDetalle(clave: string) {
   const match = /^detalles\.(\d+)\.(materialId|cantidad)$/.exec(clave);
   if (!match) return clave;
-  return `${match[2] === "materialId" ? "Material" : "Cantidad"} ${Number(match[1]) + 1}`;
+  const numeroMaterial = Number(match[1]) + 1;
+  return match[2] === "materialId"
+    ? `Material ${numeroMaterial}`
+    : `Cantidad del material ${numeroMaterial}`;
 }
 
 export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
@@ -458,7 +461,8 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
                 </label>
                 <div data-campo={claveDetalle(index, "cantidad")}>
                   <InputField
-                    label={`Cantidad ${index + 1}`}
+                    label="Cantidad"
+                    aria-label={`Cantidad del material ${index + 1}`}
                     type="number"
                     min="0.01"
                     step="0.01"

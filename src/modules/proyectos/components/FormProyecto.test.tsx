@@ -91,7 +91,7 @@ describe("Materiales de proyectos", () => {
     fireEvent.change(screen.getByLabelText("Material 1"), {
       target: { value: "1" },
     });
-    fireEvent.change(screen.getByLabelText("Cantidad 1"), {
+    fireEvent.change(screen.getByLabelText("Cantidad del material 1"), {
       target: { value: "2" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Guardar proyecto" }));
@@ -123,14 +123,14 @@ describe("Materiales de proyectos", () => {
     fireEvent.change(screen.getByLabelText("Material 1"), {
       target: { value: "1" },
     });
-    fireEvent.change(screen.getByLabelText("Cantidad 1"), {
+    fireEvent.change(screen.getByLabelText("Cantidad del material 1"), {
       target: { value: "0" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Guardar proyecto" }));
     expect(mocks.guardar).not.toHaveBeenCalled();
     expect(
       screen.getByRole("button", {
-        name: /Cantidad 1: Ingresa una cantidad mayor que cero/,
+        name: /Cantidad del material 1: Ingresa una cantidad mayor que cero/,
       }),
     ).toBeTruthy();
   });
@@ -151,16 +151,18 @@ describe("Materiales de proyectos", () => {
     fireEvent.change(screen.getByLabelText("Material 2"), {
       target: { value: "2" },
     });
-    fireEvent.change(screen.getByLabelText("Cantidad 2"), {
+    fireEvent.change(screen.getByLabelText("Cantidad del material 2"), {
       target: { value: "0" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Guardar proyecto" }));
     expect(mocks.guardar).not.toHaveBeenCalled();
     const aviso = screen.getByRole("button", {
-      name: /Cantidad 2: Ingresa una cantidad mayor que cero/,
+      name: /Cantidad del material 2: Ingresa una cantidad mayor que cero/,
     });
     fireEvent.click(aviso);
-    expect(document.activeElement).toBe(screen.getByLabelText("Cantidad 2"));
+    expect(document.activeElement).toBe(
+      screen.getByLabelText("Cantidad del material 2"),
+    );
   });
 
   it("permite quitar un material existente al editar", async () => {

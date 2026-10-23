@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/proyectos/")({
 });
 function Proyectos() {
   const [busqueda, setBusqueda] = useState("");
-  const [estado, setEstado] = useState("");
+  const [estado, setEstado] = useState("ACTIVO");
   const {
     data = [],
     isPending,
