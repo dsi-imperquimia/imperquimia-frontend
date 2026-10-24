@@ -1,4 +1,5 @@
-export type EstadoProyecto = "ACTIVO" | "FINALIZADO" | "PAGADO" | "GARANTIA";
+export type EstadoProyecto =
+  "ACTIVO" | "FINALIZADO" | "PAGADO" | "GARANTIA" | "CANCELADO";
 export interface Proyecto {
   id: number;
   nombre: string;

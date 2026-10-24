@@ -4,7 +4,6 @@ import {
   Layers,
   LayoutDashboard,
   ShieldUser,
-  UserPlus,
   Users,
   Wrench,
 } from "lucide-react";
@@ -40,12 +39,6 @@ export const NAV_ITEMS: NavItem[] = [
         permission: ["USER_READ"],
       },
       {
-        label: "Crear usuario",
-        to: "/users/create",
-        icon: UserPlus,
-        permission: ["USER_CREATE"],
-      },
-      {
         label: "Roles",
         to: "/users/roles",
         icon: ShieldUser,
@@ -65,19 +58,9 @@ export const NAV_ITEMS: NavItem[] = [
         permission: ["EMPLEADO_READ"],
       },
       {
-        label: "Crear empleado",
-        to: "/empleados/create",
-        permission: ["EMPLEADO_CREATE"],
-      },
-      {
         label: "Lista de cargos",
         to: "/cargo-empleado",
         permission: ["CARGO_EMPLEADO_READ"],
-      },
-      {
-        label: "Crear cargo",
-        to: "/cargo-empleado/create",
-        permission: ["CARGO_EMPLEADO_CREATE"],
       },
       {
         label: "Catálogo Habilidades",
@@ -129,11 +112,6 @@ export const NAV_ITEMS: NavItem[] = [
         to: "/cotizaciones",
         permission: ["COTIZACIONES_READ"],
       },
-      {
-        label: "Crear cotización",
-        to: "/cotizaciones/create",
-        permission: ["COTIZACIONES_CREATE"],
-      },
     ],
     permission: ["COTIZACIONES_READ"],
   },
@@ -141,30 +119,40 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Proyectos",
     icon: BriefcaseBusiness,
     to: "/proyectos",
-    children: [
-      { label: "Lista de proyectos", to: "/proyectos" },
-      {
-        label: "Crear proyecto",
-        to: "/proyectos/create",
-        permission: ["PROYECTO_CREATE"],
-      },
-    ],
+    children: [{ label: "Lista de proyectos", to: "/proyectos" }],
     permission: ["PROYECTO_READ"],
   },
   {
     label: "Herramientas",
     icon: Wrench,
     to: "/herramientas",
-    children: [{ label: "Lista de herramientas", to: "/herramientas" }],
-    permission: ["HERRAMIENTA_READ"],
+    children: [
+      {
+        label: "Lista de herramientas",
+        to: "/herramientas",
+        permission: ["HERRAMIENTA_READ"],
+      },
+      {
+        label: "Tipos de herramientas",
+        to: "/herramientas/tipos",
+        permission: ["HERRAMIENTA_CREATE", "HERRAMIENTA_UPDATE"],
+      },
+      {
+        label: "Marcas de herramientas",
+        to: "/herramientas/marcas",
+        permission: ["HERRAMIENTA_CREATE", "HERRAMIENTA_UPDATE"],
+      },
+    ],
+    permission: [
+      "HERRAMIENTA_READ",
+      "HERRAMIENTA_CREATE",
+      "HERRAMIENTA_UPDATE",
+    ],
   },
   {
     label: "Materiales",
     icon: Layers,
     to: "/materiales",
-    children: [
-      { label: "Lista de materiales", to: "/materiales" },
-      { label: "Agregar material", to: "/materiales/gestion" },
-    ],
+    children: [{ label: "Lista de materiales", to: "/materiales" }],
   },
 ];

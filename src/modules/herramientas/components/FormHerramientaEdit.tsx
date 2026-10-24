@@ -3,12 +3,14 @@ import { useForm } from "@tanstack/react-form";
 import { Button } from "@heroui/react/button";
 import { toast } from "@heroui/react/toast";
 import { useNavigate } from "@tanstack/react-router";
-import { Wrench, Tag, Layers } from "lucide-react";
+import { Wrench } from "lucide-react";
 
 import { InputField } from "@components/fields/InputField";
 import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import { updateHerramienta } from "../api/updateHerramienta";
 import type { Herramienta } from "../types/herramientas";
+import { SelectorTipoHerramienta } from "./SelectorTipoHerramienta";
+import { SelectorMarcaHerramienta } from "./SelectorMarcaHerramienta";
 
 interface Props {
   herramienta: Herramienta;
@@ -20,8 +22,8 @@ export function FormHerramientaEdit({ herramienta }: Props) {
   const form = useForm({
     defaultValues: {
       nombre: herramienta.nombre,
-      marca: herramienta.marca,
-      tipo: herramienta.tipo,
+      marcaId: herramienta.marcaId,
+      tipoId: herramienta.tipoId,
     },
     onSubmit: async ({ value, formApi }) => {
       const updated = await updateHerramienta(herramienta.id, value).catch(
@@ -96,20 +98,16 @@ export function FormHerramientaEdit({ herramienta }: Props) {
       </form.Field>
 
       <form.Field
-        name="marca"
+        name="marcaId"
         validators={{
           onChange: ({ value }) =>
-            !value ? "La marca es requerida" : undefined,
+            !value ? "Selecciona una marca" : undefined,
         }}
       >
         {(field) => (
-          <InputField
-            label="Marca"
-            type="text"
-            placeholder="Ej. DeWalt, Bosch, Makita"
-            startContent={<Tag className="size-4 text-muted" />}
+          <SelectorMarcaHerramienta
             value={field.state.value}
-            onChange={(e) => field.handleChange(e.target.value)}
+            onChange={field.handleChange}
             onBlur={field.handleBlur}
             errorMessage={
               field.state.meta.errors.length > 0
@@ -121,20 +119,16 @@ export function FormHerramientaEdit({ herramienta }: Props) {
       </form.Field>
 
       <form.Field
-        name="tipo"
+        name="tipoId"
         validators={{
           onChange: ({ value }) =>
             !value ? "El tipo es requerido" : undefined,
         }}
       >
         {(field) => (
-          <InputField
-            label="Tipo de Herramienta"
-            type="text"
-            placeholder="Ej. Eléctrica, Neumática, Manual"
-            startContent={<Layers className="size-4 text-muted" />}
+          <SelectorTipoHerramienta
             value={field.state.value}
-            onChange={(e) => field.handleChange(e.target.value)}
+            onChange={field.handleChange}
             onBlur={field.handleBlur}
             errorMessage={
               field.state.meta.errors.length > 0
@@ -153,7 +147,11 @@ export function FormHerramientaEdit({ herramienta }: Props) {
         })}
       >
         {({ canSubmit, isSubmitting, errorMap }) => {
-          const error = errorMap.onSubmit || errorMap.onServer;
+          const serverErrors = errorMap as {
+            onSubmit?: string;
+            onServer?: string;
+          };
+          const error = serverErrors.onSubmit || serverErrors.onServer;
           return (
             <>
               {error && (

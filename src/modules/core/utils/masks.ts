@@ -21,6 +21,12 @@ function applyMask(value: string, mask: string): string {
 
 export const DUI_MASK = "00000000-0";
 export const NIT_MASK = "0000-000000-000-0";
+export const PHONE_MASK = "0000-0000";
+
+/** Formatea un teléfono salvadoreño para mostrarlo como 0000-0000. */
+export function formatPhone(value: string): string {
+  return applyMask(value, PHONE_MASK);
+}
 
 /** Formatea un DUI de El Salvador: 00000000-0 */
 export function formatDui(value: string): string {
