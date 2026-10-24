@@ -193,6 +193,48 @@ describe("Formulario de empleado y habilidades", () => {
     },
   );
 
+  it.each([
+    ["formato incompleto", "1234"],
+    ["dígito verificador incorrecto", "00000000-1"],
+  ])("muestra DUI inválido por %s y no envía datos", async (_case, value) => {
+    mount({ ...empleado, id: undefined, habilidades: [] });
+    fireEvent.change(screen.getByRole("textbox", { name: "DUI" }), {
+      target: { value },
+    });
+
+    expect(await screen.findByText("DUI inválido")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Guardar empleado" }));
+    expect(mocks.post).not.toHaveBeenCalled();
+  });
+
+  it("no envía un DUI inválido precargado", async () => {
+    mount({ ...empleado, id: undefined, dui: "00000000-1", habilidades: [] });
+
+    fireEvent.click(screen.getByRole("button", { name: "Guardar empleado" }));
+    expect(await screen.findByText("DUI inválido")).toBeTruthy();
+    expect(mocks.post).not.toHaveBeenCalled();
+  });
+
+  it("muestra junto al DUI el error 400 de validación de la API", async () => {
+    const message =
+      "El DUI debe tener formato 00000000-0 y un dígito verificador válido.";
+    mocks.post.mockRejectedValueOnce(
+      new AxiosError("Bad Request", "400", undefined, undefined, {
+        data: { message: { dui: [message] } },
+        status: 400,
+        statusText: "Bad Request",
+        headers: {},
+        config: {} as never,
+      }),
+    );
+
+    mount({ ...empleado, id: undefined, habilidades: [] });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar empleado" }));
+
+    expect(await screen.findByText(message)).toBeTruthy();
+    expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+
   it("muestra errores del servidor sin anunciar éxito ni perder la selección", async () => {
     mocks.patch.mockRejectedValueOnce(
       new AxiosError("Bad request", "400", undefined, undefined, {
