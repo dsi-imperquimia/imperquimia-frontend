@@ -3,6 +3,7 @@ import { Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
 import { cn } from "@modules/core/utils/utils";
+import { ConfirmActionDialog } from "@components/ConfirmActionDialog";
 import { listHabilidades, deleteHabilidad } from "@modules/empleados/api/habilidadesApi";
 import { ModalHabilidad } from "@modules/empleados/components/ModalHabilidad";
 import type { Habilidad } from "@modules/empleados/types/habilidad";
@@ -18,6 +19,7 @@ function HabilidadesCatalogoComponent() {
   const queryClient = useQueryClient();
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [habilidadSeleccionada, setHabilidadSeleccionada] = useState<Habilidad | null>(null);
+  const [habilidadParaEliminar, setHabilidadParaEliminar] = useState<Habilidad | null>(null);
 
   const { data: habilidades = [], isPending, error, refetch, isRefetching } = useQuery<Habilidad[]>({
     queryKey: ["habilidades"],
@@ -45,6 +47,17 @@ function HabilidadesCatalogoComponent() {
   const handleEdit = (habilidad: Habilidad) => {
     setHabilidadSeleccionada(habilidad);
     setIsOpenModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!habilidadParaEliminar) return false;
+
+    try {
+      await deleteMutation.mutateAsync(habilidadParaEliminar.id);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   useEffect(() => {
@@ -102,11 +115,13 @@ function HabilidadesCatalogoComponent() {
                         <Button size="sm" variant="ghost" isIconOnly onClick={() => handleEdit(hab)}>
                           <Edit2 size={14} />
                         </Button>
-                        <Button size="sm" variant="danger" isIconOnly onClick={() => {
-                            if(confirm(`¿Desea eliminar la habilidad "${hab.nombre}"?`)) {
-                              deleteMutation.mutate(hab.id);
-                            }
-                          }}
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          isIconOnly
+                          aria-label={`Eliminar ${hab.nombre}`}
+                          onClick={() => setHabilidadParaEliminar(hab)}
+                          isDisabled={deleteMutation.isPending}
                         >
                           <Trash2 size={14} />
                         </Button>
@@ -124,6 +139,16 @@ function HabilidadesCatalogoComponent() {
         isOpen={isOpenModal} 
         onOpenChange={setIsOpenModal} 
         habilidad={habilidadSeleccionada} 
+      />
+      <ConfirmActionDialog
+        isOpen={habilidadParaEliminar !== null}
+        onOpenChange={(open) => {
+          if (!open) setHabilidadParaEliminar(null);
+        }}
+        title="Eliminar habilidad"
+        description={`¿Desea eliminar la habilidad "${habilidadParaEliminar?.nombre ?? ""}"?`}
+        confirmLabel="Eliminar"
+        onConfirm={confirmDelete}
       />
     </>
   );

@@ -3,6 +3,7 @@ import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
 import { userActions } from "@modules/auth/store/authStore";
 import { cn } from "@modules/core/utils/utils";
+import { ConfirmActionDialog } from "@components/ConfirmActionDialog";
 import { listCotizaciones } from "@modules/cotizacion/api/list-cotizaciones";
 import type {
   CotizacionList,
@@ -11,7 +12,7 @@ import type {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Edit, Eye, FilePlus, RefreshCw, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { deleteCotizacion } from "@modules/cotizacion/api/delete-cotizacion";
 import { approveCotizacion } from "@modules/cotizacion/api/approve-cotizacion";
 
@@ -23,12 +24,15 @@ function formatDate(date: string) {
   return new Date(date).toLocaleDateString("es-SV");
 }
 
-function confirmarAccion(mensaje: string) {
-  return window.confirm(mensaje);
-}
+type PendingAction = {
+  id: number;
+  cliente: string;
+  type: "approve" | "reject" | "delete";
+};
 
 function RouteComponent() {
   const queryClient = useQueryClient();
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
   const { data, isPending, error, refetch, isRefetching } = useQuery<
     CotizacionList[]
   >({
@@ -53,18 +57,27 @@ function RouteComponent() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: deleteCotizacion,
+    mutationFn: ({ id }: { id: number; type: "reject" | "delete" }) =>
+      deleteCotizacion(id),
 
-    onSuccess: async () => {
-      toast.success("Cotización eliminada correctamente.");
+    onSuccess: async (_result, action) => {
+      toast.success(
+        action.type === "reject"
+          ? "Cotización rechazada correctamente."
+          : "Cotización eliminada correctamente.",
+      );
 
       await queryClient.invalidateQueries({
         queryKey: ["cotizaciones"],
       });
     },
 
-    onError: () => {
-      toast.danger("No se pudo eliminar la cotización.");
+    onError: (_error, action) => {
+      toast.danger(
+        action.type === "reject"
+          ? "No se pudo rechazar la cotización."
+          : "No se pudo eliminar la cotización.",
+      );
     },
   });
 
@@ -78,28 +91,36 @@ function RouteComponent() {
     );
   }, [error]);
 
-  async function handleEstadoChange(id: number, estado: EstadoCotizacion) {
+  function handleEstadoChange(
+    id: number,
+    cliente: string,
+    estado: EstadoCotizacion,
+  ) {
     if (estado === "PENDIENTE") return;
 
     if (estado === "APROBADA") {
-      const confirmado = confirmarAccion(
-        "¿Está seguro de aprobar esta cotización? Al aprobarla se creará automáticamente un proyecto.",
-      );
-
-      if (!confirmado) return;
-
-      approveMutation.mutate(id);
+      setPendingAction({ id, cliente, type: "approve" });
       return;
     }
 
-    if (estado === "RECHAZADA") {
-      const confirmado = confirmarAccion(
-        "¿Está seguro de rechazar esta cotización? Ya no aparecerá en el listado principal.",
-      );
+    setPendingAction({ id, cliente, type: "reject" });
+  }
 
-      if (!confirmado) return;
+  async function confirmPendingAction() {
+    if (!pendingAction) return false;
 
-      deleteMutation.mutate(id);
+    try {
+      if (pendingAction.type === "approve") {
+        await approveMutation.mutateAsync(pendingAction.id);
+      } else {
+        await deleteMutation.mutateAsync({
+          id: pendingAction.id,
+          type: pendingAction.type,
+        });
+      }
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -170,6 +191,7 @@ function RouteComponent() {
                           onChange={(value) =>
                             handleEstadoChange(
                               cotizacion.id,
+                              cotizacion.cliente,
                               value as EstadoCotizacion,
                             )
                           }
@@ -262,15 +284,13 @@ function RouteComponent() {
                           <Button
                             size="sm"
                             variant="danger"
-                            onClick={() => {
-                              const confirmado = confirmarAccion(
-                                "¿Está seguro de eliminar esta cotización? Esta acción la marcará como rechazada.",
-                              );
-
-                              if (!confirmado) return;
-
-                              deleteMutation.mutate(cotizacion.id);
-                            }}
+                            onClick={() =>
+                              setPendingAction({
+                                id: cotizacion.id,
+                                cliente: cotizacion.cliente,
+                                type: "delete",
+                              })
+                            }
                             isDisabled={deleteMutation.isPending}
                             isPending={deleteMutation.isPending}
                           >
@@ -287,6 +307,35 @@ function RouteComponent() {
           </Table.Content>
         </Table.ScrollContainer>
       </Table>
+      <ConfirmActionDialog
+        isOpen={pendingAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingAction(null);
+        }}
+        title={
+          pendingAction?.type === "approve"
+            ? "Aprobar cotización"
+            : pendingAction?.type === "reject"
+              ? "Rechazar cotización"
+              : "Eliminar cotización"
+        }
+        description={
+          pendingAction?.type === "approve"
+            ? `¿Está seguro de aprobar la cotización de ${pendingAction.cliente}? Al aprobarla se creará automáticamente un proyecto.`
+            : pendingAction?.type === "reject"
+              ? `¿Está seguro de rechazar la cotización de ${pendingAction.cliente}? Ya no aparecerá en el listado principal.`
+              : `¿Está seguro de eliminar la cotización de ${pendingAction?.cliente ?? ""}? Esta acción la marcará como rechazada.`
+        }
+        confirmLabel={
+          pendingAction?.type === "approve"
+            ? "Aprobar"
+            : pendingAction?.type === "reject"
+              ? "Rechazar"
+              : "Eliminar"
+        }
+        status={pendingAction?.type === "approve" ? "warning" : "danger"}
+        onConfirm={confirmPendingAction}
+      />
     </>
   );
 }

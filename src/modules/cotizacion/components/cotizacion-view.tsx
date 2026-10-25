@@ -1,6 +1,7 @@
 import { Card, toast } from "@heroui/react";
 import { Table } from "@heroui/react/table";
 import { Button } from "@heroui/react/button";
+import { ConfirmActionDialog } from "@components/ConfirmActionDialog";
 import { Link, useRouter } from "@tanstack/react-router";
 import {
   ArrowLeft,
@@ -13,6 +14,7 @@ import type { CotizacionDetalle } from "../types/cotizacion";
 import { CotizacionPrintTemplate } from "./cotizacion-print-emplate";
 import { approveCotizacion } from "../api/approve-cotizacion";
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface Props {
   cotizacion: CotizacionDetalle;
@@ -28,6 +30,7 @@ function money(value: string) {
 
 export function CotizacionView({ cotizacion }: Props) {
   const router = useRouter();
+  const [isApproveOpen, setIsApproveOpen] = useState(false);
 
   const aprobarMutation = useMutation({
     mutationFn: () => approveCotizacion(cotizacion.id),
@@ -46,14 +49,13 @@ export function CotizacionView({ cotizacion }: Props) {
   function handlePrint() {
     window.print();
   }
-  function handleAprobar() {
-    const confirmado = window.confirm(
-      "¿Está seguro de aprobar esta cotización? Al aprobarla se creará automáticamente un proyecto.",
-    );
-
-    if (!confirmado) return;
-
-    aprobarMutation.mutate();
+  async function confirmAprobar() {
+    try {
+      await aprobarMutation.mutateAsync();
+      return true;
+    } catch {
+      return false;
+    }
   }
   return (
     <>
@@ -70,7 +72,7 @@ export function CotizacionView({ cotizacion }: Props) {
             {cotizacion.estado === "PENDIENTE" && (
               <Button
                 size="sm"
-                onClick={handleAprobar}
+                onClick={() => setIsApproveOpen(true)}
                 isDisabled={aprobarMutation.isPending}
                 isPending={aprobarMutation.isPending}
               >
@@ -273,6 +275,16 @@ export function CotizacionView({ cotizacion }: Props) {
           </Card.Content>
         </Card>
       </div>
+
+      <ConfirmActionDialog
+        isOpen={isApproveOpen}
+        onOpenChange={setIsApproveOpen}
+        title="Aprobar cotización"
+        description={`¿Está seguro de aprobar la cotización de ${cotizacion.cliente}? Al aprobarla se creará automáticamente un proyecto.`}
+        confirmLabel="Aprobar"
+        status="warning"
+        onConfirm={confirmAprobar}
+      />
 
       <CotizacionPrintTemplate cotizacion={cotizacion} />
     </>
