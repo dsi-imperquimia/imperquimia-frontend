@@ -14,6 +14,7 @@ import { parseErrorApiUseForm } from "@modules/core/utils/parseErrorApi";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { User } from "lucide-react";
+import type { Empleado } from "@modules/empleados/types/empleado";
 import { storeUser } from "../api/store-user";
 import type { Permission } from "../types/permission";
 import type { Role } from "../types/roles";
@@ -23,9 +24,15 @@ interface Props {
   user?: Partial<UserType>;
   roles?: Role[];
   permissions?: Permission[];
+  empleados?: Empleado[];
 }
 
-export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
+export function FormUser({
+  user: userInit,
+  roles,
+  permissions = [],
+  empleados = [],
+}: Props) {
   const isEdit = Boolean(userInit?.id);
   const navigate = useNavigate();
 
@@ -184,6 +191,36 @@ export function FormUser({ user: userInit, roles, permissions = [] }: Props) {
                       textValue={role.name}
                     >
                       {role.name}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </SelectedField>
+              )}
+            </form.Field>
+
+            <form.Field name="empleadoId">
+              {(field) => (
+                <SelectedField
+                  label="Empleado vinculado"
+                  placeholder="Ninguno"
+                  description="Vincula este usuario con un empleado, por ejemplo para que un jefe de proyecto pueda iniciar sesión."
+                  value={field.state.value ?? ""}
+                  onChange={(value) =>
+                    field.handleChange(value === "" ? null : Number(value))
+                  }
+                  onBlur={field.handleBlur}
+                >
+                  <ListBox.Item id="" textValue="Ninguno">
+                    Ninguno
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                  {empleados.map((empleado) => (
+                    <ListBox.Item
+                      key={empleado.id}
+                      id={empleado.id}
+                      textValue={empleado.nombreCompleto}
+                    >
+                      {empleado.nombreCompleto}
                       <ListBox.ItemIndicator />
                     </ListBox.Item>
                   ))}

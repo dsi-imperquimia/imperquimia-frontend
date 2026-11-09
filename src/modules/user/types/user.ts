@@ -11,4 +11,6 @@ export interface User {
   role?: Role;
   permissions?: Permission[];
   permissionsIds?: number[];
+  empleadoId?: number | null;
+  empleado?: { id: number; nombreCompleto: string } | null;
 }

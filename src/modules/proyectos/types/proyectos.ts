@@ -18,6 +18,13 @@ export interface Proyecto {
 }
 export interface ProyectoDetalle extends Proyecto {
   creadoPor?: { id: number; name: string; lastName: string } | null;
+  jefeProyectoId?: number | null;
+  jefeProyecto?: {
+    id: number;
+    nombreCompleto: string;
+    activo: boolean;
+    cargo?: { nombre: string } | null;
+  } | null;
   herramientas: {
     id: number;
     nombre: string;

@@ -1,0 +1,130 @@
+import { SelectedField } from "@components/fields/SelectedField";
+import { Button } from "@heroui/react/button";
+import { ListBox } from "@heroui/react/list-box";
+import { toast } from "@heroui/react/toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { listEmpleados } from "@modules/empleados/api/list-empleados";
+import { userActions } from "@modules/auth/store/authStore";
+import {
+  asignarJefeProyecto,
+  errorJefeProyecto,
+  retirarJefeProyecto,
+} from "../api/guardarProyecto";
+import type { ProyectoDetalle } from "../types/proyectos";
+
+export function AsignarJefeProyecto({
+  proyecto,
+}: {
+  proyecto: ProyectoDetalle;
+}) {
+  const client = useQueryClient();
+  const puedeEditar = userActions.hasPermission("PROYECTO_UPDATE");
+  const [empleadoId, setEmpleadoId] = useState<number | "">("");
+  const [pending, setPending] = useState(false);
+
+  const { data: empleados = [] } = useQuery({
+    queryKey: ["empleados"],
+    queryFn: listEmpleados,
+    enabled: puedeEditar,
+  });
+
+  async function refrescar() {
+    await client.invalidateQueries({ queryKey: ["proyectos", proyecto.id] });
+  }
+
+  async function handleAsignar() {
+    if (empleadoId === "") return;
+    setPending(true);
+    try {
+      await asignarJefeProyecto(proyecto.id, empleadoId);
+      await refrescar();
+      setEmpleadoId("");
+      toast.success("Jefe de proyecto asignado");
+    } catch (error) {
+      toast.danger(errorJefeProyecto(error));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function handleRetirar() {
+    setPending(true);
+    try {
+      await retirarJefeProyecto(proyecto.id);
+      await refrescar();
+      toast.success("Jefe de proyecto retirado");
+    } catch (error) {
+      toast.danger(errorJefeProyecto(error));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const empleadosDisponibles = empleados.filter(
+    (empleado) => empleado.activo && empleado.id !== proyecto.jefeProyectoId,
+  );
+
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-lg font-semibold">Jefe de proyecto</h2>
+      {proyecto.jefeProyecto ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium">
+              {proyecto.jefeProyecto.nombreCompleto}
+            </p>
+            <p className="text-sm text-gray-500">
+              {proyecto.jefeProyecto.cargo?.nombre ?? "Sin cargo"}
+            </p>
+          </div>
+          {puedeEditar && proyecto.estado !== "CANCELADO" && (
+            <Button
+              variant="outline"
+              isDisabled={pending}
+              isPending={pending}
+              onClick={handleRetirar}
+            >
+              Quitar jefe
+            </Button>
+          )}
+        </div>
+      ) : (
+        <p className="mb-4 text-gray-500">
+          Este proyecto todavía no tiene un jefe de proyecto asignado.
+        </p>
+      )}
+      {puedeEditar && proyecto.estado !== "CANCELADO" && (
+        <div className="mt-4 flex flex-wrap items-end gap-3">
+          <SelectedField
+            label="Asignar empleado como jefe"
+            placeholder="Selecciona un empleado"
+            className="min-w-60"
+            value={empleadoId}
+            onChange={(value) =>
+              setEmpleadoId(value === "" ? "" : Number(value))
+            }
+          >
+            {empleadosDisponibles.map((empleado) => (
+              <ListBox.Item
+                key={empleado.id}
+                id={empleado.id}
+                textValue={empleado.nombreCompleto}
+              >
+                {empleado.nombreCompleto}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </SelectedField>
+          <Button
+            isDisabled={empleadoId === "" || pending}
+            isPending={pending}
+            onClick={handleAsignar}
+          >
+            Asignar
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+}

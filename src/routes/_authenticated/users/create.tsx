@@ -1,5 +1,6 @@
 import { Card } from "@heroui/react/card";
 import { handleApiError } from "@modules/core/utils/handleApiError";
+import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { getAllPermissions } from "@modules/user/api/permission/get-all";
 import { getAllRoles } from "@modules/user/api/roles/get-all";
 import { FormUser } from "@modules/user/components/FormUser";
@@ -11,11 +12,12 @@ export const Route = createFileRoute("/_authenticated/users/create")({
   loader: async () => ({
     roles: await getAllRoles().catch(handleApiError),
     permissions: await getAllPermissions().catch(handleApiError),
+    empleados: await listEmpleados().catch(handleApiError),
   }),
 });
 
 function RouteComponent() {
-  const { roles, permissions } = Route.useLoaderData();
+  const { roles, permissions, empleados } = Route.useLoaderData();
 
   return (
     <Card className="w-full max-w-md" variant="transparent">
@@ -24,7 +26,11 @@ function RouteComponent() {
         Crear usuario
       </Card.Header>
       <Card.Content>
-        <FormUser roles={roles} permissions={permissions} />
+        <FormUser
+          roles={roles}
+          permissions={permissions}
+          empleados={empleados}
+        />
       </Card.Content>
     </Card>
   );
