@@ -3,12 +3,18 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@heroui/react/button";
 import { toast } from "@heroui/react/toast";
+import { HardHat } from "lucide-react";
 import { InputField } from "@components/fields/InputField";
+import { SelectedField } from "@components/fields/SelectedField";
+import { ListBox } from "@heroui/react/list-box";
 import { guardarProyecto, errorProyecto } from "../api/guardarProyecto";
 import type { DatosProyecto, ErroresProyecto } from "../api/guardarProyecto";
 import type { ProyectoDetalle } from "../types/proyectos";
 import { dinero } from "../types/proyectos";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
+import { listEmpleados } from "@modules/empleados/api/list-empleados";
+import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
+import { listProyectos } from "../api/listProyectos";
 
 function esFechaValida(fecha: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
@@ -51,6 +57,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     email: proyecto?.email ?? "",
     fechaInicio: proyecto?.fechaInicio?.slice(0, 10) ?? "",
     fechaFin: proyecto?.fechaFin?.slice(0, 10) ?? "",
+    jefeProyectoId: undefined,
   });
   const [detalles, setDetalles] = useState(
     proyecto?.detalles.map((detalle) => ({
@@ -100,6 +107,25 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     queryFn: listMateriales,
   });
   const materiales = materialesQuery.data ?? [];
+  // Solo se usa al crear: en edición, el jefe se asigna aparte (AsignarJefeProyecto).
+  const { data: empleadosParaJefe = [] } = useQuery({
+    queryKey: ["empleados"],
+    queryFn: listEmpleados,
+    enabled: !proyecto,
+  });
+  const { data: proyectosParaJefe = [] } = useQuery({
+    queryKey: ["proyectos"],
+    queryFn: listProyectos,
+    enabled: !proyecto,
+  });
+  const ocupadosComoJefe = new Set(
+    proyectosParaJefe
+      .filter((otro) => otro.estado === "ACTIVO" && otro.jefeProyectoId)
+      .map((otro) => otro.jefeProyectoId),
+  );
+  const empleadosDisponiblesComoJefe = empleadosParaJefe.filter(
+    (empleado) => empleado.activo && !ocupadosComoJefe.has(empleado.id),
+  );
   const materialesElegibles = materiales.filter(
     (material) =>
       material.estado ||
@@ -513,7 +539,10 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           </p>
         )}
         {erroresDetalle.length > 0 && (
-          <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
             <p>Corrige los siguientes materiales:</p>
             <ul className="mt-1 list-disc pl-5">
               {erroresDetalle.map(([clave, mensaje]) => (
@@ -547,6 +576,47 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           </div>
         </dl>
       </section>
+      {proyecto ? (
+        <AsignarJefeProyecto
+          proyecto={proyecto}
+          className="space-y-4 border-t border-gray-200 pt-5"
+        />
+      ) : (
+        <section className="space-y-4 border-t border-gray-200 pt-5">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <HardHat className="size-5 text-gray-400" />
+            Jefe de proyecto
+          </h2>
+          <SelectedField
+            label="Asignar empleado como jefe (opcional)"
+            placeholder="Selecciona un empleado"
+            className="max-w-sm"
+            isDisabled={guardando}
+            value={datos.jefeProyectoId ?? ""}
+            onChange={(value) =>
+              setDatos({
+                ...datos,
+                jefeProyectoId: value === "" ? undefined : Number(value),
+              })
+            }
+          >
+            <ListBox.Item id="" textValue="Ninguno">
+              Ninguno
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
+            {empleadosDisponiblesComoJefe.map((empleado) => (
+              <ListBox.Item
+                key={empleado.id}
+                id={empleado.id}
+                textValue={empleado.nombreCompleto}
+              >
+                {empleado.nombreCompleto}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </SelectedField>
+        </section>
+      )}
       {error && (
         <p
           role="alert"

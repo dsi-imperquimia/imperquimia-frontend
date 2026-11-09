@@ -12,6 +12,7 @@ export interface DatosProyecto {
   fechaInicio: string;
   fechaFin: string;
   detalles: { materialId: number; cantidad: number }[];
+  jefeProyectoId?: number;
 }
 
 export interface ErroresProyecto {
@@ -36,6 +37,27 @@ export function errorCancelarProyecto(error: unknown) {
   return typeof mensaje === "string"
     ? mensaje
     : "No se pudo cancelar el proyecto. Inténtalo de nuevo.";
+}
+
+export async function asignarJefeProyecto(id: number, empleadoId: number) {
+  const { data } = await http.post<Proyecto>(
+    `/proyectos/${id}/jefe/${empleadoId}`,
+  );
+  return data;
+}
+
+export async function retirarJefeProyecto(id: number) {
+  const { data } = await http.patch<Proyecto>(`/proyectos/${id}/jefe/retirar`);
+  return data;
+}
+
+export function errorJefeProyecto(error: unknown) {
+  const mensaje: unknown = isAxiosError(error)
+    ? error.response?.data?.message
+    : null;
+  return typeof mensaje === "string"
+    ? mensaje
+    : "No se pudo actualizar el jefe de proyecto. Inténtalo de nuevo.";
 }
 
 export function errorProyecto(error: unknown) {
@@ -68,7 +90,8 @@ export function errorProyecto(error: unknown) {
         continue;
       }
       if (campo === "materialId" || campo === "cantidad") {
-        if (!tieneFilas) campos.detalles = "Revisa los materiales y sus cantidades.";
+        if (!tieneFilas)
+          campos.detalles = "Revisa los materiales y sus cantidades.";
         continue;
       }
       const campoTipado = campo as keyof DatosProyecto;
