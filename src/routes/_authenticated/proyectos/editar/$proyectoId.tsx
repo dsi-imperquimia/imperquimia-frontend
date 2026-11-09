@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { FormProyecto } from "@modules/proyectos/components/FormProyecto";
+import { AsignarJefeProyecto } from "@modules/proyectos/components/AsignarJefeProyecto";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
 
 export const Route = createFileRoute(
@@ -32,6 +33,7 @@ function Editar() {
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">Editar proyecto</h1>
       <FormProyecto key={data.id} proyecto={data} />
+      <AsignarJefeProyecto proyecto={data} />
     </div>
   );
 }
