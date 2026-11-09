@@ -3,7 +3,7 @@ import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
 import { toast } from "@heroui/react/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { HardHat } from "lucide-react";
+import { HardHat, UserMinus, UserPlus, UserX } from "lucide-react";
 import { useState } from "react";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { userActions } from "@modules/auth/store/authStore";
@@ -96,11 +96,16 @@ export function AsignarJefeProyecto({
 
   return (
     <section className={className}>
-      <h2 className="mb-4 text-lg font-semibold">Jefe de proyecto</h2>
+      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
+        <HardHat className="size-5 text-gray-400" />
+        Jefe de proyecto
+      </h2>
       {proyecto.jefeProyecto ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {!editable && <HardHat className="size-8 shrink-0 text-gray-400" />}
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+              <HardHat className="size-5" />
+            </span>
             <div>
               <p className="font-medium">
                 {proyecto.jefeProyecto.nombreCompleto}
@@ -118,12 +123,14 @@ export function AsignarJefeProyecto({
               isPending={pending}
               onClick={handleRetirar}
             >
+              <UserMinus className="size-4" />
               Quitar jefe
             </Button>
           )}
         </div>
       ) : (
-        <p className="mb-4 text-gray-500">
+        <p className="mb-4 flex items-center gap-2 text-gray-500">
+          <UserX className="size-5 text-gray-400" />
           Este proyecto todavía no tiene un jefe de proyecto asignado.
         </p>
       )}
@@ -155,6 +162,7 @@ export function AsignarJefeProyecto({
             isPending={pending}
             onClick={handleAsignar}
           >
+            <UserPlus className="size-4" />
             Asignar
           </Button>
         </div>
