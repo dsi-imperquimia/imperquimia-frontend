@@ -3,6 +3,7 @@ import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
 import { toast } from "@heroui/react/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { HardHat } from "lucide-react";
 import { useState } from "react";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { userActions } from "@modules/auth/store/authStore";
@@ -95,13 +96,16 @@ export function AsignarJefeProyecto({
       <h2 className="mb-4 text-lg font-semibold">Jefe de proyecto</h2>
       {proyecto.jefeProyecto ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="font-medium">
-              {proyecto.jefeProyecto.nombreCompleto}
-            </p>
-            <p className="text-sm text-gray-500">
-              {proyecto.jefeProyecto.cargo?.nombre ?? "Sin cargo"}
-            </p>
+          <div className="flex items-center gap-3">
+            {!editable && <HardHat className="size-8 shrink-0 text-gray-400" />}
+            <div>
+              <p className="font-medium">
+                {proyecto.jefeProyecto.nombreCompleto}
+              </p>
+              <p className="text-sm text-gray-500">
+                {proyecto.jefeProyecto.cargo?.nombre ?? "Sin cargo"}
+              </p>
+            </div>
           </div>
           {puedeEditar && proyecto.estado !== "CANCELADO" && (
             <Button
