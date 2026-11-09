@@ -16,11 +16,14 @@ import type { ProyectoDetalle } from "../types/proyectos";
 
 export function AsignarJefeProyecto({
   proyecto,
+  editable = true,
 }: {
   proyecto: ProyectoDetalle;
+  /** En la vista de solo lectura (detalle del proyecto) no se permite editar. */
+  editable?: boolean;
 }) {
   const client = useQueryClient();
-  const puedeEditar = userActions.hasPermission("PROYECTO_UPDATE");
+  const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
   const [empleadoId, setEmpleadoId] = useState<number | "">("");
   const [pending, setPending] = useState(false);
 

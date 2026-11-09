@@ -104,7 +104,7 @@ function Detalle() {
           )}
         </div>
       </section>
-      <AsignarJefeProyecto proyecto={p} />
+      <AsignarJefeProyecto proyecto={p} editable={false} />
       <section className="rounded-xl border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-lg font-semibold">
           Presupuesto de materiales
