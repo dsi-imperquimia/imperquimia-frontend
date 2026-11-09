@@ -20,6 +20,7 @@ import { Route as AuthenticatedCotizacionesCreateRouteImport } from './routes/_a
 import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
 import { Route as AuthenticatedEmpleadosIndexRouteImport } from './routes/_authenticated/empleados/index'
 import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
+import { Route as AuthenticatedEmpleadosAsignacionesRouteImport } from './routes/_authenticated/empleados/asignaciones'
 import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
 import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
 import { Route as AuthenticatedHerramientasIndexRouteImport } from './routes/_authenticated/herramientas/index'
@@ -101,6 +102,12 @@ const AuthenticatedEmpleadosEmpleadoIdRoute =
   AuthenticatedEmpleadosEmpleadoIdRouteImport.update({
     id: '/empleados/$empleadoId',
     path: '/empleados/$empleadoId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedEmpleadosAsignacionesRoute =
+  AuthenticatedEmpleadosAsignacionesRouteImport.update({
+    id: '/empleados/asignaciones',
+    path: '/empleados/asignaciones',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedEmpleadosCreateRoute =
@@ -237,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  '/empleados/asignaciones': typeof AuthenticatedEmpleadosAsignacionesRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
@@ -270,6 +278,7 @@ export interface FileRoutesByTo {
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  '/empleados/asignaciones': typeof AuthenticatedEmpleadosAsignacionesRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
@@ -305,6 +314,7 @@ export interface FileRoutesById {
   '/_authenticated/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/_authenticated/demo/store': typeof AuthenticatedDemoStoreRoute
   '/_authenticated/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  '/_authenticated/empleados/asignaciones': typeof AuthenticatedEmpleadosAsignacionesRoute
   '/_authenticated/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/_authenticated/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/_authenticated/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
@@ -340,6 +350,7 @@ export interface FileRouteTypes {
     | '/cotizaciones/create'
     | '/demo/store'
     | '/empleados/$empleadoId'
+    | '/empleados/asignaciones'
     | '/empleados/create'
     | '/empleados/habilidades'
     | '/herramientas/marcas'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/cotizaciones/create'
     | '/demo/store'
     | '/empleados/$empleadoId'
+    | '/empleados/asignaciones'
     | '/empleados/create'
     | '/empleados/habilidades'
     | '/herramientas/marcas'
@@ -407,6 +419,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cotizaciones/create'
     | '/_authenticated/demo/store'
     | '/_authenticated/empleados/$empleadoId'
+    | '/_authenticated/empleados/asignaciones'
     | '/_authenticated/empleados/create'
     | '/_authenticated/empleados/habilidades'
     | '/_authenticated/herramientas/marcas'
@@ -515,6 +528,13 @@ declare module '@tanstack/react-router' {
       path: '/empleados/$empleadoId'
       fullPath: '/empleados/$empleadoId'
       preLoaderRoute: typeof AuthenticatedEmpleadosEmpleadoIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/empleados/asignaciones': {
+      id: '/_authenticated/empleados/asignaciones'
+      path: '/empleados/asignaciones'
+      fullPath: '/empleados/asignaciones'
+      preLoaderRoute: typeof AuthenticatedEmpleadosAsignacionesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/empleados/create': {
@@ -674,6 +694,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCotizacionesCreateRoute: typeof AuthenticatedCotizacionesCreateRoute
   AuthenticatedDemoStoreRoute: typeof AuthenticatedDemoStoreRoute
   AuthenticatedEmpleadosEmpleadoIdRoute: typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  AuthenticatedEmpleadosAsignacionesRoute: typeof AuthenticatedEmpleadosAsignacionesRoute
   AuthenticatedEmpleadosCreateRoute: typeof AuthenticatedEmpleadosCreateRoute
   AuthenticatedEmpleadosHabilidadesRoute: typeof AuthenticatedEmpleadosHabilidadesRoute
   AuthenticatedHerramientasMarcasRoute: typeof AuthenticatedHerramientasMarcasRoute
@@ -708,6 +729,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCotizacionesCreateRoute: AuthenticatedCotizacionesCreateRoute,
   AuthenticatedDemoStoreRoute: AuthenticatedDemoStoreRoute,
   AuthenticatedEmpleadosEmpleadoIdRoute: AuthenticatedEmpleadosEmpleadoIdRoute,
+  AuthenticatedEmpleadosAsignacionesRoute:
+    AuthenticatedEmpleadosAsignacionesRoute,
   AuthenticatedEmpleadosCreateRoute: AuthenticatedEmpleadosCreateRoute,
   AuthenticatedEmpleadosHabilidadesRoute:
     AuthenticatedEmpleadosHabilidadesRoute,

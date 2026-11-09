@@ -58,6 +58,11 @@ export const NAV_ITEMS: NavItem[] = [
         permission: ["EMPLEADO_READ"],
       },
       {
+        label: "Asignaciones",
+        to: "/empleados/asignaciones",
+        permission: ["EMPLEADO_READ"],
+      },
+      {
         label: "Lista de cargos",
         to: "/cargo-empleado",
         permission: ["CARGO_EMPLEADO_READ"],
