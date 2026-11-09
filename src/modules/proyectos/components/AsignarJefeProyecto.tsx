@@ -18,10 +18,13 @@ import type { ProyectoDetalle } from "../types/proyectos";
 export function AsignarJefeProyecto({
   proyecto,
   editable = true,
+  className = "rounded-xl border border-gray-200 bg-white p-6",
 }: {
   proyecto: ProyectoDetalle;
   /** En la vista de solo lectura (detalle del proyecto) no se permite editar. */
   editable?: boolean;
+  /** Permite fundir el bloque dentro de otro contenedor (p. ej. el formulario de edición). */
+  className?: string;
 }) {
   const client = useQueryClient();
   const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
@@ -92,7 +95,7 @@ export function AsignarJefeProyecto({
   );
 
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-6">
+    <section className={className}>
       <h2 className="mb-4 text-lg font-semibold">Jefe de proyecto</h2>
       {proyecto.jefeProyecto ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -109,6 +112,7 @@ export function AsignarJefeProyecto({
           </div>
           {puedeEditar && proyecto.estado !== "CANCELADO" && (
             <Button
+              type="button"
               variant="outline"
               isDisabled={pending}
               isPending={pending}
@@ -146,6 +150,7 @@ export function AsignarJefeProyecto({
             ))}
           </SelectedField>
           <Button
+            type="button"
             isDisabled={empleadoId === "" || pending}
             isPending={pending}
             onClick={handleAsignar}

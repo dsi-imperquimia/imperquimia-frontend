@@ -9,6 +9,7 @@ import type { DatosProyecto, ErroresProyecto } from "../api/guardarProyecto";
 import type { ProyectoDetalle } from "../types/proyectos";
 import { dinero } from "../types/proyectos";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
+import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
 
 function esFechaValida(fecha: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
@@ -513,7 +514,10 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           </p>
         )}
         {erroresDetalle.length > 0 && (
-          <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
             <p>Corrige los siguientes materiales:</p>
             <ul className="mt-1 list-disc pl-5">
               {erroresDetalle.map(([clave, mensaje]) => (
@@ -547,6 +551,12 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           </div>
         </dl>
       </section>
+      {proyecto && (
+        <AsignarJefeProyecto
+          proyecto={proyecto}
+          className="space-y-4 border-t border-gray-200 pt-5"
+        />
+      )}
       {error && (
         <p
           role="alert"
