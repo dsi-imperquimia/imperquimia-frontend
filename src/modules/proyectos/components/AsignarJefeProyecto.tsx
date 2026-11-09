@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { userActions } from "@modules/auth/store/authStore";
+import { listProyectos } from "../api/listProyectos";
 import {
   asignarJefeProyecto,
   errorJefeProyecto,
@@ -28,6 +29,24 @@ export function AsignarJefeProyecto({
     queryFn: listEmpleados,
     enabled: puedeEditar,
   });
+
+  // Empleados que ya son jefe de OTRO proyecto activo: no deben aparecer
+  // como candidatos, para no asignar a alguien que ya está al frente de otra obra.
+  const { data: proyectos = [] } = useQuery({
+    queryKey: ["proyectos"],
+    queryFn: listProyectos,
+    enabled: puedeEditar,
+  });
+  const ocupadosEnOtroProyecto = new Set(
+    proyectos
+      .filter(
+        (otro) =>
+          otro.id !== proyecto.id &&
+          otro.estado === "ACTIVO" &&
+          otro.jefeProyectoId,
+      )
+      .map((otro) => otro.jefeProyectoId),
+  );
 
   async function refrescar() {
     await client.invalidateQueries({ queryKey: ["proyectos", proyecto.id] });
@@ -62,7 +81,10 @@ export function AsignarJefeProyecto({
   }
 
   const empleadosDisponibles = empleados.filter(
-    (empleado) => empleado.activo && empleado.id !== proyecto.jefeProyectoId,
+    (empleado) =>
+      empleado.activo &&
+      empleado.id !== proyecto.jefeProyectoId &&
+      !ocupadosEnOtroProyecto.has(empleado.id),
   );
 
   return (
