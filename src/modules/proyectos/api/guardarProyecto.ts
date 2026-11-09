@@ -12,6 +12,7 @@ export interface DatosProyecto {
   fechaInicio: string;
   fechaFin: string;
   detalles: { materialId: number; cantidad: number }[];
+  jefeProyectoId?: number;
 }
 
 export interface ErroresProyecto {
