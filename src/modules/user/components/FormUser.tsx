@@ -25,6 +25,7 @@ interface Props {
   roles?: Role[];
   permissions?: Permission[];
   empleados?: Empleado[];
+  users?: UserType[];
 }
 
 export function FormUser({
@@ -32,9 +33,21 @@ export function FormUser({
   roles,
   permissions = [],
   empleados = [],
+  users = [],
 }: Props) {
   const isEdit = Boolean(userInit?.id);
   const navigate = useNavigate();
+
+  // Un empleado ya vinculado a otro usuario no debe aparecer como opción,
+  // salvo que sea el que ya está vinculado al usuario que se está editando.
+  const empleadosVinculados = new Set(
+    users
+      .filter((u) => u.id !== userInit?.id && u.empleadoId)
+      .map((u) => u.empleadoId),
+  );
+  const empleadosDisponibles = empleados.filter(
+    (empleado) => !empleadosVinculados.has(empleado.id),
+  );
 
   const form = useForm({
     defaultValues: userInit ?? {},
@@ -214,7 +227,7 @@ export function FormUser({
                     Ninguno
                     <ListBox.ItemIndicator />
                   </ListBox.Item>
-                  {empleados.map((empleado) => (
+                  {empleadosDisponibles.map((empleado) => (
                     <ListBox.Item
                       key={empleado.id}
                       id={empleado.id}
