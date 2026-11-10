@@ -1,6 +1,7 @@
 import { SelectedField } from "@components/fields/SelectedField";
 import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
+import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Users, UserMinus, UserPlus, UserX, Wrench } from "lucide-react";
@@ -27,6 +28,7 @@ export function AsignarEmpleadosProyecto({
 }) {
   const client = useQueryClient();
   const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
+  const puedeAsignar = puedeEditar && proyecto.estado !== "CANCELADO";
   const [empleadoId, setEmpleadoId] = useState<number | "">("");
   const [pendiente, setPendiente] = useState<number | "nuevo" | null>(null);
 
@@ -42,7 +44,7 @@ export function AsignarEmpleadosProyecto({
     await client.invalidateQueries({ queryKey: ["proyectos", proyecto.id] });
   }
 
-  async function handleAsignar() {
+  async function handleAsignar(cerrar: () => void) {
     if (empleadoId === "") return;
     setPendiente("nuevo");
     try {
@@ -50,6 +52,7 @@ export function AsignarEmpleadosProyecto({
       await refrescar();
       setEmpleadoId("");
       toast.success("Técnico asignado al proyecto");
+      cerrar();
     } catch (error) {
       toast.danger(errorEmpleadoProyecto(error));
     } finally {
@@ -80,10 +83,73 @@ export function AsignarEmpleadosProyecto({
 
   return (
     <section className={className}>
-      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-        <Users className="size-5 text-gray-400" />
-        Técnicos asignados
-      </h2>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <Users className="size-5 text-gray-400" />
+          Técnicos asignados
+        </h2>
+        {puedeAsignar && (
+          <Modal>
+            <Button type="button" variant="outline" size="sm">
+              <UserPlus className="size-4" />
+              Asignar técnico
+            </Button>
+            <Modal.Backdrop>
+              <Modal.Container>
+                <Modal.Dialog className="sm:max-w-sm">
+                  {({ close }) => (
+                    <>
+                      <Modal.CloseTrigger />
+                      <Modal.Header>
+                        <Modal.Icon className="bg-gray-100 text-gray-500">
+                          <Wrench className="size-5" />
+                        </Modal.Icon>
+                        <Modal.Heading>Asignar técnico</Modal.Heading>
+                      </Modal.Header>
+                      <Modal.Body>
+                        <SelectedField
+                          label="Empleado"
+                          placeholder="Selecciona un empleado"
+                          className="w-full"
+                          value={empleadoId}
+                          onChange={(value) =>
+                            setEmpleadoId(value === "" ? "" : Number(value))
+                          }
+                        >
+                          {empleadosDisponibles.map((empleado) => (
+                            <ListBox.Item
+                              key={empleado.id}
+                              id={empleado.id}
+                              textValue={empleado.nombreCompleto}
+                            >
+                              {empleado.nombreCompleto}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          ))}
+                        </SelectedField>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button slot="close" variant="secondary">
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="button"
+                          isDisabled={empleadoId === "" || pendiente !== null}
+                          isPending={pendiente === "nuevo"}
+                          onClick={() => handleAsignar(close)}
+                        >
+                          <UserPlus className="size-4" />
+                          Asignar
+                        </Button>
+                      </Modal.Footer>
+                    </>
+                  )}
+                </Modal.Dialog>
+              </Modal.Container>
+            </Modal.Backdrop>
+          </Modal>
+        )}
+      </div>
       {asignados.length ? (
         <ul className="divide-y divide-gray-200">
           {asignados.map((a) => (
@@ -102,7 +168,7 @@ export function AsignarEmpleadosProyecto({
                   </p>
                 </div>
               </div>
-              {puedeEditar && proyecto.estado !== "CANCELADO" && (
+              {puedeAsignar && (
                 <Button
                   type="button"
                   variant="outline"
@@ -118,43 +184,10 @@ export function AsignarEmpleadosProyecto({
           ))}
         </ul>
       ) : (
-        <p className="mb-4 flex items-center gap-2 text-gray-500">
+        <p className="flex items-center gap-2 text-gray-500">
           <UserX className="size-5 text-gray-400" />
           Este proyecto todavía no tiene técnicos asignados.
         </p>
-      )}
-      {puedeEditar && proyecto.estado !== "CANCELADO" && (
-        <div className="mt-4 flex flex-wrap items-end gap-3">
-          <SelectedField
-            label="Asignar técnico"
-            placeholder="Selecciona un empleado"
-            className="min-w-60"
-            value={empleadoId}
-            onChange={(value) =>
-              setEmpleadoId(value === "" ? "" : Number(value))
-            }
-          >
-            {empleadosDisponibles.map((empleado) => (
-              <ListBox.Item
-                key={empleado.id}
-                id={empleado.id}
-                textValue={empleado.nombreCompleto}
-              >
-                {empleado.nombreCompleto}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-            ))}
-          </SelectedField>
-          <Button
-            type="button"
-            isDisabled={empleadoId === "" || pendiente !== null}
-            isPending={pendiente === "nuevo"}
-            onClick={handleAsignar}
-          >
-            <UserPlus className="size-4" />
-            Asignar
-          </Button>
-        </div>
       )}
     </section>
   );
