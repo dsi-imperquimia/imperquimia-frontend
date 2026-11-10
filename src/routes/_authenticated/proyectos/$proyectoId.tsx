@@ -5,6 +5,7 @@ import { getProyecto } from "@modules/proyectos/api/getProyecto";
 import { dinero, fecha } from "@modules/proyectos/types/proyectos";
 import { DialogCancelarProyecto } from "@modules/proyectos/components/DialogCancelarProyecto";
 import { AsignarJefeProyecto } from "@modules/proyectos/components/AsignarJefeProyecto";
+import { AsignarEmpleadosProyecto } from "@modules/proyectos/components/AsignarEmpleadosProyecto";
 import { userActions } from "@modules/auth/store/authStore";
 
 export const Route = createFileRoute("/_authenticated/proyectos/$proyectoId")({
@@ -105,6 +106,7 @@ function Detalle() {
         </div>
       </section>
       <AsignarJefeProyecto proyecto={p} editable={false} />
+      <AsignarEmpleadosProyecto proyecto={p} editable={false} />
       <section className="rounded-xl border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-lg font-semibold">
           Presupuesto de materiales

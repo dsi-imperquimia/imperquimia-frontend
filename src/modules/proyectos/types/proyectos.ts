@@ -31,6 +31,17 @@ export interface ProyectoDetalle extends Proyecto {
     codigoUnico: string;
     estado: string;
   }[];
+  empleados: {
+    empleadoId: number;
+    fechaAsignacion: string;
+    fechaRetiro?: string | null;
+    empleado: {
+      id: number;
+      nombreCompleto: string;
+      activo: boolean;
+      cargo?: { nombre: string } | null;
+    };
+  }[];
   detalles: {
     id: number;
     material: { id: number; nombre: string };
