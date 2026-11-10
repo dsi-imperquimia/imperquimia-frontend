@@ -1,8 +1,11 @@
+import { InputField } from "@components/fields/InputField";
+import { SelectedField } from "@components/fields/SelectedField";
 import { Button } from "@heroui/react/button";
+import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Users, UserMinus, UserPlus, UserX, Wrench } from "lucide-react";
+import { Search, Users, UserMinus, UserPlus, UserX, Wrench } from "lucide-react";
 import { useState } from "react";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { userActions } from "@modules/auth/store/authStore";
@@ -28,6 +31,8 @@ export function AsignarEmpleadosProyecto({
   const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
   const puedeAsignar = puedeEditar && proyecto.estado !== "CANCELADO";
   const [pendiente, setPendiente] = useState<number | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [cargoFiltro, setCargoFiltro] = useState("");
 
   const { data: empleados = [] } = useQuery({
     queryKey: ["empleados"],
@@ -74,6 +79,21 @@ export function AsignarEmpleadosProyecto({
       empleado.activo &&
       !asignados.some((a) => a.empleadoId === empleado.id),
   );
+  const cargosDisponibles = [
+    ...new Set(
+      empleadosDisponibles
+        .map((empleado) => empleado.cargo?.nombre)
+        .filter((nombre): nombre is string => Boolean(nombre)),
+    ),
+  ].sort();
+  const texto = busqueda.trim().toLowerCase();
+  const empleadosFiltrados = empleadosDisponibles.filter(
+    (empleado) =>
+      (!cargoFiltro || empleado.cargo?.nombre === cargoFiltro) &&
+      (!texto ||
+        empleado.nombreCompleto.toLowerCase().includes(texto) ||
+        (empleado.cargo?.nombre ?? "").toLowerCase().includes(texto)),
+  );
 
   return (
     <section className={className}>
@@ -89,8 +109,8 @@ export function AsignarEmpleadosProyecto({
               Asignar técnico
             </Button>
             <Modal.Backdrop>
-              <Modal.Container>
-                <Modal.Dialog className="sm:max-w-md">
+              <Modal.Container size="lg">
+                <Modal.Dialog>
                   <Modal.CloseTrigger />
                   <Modal.Header>
                     <Modal.Icon className="bg-gray-100 text-gray-500">
@@ -98,8 +118,36 @@ export function AsignarEmpleadosProyecto({
                     </Modal.Icon>
                     <Modal.Heading>Asignar técnico</Modal.Heading>
                   </Modal.Header>
-                  <Modal.Body className="max-h-80 overflow-y-auto p-0">
-                    {empleadosDisponibles.length ? (
+                  <Modal.Body className="max-h-[28rem] overflow-y-auto p-0">
+                    <div className="flex flex-wrap gap-3 border-b border-gray-200 px-6 py-4">
+                      <InputField
+                        label="Buscar"
+                        placeholder="Nombre o cargo"
+                        className="min-w-48 flex-1"
+                        startContent={<Search className="size-4" />}
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                      />
+                      <SelectedField
+                        label="Cargo"
+                        placeholder="Todos los cargos"
+                        className="min-w-48"
+                        value={cargoFiltro}
+                        onChange={(value) => setCargoFiltro(String(value))}
+                      >
+                        <ListBox.Item id="" textValue="Todos los cargos">
+                          Todos los cargos
+                          <ListBox.ItemIndicator />
+                        </ListBox.Item>
+                        {cargosDisponibles.map((cargo) => (
+                          <ListBox.Item key={cargo} id={cargo} textValue={cargo}>
+                            {cargo}
+                            <ListBox.ItemIndicator />
+                          </ListBox.Item>
+                        ))}
+                      </SelectedField>
+                    </div>
+                    {empleadosFiltrados.length ? (
                       <table className="w-full text-left text-sm">
                         <thead>
                           <tr className="text-gray-500">
@@ -109,7 +157,7 @@ export function AsignarEmpleadosProyecto({
                           </tr>
                         </thead>
                         <tbody>
-                          {empleadosDisponibles.map((empleado) => (
+                          {empleadosFiltrados.map((empleado) => (
                             <tr
                               key={empleado.id}
                               className="border-t border-gray-200"
@@ -139,7 +187,9 @@ export function AsignarEmpleadosProyecto({
                     ) : (
                       <p className="flex items-center gap-2 px-6 py-4 text-gray-500">
                         <UserX className="size-5 text-gray-400" />
-                        No hay empleados disponibles para asignar.
+                        {empleadosDisponibles.length
+                          ? "Ningún empleado coincide con el filtro."
+                          : "No hay empleados disponibles para asignar."}
                       </p>
                     )}
                   </Modal.Body>
