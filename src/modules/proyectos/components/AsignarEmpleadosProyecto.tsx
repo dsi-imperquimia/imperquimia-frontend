@@ -1,6 +1,4 @@
-import { SelectedField } from "@components/fields/SelectedField";
 import { Button } from "@heroui/react/button";
-import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,8 +27,7 @@ export function AsignarEmpleadosProyecto({
   const client = useQueryClient();
   const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
   const puedeAsignar = puedeEditar && proyecto.estado !== "CANCELADO";
-  const [empleadoId, setEmpleadoId] = useState<number | "">("");
-  const [pendiente, setPendiente] = useState<number | "nuevo" | null>(null);
+  const [pendiente, setPendiente] = useState<number | null>(null);
 
   const { data: empleados = [] } = useQuery({
     queryKey: ["empleados"],
@@ -44,15 +41,12 @@ export function AsignarEmpleadosProyecto({
     await client.invalidateQueries({ queryKey: ["proyectos", proyecto.id] });
   }
 
-  async function handleAsignar(cerrar: () => void) {
-    if (empleadoId === "") return;
-    setPendiente("nuevo");
+  async function handleAsignar(id: number) {
+    setPendiente(id);
     try {
-      await asignarEmpleadoProyecto(proyecto.id, empleadoId);
+      await asignarEmpleadoProyecto(proyecto.id, id);
       await refrescar();
-      setEmpleadoId("");
       toast.success("Técnico asignado al proyecto");
-      cerrar();
     } catch (error) {
       toast.danger(errorEmpleadoProyecto(error));
     } finally {
@@ -96,54 +90,64 @@ export function AsignarEmpleadosProyecto({
             </Button>
             <Modal.Backdrop>
               <Modal.Container>
-                <Modal.Dialog className="sm:max-w-sm">
-                  {({ close }) => (
-                    <>
-                      <Modal.CloseTrigger />
-                      <Modal.Header>
-                        <Modal.Icon className="bg-gray-100 text-gray-500">
-                          <Wrench className="size-5" />
-                        </Modal.Icon>
-                        <Modal.Heading>Asignar técnico</Modal.Heading>
-                      </Modal.Header>
-                      <Modal.Body>
-                        <SelectedField
-                          label="Empleado"
-                          placeholder="Selecciona un empleado"
-                          className="w-full"
-                          value={empleadoId}
-                          onChange={(value) =>
-                            setEmpleadoId(value === "" ? "" : Number(value))
-                          }
-                        >
+                <Modal.Dialog className="sm:max-w-md">
+                  <Modal.CloseTrigger />
+                  <Modal.Header>
+                    <Modal.Icon className="bg-gray-100 text-gray-500">
+                      <Wrench className="size-5" />
+                    </Modal.Icon>
+                    <Modal.Heading>Asignar técnico</Modal.Heading>
+                  </Modal.Header>
+                  <Modal.Body className="max-h-80 overflow-y-auto p-0">
+                    {empleadosDisponibles.length ? (
+                      <table className="w-full text-left text-sm">
+                        <thead>
+                          <tr className="text-gray-500">
+                            <th className="px-6 py-2 font-normal">Empleado</th>
+                            <th className="px-6 py-2 font-normal">Cargo</th>
+                            <th className="px-6 py-2" />
+                          </tr>
+                        </thead>
+                        <tbody>
                           {empleadosDisponibles.map((empleado) => (
-                            <ListBox.Item
+                            <tr
                               key={empleado.id}
-                              id={empleado.id}
-                              textValue={empleado.nombreCompleto}
+                              className="border-t border-gray-200"
                             >
-                              {empleado.nombreCompleto}
-                              <ListBox.ItemIndicator />
-                            </ListBox.Item>
+                              <td className="px-6 py-2">
+                                {empleado.nombreCompleto}
+                              </td>
+                              <td className="px-6 py-2 text-gray-500">
+                                {empleado.cargo?.nombre ?? "Sin cargo"}
+                              </td>
+                              <td className="px-6 py-2 text-right">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  isDisabled={pendiente !== null}
+                                  isPending={pendiente === empleado.id}
+                                  onClick={() => handleAsignar(empleado.id)}
+                                >
+                                  <UserPlus className="size-4" />
+                                  Asignar
+                                </Button>
+                              </td>
+                            </tr>
                           ))}
-                        </SelectedField>
-                      </Modal.Body>
-                      <Modal.Footer>
-                        <Button slot="close" variant="secondary">
-                          Cancelar
-                        </Button>
-                        <Button
-                          type="button"
-                          isDisabled={empleadoId === "" || pendiente !== null}
-                          isPending={pendiente === "nuevo"}
-                          onClick={() => handleAsignar(close)}
-                        >
-                          <UserPlus className="size-4" />
-                          Asignar
-                        </Button>
-                      </Modal.Footer>
-                    </>
-                  )}
+                        </tbody>
+                      </table>
+                    ) : (
+                      <p className="flex items-center gap-2 px-6 py-4 text-gray-500">
+                        <UserX className="size-5 text-gray-400" />
+                        No hay empleados disponibles para asignar.
+                      </p>
+                    )}
+                  </Modal.Body>
+                  <Modal.Footer>
+                    <Button slot="close" variant="secondary">
+                      Cerrar
+                    </Button>
+                  </Modal.Footer>
                 </Modal.Dialog>
               </Modal.Container>
             </Modal.Backdrop>
