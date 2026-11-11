@@ -40,6 +40,7 @@ export interface ProyectoDetalle extends Proyecto {
       nombreCompleto: string;
       activo: boolean;
       cargo?: { nombre: string } | null;
+      habilidades: { habilidadId: number; habilidad: { nombre: string } }[];
     };
   }[];
   detalles: {
