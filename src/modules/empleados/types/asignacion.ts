@@ -2,7 +2,7 @@ export interface ProyectoAsignado {
   id: number;
   nombre: string;
   estado: string;
-  fechaAsignacion: string;
+  roles: ("TECNICO" | "JEFE")[];
 }
 
 export interface AsignacionEmpleado {
