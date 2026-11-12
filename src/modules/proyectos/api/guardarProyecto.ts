@@ -26,8 +26,8 @@ export async function guardarProyecto(datos: DatosProyecto, id?: number) {
     : await http.post<Proyecto>("/proyectos", datos);
   return data;
 }
-export async function cancelarProyecto(id: number) {
-  await http.patch(`/proyectos/${id}/cancelar`);
+export async function cancelarProyecto(id: number, motivo: string) {
+  await http.patch(`/proyectos/${id}/cancelar`, { motivo });
 }
 
 export function errorCancelarProyecto(error: unknown) {

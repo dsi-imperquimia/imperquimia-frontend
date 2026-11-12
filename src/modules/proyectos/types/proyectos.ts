@@ -12,6 +12,7 @@ export interface Proyecto {
   fechaFin?: string | null;
   cotizacionId?: number | null;
   estado: EstadoProyecto;
+  motivoCancelacion?: string | null;
   subTotal: string | number;
   totalIva: string | number;
   total: string | number;

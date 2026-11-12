@@ -130,7 +130,13 @@ function Proyectos() {
                     {fecha(p.fechaFin)}
                   </td>
                   <td className="px-4 py-4">
-                    <span className="inline-flex whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold">
+                    <span
+                      className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${
+                        p.estado === "CANCELADO"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100"
+                      }`}
+                    >
                       {p.estado === "GARANTIA" ? "GARANTÍA" : p.estado}
                     </span>
                   </td>
