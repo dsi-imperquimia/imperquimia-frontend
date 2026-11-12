@@ -15,14 +15,33 @@ export interface Proyecto {
   subTotal: string | number;
   totalIva: string | number;
   total: string | number;
+  jefeProyectoId?: number | null;
 }
 export interface ProyectoDetalle extends Proyecto {
   creadoPor?: { id: number; name: string; lastName: string } | null;
+  jefeProyecto?: {
+    id: number;
+    nombreCompleto: string;
+    activo: boolean;
+    cargo?: { nombre: string } | null;
+  } | null;
   herramientas: {
     id: number;
     nombre: string;
     codigoUnico: string;
     estado: string;
+  }[];
+  empleados: {
+    empleadoId: number;
+    fechaAsignacion: string;
+    fechaRetiro?: string | null;
+    empleado: {
+      id: number;
+      nombreCompleto: string;
+      activo: boolean;
+      cargo?: { nombre: string } | null;
+      habilidades: { habilidadId: number; habilidad: { nombre: string } }[];
+    };
   }[];
   detalles: {
     id: number;

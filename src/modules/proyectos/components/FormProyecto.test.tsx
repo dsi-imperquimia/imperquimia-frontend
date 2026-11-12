@@ -180,6 +180,7 @@ describe("Materiales de proyectos", () => {
       totalIva: "2.60",
       total: "22.60",
       herramientas: [],
+      empleados: [],
       detalles: [
         {
           id: 5,
