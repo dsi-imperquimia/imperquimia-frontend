@@ -7,7 +7,7 @@ import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
 import type { Material } from "@modules/materiales/types/material";
 import type { Proyecto } from "@modules/proyectos/types/proyectos";
-import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
+import { Search } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   errorMovimientoMaterial,
@@ -15,6 +15,7 @@ import {
 } from "../api/inventario-materiales";
 import {
   MOTIVO_LABEL,
+  type ExistenciaMaterial,
   type MotivoMovimientoMaterial,
 } from "../types/inventario-material";
 
@@ -27,12 +28,21 @@ const MOTIVOS: Record<TipoFormulario, MotivoMovimientoMaterial[]> = {
 
 const nuevaClave = () => globalThis.crypto.randomUUID();
 
+function searchable(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase();
+}
+
 export function MovimientoMaterialModal({
   tipo,
   isOpen,
   onOpenChange,
   materiales,
   proyectos,
+  existencias,
+  initialMaterialId,
   onSuccess,
 }: {
   tipo: TipoFormulario;
@@ -40,9 +50,14 @@ export function MovimientoMaterialModal({
   onOpenChange: (open: boolean) => void;
   materiales: Material[];
   proyectos: Proyecto[];
+  existencias: ExistenciaMaterial[];
+  initialMaterialId?: number;
   onSuccess: () => Promise<void>;
 }) {
-  const [materialId, setMaterialId] = useState("");
+  const [materialId, setMaterialId] = useState(
+    initialMaterialId ? String(initialMaterialId) : "",
+  );
+  const [materialSearch, setMaterialSearch] = useState("");
   const [cantidad, setCantidad] = useState("");
   const [motivo, setMotivo] = useState<MotivoMovimientoMaterial>(
     MOTIVOS[tipo][0],
@@ -57,14 +72,66 @@ export function MovimientoMaterialModal({
     motivo === "DEVOLUCION_PROYECTO" || motivo === "USO_PROYECTO";
   const requiereObservacion = motivo === "OTRO";
 
+  const materialSeleccionado = materiales.find(
+    (material) => material.id === Number(materialId),
+  );
+  const materialQuery = searchable(materialSearch.trim());
+  const materialesVisibles = materiales.filter((material) => {
+    if (material.id === materialSeleccionado?.id) return true;
+    return searchable(
+      [material.codigo, material.nombre, material.descripcion, material.unidad]
+        .filter(Boolean)
+        .join(" "),
+    ).includes(materialQuery);
+  });
+  const proyectosConMaterial = new Set(
+    existencias
+      .filter(
+        (existencia) =>
+          existencia.material.id === Number(materialId) &&
+          existencia.ubicacion.tipo === "PROYECTO" &&
+          existencia.ubicacion.proyectoId !== null &&
+          Number(existencia.cantidad) > 0,
+      )
+      .map((existencia) => existencia.ubicacion.proyectoId),
+  );
+  const proyectosElegibles = proyectos.filter((proyecto) =>
+    tipo === "SALIDA"
+      ? proyecto.estado === "ACTIVO"
+      : proyecto.estado === "ACTIVO" && proyectosConMaterial.has(proyecto.id),
+  );
+  const existenciaBodega = existencias.find(
+    (existencia) =>
+      existencia.material.id === Number(materialId) &&
+      existencia.ubicacion.tipo === "BODEGA",
+  );
+  const existenciaProyecto = existencias.find(
+    (existencia) =>
+      existencia.material.id === Number(materialId) &&
+      existencia.ubicacion.proyectoId === Number(proyectoId),
+  );
+  const existenciaOrigen =
+    tipo === "SALIDA"
+      ? existenciaBodega
+      : motivo === "DEVOLUCION_PROYECTO"
+        ? existenciaProyecto
+        : undefined;
+  const saldoMostrado =
+    motivo === "DEVOLUCION_PROYECTO"
+      ? existenciaProyecto?.cantidad
+      : existenciaBodega?.cantidad;
+
   useEffect(() => {
     setMotivo(MOTIVOS[tipo][0]);
+    setMaterialId(initialMaterialId ? String(initialMaterialId) : "");
+    setMaterialSearch("");
     setProyectoId("");
     setError(undefined);
-  }, [tipo, isOpen]);
+  }, [tipo, isOpen, initialMaterialId]);
 
   function reset() {
     setMaterialId("");
+    setMaterialSearch("");
     setCantidad("");
     setMotivo(MOTIVOS[tipo][0]);
     setProyectoId("");
@@ -91,6 +158,14 @@ export function MovimientoMaterialModal({
     }
     if (requiereObservacion && !observacion.trim()) {
       return setError("Describe el motivo del movimiento.");
+    }
+    if (
+      existenciaOrigen &&
+      cantidadNumero > Number(existenciaOrigen.cantidad)
+    ) {
+      return setError(
+        `La cantidad supera el saldo disponible. Actualmente hay ${Number(existenciaOrigen.cantidad).toLocaleString("es-SV", { maximumFractionDigits: 2 })} ${materialSeleccionado?.unidad ?? "unidades"}.`,
+      );
     }
 
     setIsPending(true);
@@ -119,17 +194,13 @@ export function MovimientoMaterialModal({
     }
   }
 
-  const Icon = tipo === "ENTRADA" ? ArrowDownToLine : ArrowUpFromLine;
   return (
     <Modal isOpen={isOpen} onOpenChange={handleOpenChange}>
       <Modal.Backdrop>
         <Modal.Container>
-          <Modal.Dialog className="w-full sm:max-w-2xl">
+          <Modal.Dialog className="max-h-[calc(100vh-2rem)] w-full overflow-hidden sm:max-w-2xl">
             <Modal.CloseTrigger />
-            <Modal.Header className="flex items-center gap-3">
-              <Modal.Icon className="bg-gray-100 text-gray-600">
-                <Icon className="size-5" />
-              </Modal.Icon>
+            <Modal.Header>
               <div>
                 <Modal.Heading>
                   Registrar {tipo === "ENTRADA" ? "entrada" : "salida"}
@@ -139,8 +210,19 @@ export function MovimientoMaterialModal({
                 </p>
               </div>
             </Modal.Header>
-            <form onSubmit={handleSubmit}>
-              <Modal.Body className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            >
+              <Modal.Body className="min-h-0 space-y-4 overflow-y-auto">
+                <InputField
+                  label="Buscar material"
+                  type="search"
+                  placeholder="Nombre, código, descripción o unidad"
+                  startContent={<Search className="size-4 text-gray-400" />}
+                  value={materialSearch}
+                  onChange={(event) => setMaterialSearch(event.target.value)}
+                />
                 <SelectedField
                   label="Material"
                   placeholder="Selecciona un material"
@@ -148,7 +230,7 @@ export function MovimientoMaterialModal({
                   onSelectionChange={(key) => setMaterialId(String(key ?? ""))}
                   isRequired
                 >
-                  {materiales.map((material) => (
+                  {materialesVisibles.map((material) => (
                     <ListBox.Item
                       key={material.id}
                       id={String(material.id)}
@@ -164,6 +246,26 @@ export function MovimientoMaterialModal({
                     </ListBox.Item>
                   ))}
                 </SelectedField>
+                {materialesVisibles.length === 0 && (
+                  <p className="text-sm text-gray-500">
+                    No se encontraron materiales con esa búsqueda.
+                  </p>
+                )}
+
+                {materialId && saldoMostrado !== undefined && (
+                  <p className="rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-800">
+                    {motivo === "DEVOLUCION_PROYECTO"
+                      ? "Disponible en el proyecto seleccionado"
+                      : "Disponible actualmente en bodega"}
+                    :{" "}
+                    <strong>
+                      {Number(saldoMostrado).toLocaleString("es-SV", {
+                        maximumFractionDigits: 2,
+                      })}{" "}
+                      {materialSeleccionado?.unidad}
+                    </strong>
+                  </p>
+                )}
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <InputField
@@ -211,18 +313,26 @@ export function MovimientoMaterialModal({
                     }
                     isRequired
                   >
-                    {proyectos
-                      .filter((proyecto) => proyecto.estado !== "CANCELADO")
-                      .map((proyecto) => (
-                        <ListBox.Item
-                          key={proyecto.id}
-                          id={String(proyecto.id)}
-                          textValue={proyecto.nombre}
-                        >
-                          {proyecto.nombre}
-                        </ListBox.Item>
-                      ))}
+                    {proyectosElegibles.map((proyecto) => (
+                      <ListBox.Item
+                        key={proyecto.id}
+                        id={String(proyecto.id)}
+                        textValue={proyecto.nombre}
+                      >
+                        {proyecto.nombre}
+                      </ListBox.Item>
+                    ))}
                   </SelectedField>
+                )}
+
+                {requiereProyecto && proyectosElegibles.length === 0 && (
+                  <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                    {tipo === "ENTRADA"
+                      ? materialId
+                        ? "Este material no tiene existencias pendientes de devolución en ningún proyecto."
+                        : "Selecciona un material para ver los proyectos con existencias."
+                      : "No hay proyectos activos disponibles para recibir materiales."}
+                  </p>
                 )}
 
                 <TextAreaField
@@ -236,6 +346,14 @@ export function MovimientoMaterialModal({
                   onChange={(event) => setObservacion(event.target.value)}
                   isRequired={requiereObservacion}
                 />
+
+                {requiereObservacion && (
+                  <p className="text-xs text-gray-500">
+                    Usa “Otro” únicamente para un ajuste extraordinario que no
+                    sea compra, devolución, uso en proyecto o venta. La
+                    descripción quedará en el historial.
+                  </p>
+                )}
 
                 {error && (
                   <p

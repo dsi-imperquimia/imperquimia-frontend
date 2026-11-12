@@ -3,7 +3,6 @@ import {
   FileText,
   Layers,
   LayoutDashboard,
-  PackageOpen,
   ShieldUser,
   Users,
   Wrench,
@@ -164,7 +163,6 @@ export const NAV_ITEMS: NavItem[] = [
       {
         label: "Inventario de materiales",
         to: "/materiales/inventario",
-        icon: PackageOpen,
         permission: ["INVENTARIO_MATERIAL_READ"],
       },
     ],
