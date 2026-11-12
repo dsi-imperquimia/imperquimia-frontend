@@ -9,8 +9,12 @@ import { SelectedField } from "@components/fields/SelectedField";
 import { ListBox } from "@heroui/react/list-box";
 import { guardarProyecto, errorProyecto } from "../api/guardarProyecto";
 import type { DatosProyecto, ErroresProyecto } from "../api/guardarProyecto";
-import type { ProyectoDetalle } from "../types/proyectos";
-import { dinero } from "../types/proyectos";
+import type {
+  EstadoEditableProyecto,
+  ProyectoDetalle,
+  TipoObra,
+} from "../types/proyectos";
+import { dinero, TIPOS_OBRA_LABEL } from "../types/proyectos";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
@@ -47,6 +51,11 @@ function etiquetaDetalle(clave: string) {
     : `Cantidad del material ${numeroMaterial}`;
 }
 
+// Solo Activo/En pausa se pueden alternar desde la edición general;
+// cancelar es un flujo dedicado (GPRCIMPER-28) y los demás estados son finales.
+const estadoEsEditable = (estado?: string): estado is EstadoEditableProyecto =>
+  estado === "ACTIVO" || estado === "EN_PAUSA";
+
 export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [datos, setDatos] = useState<Omit<DatosProyecto, "detalles">>({
@@ -59,6 +68,10 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     fechaInicio: proyecto?.fechaInicio?.slice(0, 10) ?? "",
     fechaFin: proyecto?.fechaFin?.slice(0, 10) ?? "",
     jefeProyectoId: undefined,
+    estado: estadoEsEditable(proyecto?.estado) ? proyecto.estado : undefined,
+    tipoObra: proyecto?.tipoObra ?? "",
+    presupuesto:
+      proyecto?.presupuesto != null ? String(proyecto.presupuesto) : "",
   });
   const [detalles, setDetalles] = useState(
     proyecto?.detalles.map((detalle) => ({
@@ -260,6 +273,15 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
               "Ingresa una cantidad mayor que cero, con hasta dos decimales.";
           }
         });
+        if (
+          proyecto &&
+          datos.presupuesto &&
+          (!/^\d+(?:\.\d{1,2})?$/.test(String(datos.presupuesto)) ||
+            Number(datos.presupuesto) < 0)
+        ) {
+          nuevosErrores.presupuesto =
+            "Ingresa un presupuesto válido, mayor o igual a 0, con hasta dos decimales.";
+        }
         if (Object.keys(nuevosErrores).length > 0) {
           setErroresCampo(nuevosErrores);
           setError(
@@ -287,6 +309,12 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
               ...datos,
               phone: datos.phone.replace(/\D/g, ""),
               detalles: detallesPayload,
+              estado: proyecto ? datos.estado : undefined,
+              tipoObra: proyecto && datos.tipoObra ? datos.tipoObra : undefined,
+              presupuesto:
+                proyecto && datos.presupuesto
+                  ? Number(datos.presupuesto)
+                  : undefined,
             },
             proyecto?.id,
           );
@@ -577,6 +605,79 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           </div>
         </dl>
       </section>
+      {proyecto && (
+        <section className="space-y-4 border-t border-gray-200 pt-5">
+          <h2 className="text-lg font-semibold">Detalles del proyecto</h2>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <SelectedField
+              label="Tipo de obra"
+              placeholder="Sin definir"
+              isDisabled={guardando}
+              value={datos.tipoObra ?? ""}
+              onChange={(value) =>
+                setDatos({ ...datos, tipoObra: value as TipoObra | "" })
+              }
+            >
+              <ListBox.Item id="" textValue="Sin definir">
+                Sin definir
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+              {Object.entries(TIPOS_OBRA_LABEL).map(([valor, etiqueta]) => (
+                <ListBox.Item key={valor} id={valor} textValue={etiqueta}>
+                  {etiqueta}
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              ))}
+            </SelectedField>
+            <InputField
+              label="Presupuesto"
+              type="number"
+              min="0"
+              step="0.01"
+              disabled={guardando}
+              errorMessage={erroresCampo.presupuesto}
+              value={datos.presupuesto ?? ""}
+              onChange={(e) => {
+                setDatos({ ...datos, presupuesto: e.target.value });
+                setErroresCampo((actuales) => {
+                  const siguientes = { ...actuales };
+                  delete siguientes.presupuesto;
+                  return siguientes;
+                });
+              }}
+            />
+            {estadoEsEditable(proyecto.estado) ? (
+              <SelectedField
+                label="Estado"
+                isDisabled={guardando}
+                value={datos.estado ?? proyecto.estado}
+                onChange={(value) =>
+                  setDatos({
+                    ...datos,
+                    estado: value as EstadoEditableProyecto,
+                  })
+                }
+              >
+                <ListBox.Item id="ACTIVO" textValue="Activo">
+                  Activo
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+                <ListBox.Item id="EN_PAUSA" textValue="En pausa">
+                  En pausa
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              </SelectedField>
+            ) : (
+              <div className="flex flex-col gap-1 text-sm">
+                <span className="text-gray-700">Estado</span>
+                <span className="rounded-lg border border-gray-200 bg-gray-50 p-2 text-gray-500">
+                  {proyecto.estado} (no editable aquí)
+                </span>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
       {proyecto ? (
         <>
           <AsignarJefeProyecto

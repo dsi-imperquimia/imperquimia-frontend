@@ -1,5 +1,9 @@
 import { http } from "@lib/http";
-import type { Proyecto } from "../types/proyectos";
+import type {
+  EstadoEditableProyecto,
+  Proyecto,
+  TipoObra,
+} from "../types/proyectos";
 import { isAxiosError } from "axios";
 
 export interface DatosProyecto {
@@ -13,6 +17,10 @@ export interface DatosProyecto {
   fechaFin: string;
   detalles: { materialId: number; cantidad: number }[];
   jefeProyectoId?: number;
+  // Solo aplican al editar un proyecto existente (GPRCIMPER-27).
+  estado?: EstadoEditableProyecto;
+  tipoObra?: TipoObra | "";
+  presupuesto?: string | number;
 }
 
 export interface ErroresProyecto {
@@ -103,6 +111,9 @@ export function errorProyecto(error: unknown) {
       fechaFin:
         "Ingresa una fecha de fin válida en formato AAAA-MM-DD y que no sea anterior al inicio.",
       detalles: "Revisa los materiales y sus cantidades.",
+      estado: "Selecciona un estado válido (Activo o En pausa).",
+      tipoObra: "Selecciona un tipo de obra válido.",
+      presupuesto: "Ingresa un presupuesto válido, mayor o igual a 0.",
     };
 
     for (const [campo, valor] of Object.entries(errores)) {
