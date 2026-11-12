@@ -3,6 +3,7 @@ import {
   FileText,
   Layers,
   LayoutDashboard,
+  PackageOpen,
   ShieldUser,
   Users,
   Wrench,
@@ -158,6 +159,14 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Materiales",
     icon: Layers,
     to: "/materiales",
-    children: [{ label: "Lista de materiales", to: "/materiales" }],
+    children: [
+      { label: "Lista de materiales", to: "/materiales" },
+      {
+        label: "Inventario de materiales",
+        to: "/materiales/inventario",
+        icon: PackageOpen,
+        permission: ["INVENTARIO_MATERIAL_READ"],
+      },
+    ],
   },
 ];
