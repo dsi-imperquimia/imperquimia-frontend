@@ -60,6 +60,29 @@ export function errorJefeProyecto(error: unknown) {
     : "No se pudo actualizar el jefe de proyecto. Inténtalo de nuevo.";
 }
 
+export async function asignarEmpleadoProyecto(id: number, empleadoId: number) {
+  const { data } = await http.post<Proyecto>(
+    `/proyectos/${id}/empleados/${empleadoId}`,
+  );
+  return data;
+}
+
+export async function retirarEmpleadoProyecto(id: number, empleadoId: number) {
+  const { data } = await http.patch<Proyecto>(
+    `/proyectos/${id}/empleados/${empleadoId}/retirar`,
+  );
+  return data;
+}
+
+export function errorEmpleadoProyecto(error: unknown) {
+  const mensaje: unknown = isAxiosError(error)
+    ? error.response?.data?.message
+    : null;
+  return typeof mensaje === "string"
+    ? mensaje
+    : "No se pudo actualizar el técnico asignado. Inténtalo de nuevo.";
+}
+
 export function errorProyecto(error: unknown) {
   const mensaje: unknown = isAxiosError(error)
     ? error.response?.data?.message

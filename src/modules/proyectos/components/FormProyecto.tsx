@@ -14,6 +14,7 @@ import { dinero } from "../types/proyectos";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
+import { AsignarEmpleadosProyecto } from "./AsignarEmpleadosProyecto";
 import { listProyectos } from "../api/listProyectos";
 
 function esFechaValida(fecha: string) {
@@ -577,10 +578,16 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
         </dl>
       </section>
       {proyecto ? (
-        <AsignarJefeProyecto
-          proyecto={proyecto}
-          className="space-y-4 border-t border-gray-200 pt-5"
-        />
+        <>
+          <AsignarJefeProyecto
+            proyecto={proyecto}
+            className="space-y-4 border-t border-gray-200 pt-5"
+          />
+          <AsignarEmpleadosProyecto
+            proyecto={proyecto}
+            className="space-y-4 border-t border-gray-200 pt-5"
+          />
+        </>
       ) : (
         <section className="space-y-4 border-t border-gray-200 pt-5">
           <h2 className="flex items-center gap-2 text-lg font-semibold">
