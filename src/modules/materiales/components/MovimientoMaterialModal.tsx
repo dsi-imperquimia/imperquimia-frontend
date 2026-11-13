@@ -1,13 +1,14 @@
 import { InputField } from "@components/fields/InputField";
 import { SelectedField } from "@components/fields/SelectedField";
 import { TextAreaField } from "@components/fields/TextAreaField";
+import { ComboBox } from "@heroui/react/combo-box";
 import { Button } from "@heroui/react/button";
+import { Label } from "@heroui/react/label";
 import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
 import type { Material } from "@modules/materiales/types/material";
 import type { Proyecto } from "@modules/proyectos/types/proyectos";
-import { Search } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   errorMovimientoMaterial,
@@ -22,8 +23,8 @@ import {
 type TipoFormulario = "ENTRADA" | "SALIDA";
 
 const MOTIVOS: Record<TipoFormulario, MotivoMovimientoMaterial[]> = {
-  ENTRADA: ["COMPRA", "DEVOLUCION_PROYECTO", "OTRO"],
-  SALIDA: ["USO_PROYECTO", "VENTA", "OTRO"],
+  ENTRADA: ["COMPRA", "DEVOLUCION_PROYECTO"],
+  SALIDA: ["USO_PROYECTO", "VENTA"],
 };
 
 const nuevaClave = () => globalThis.crypto.randomUUID();
@@ -70,8 +71,6 @@ export function MovimientoMaterialModal({
 
   const requiereProyecto =
     motivo === "DEVOLUCION_PROYECTO" || motivo === "USO_PROYECTO";
-  const requiereObservacion = motivo === "OTRO";
-
   const materialSeleccionado = materiales.find(
     (material) => material.id === Number(materialId),
   );
@@ -124,10 +123,13 @@ export function MovimientoMaterialModal({
   useEffect(() => {
     setMotivo(MOTIVOS[tipo][0]);
     setMaterialId(initialMaterialId ? String(initialMaterialId) : "");
-    setMaterialSearch("");
+    setMaterialSearch(
+      materiales.find((material) => material.id === initialMaterialId)
+        ?.nombre ?? "",
+    );
     setProyectoId("");
     setError(undefined);
-  }, [tipo, isOpen, initialMaterialId]);
+  }, [tipo, isOpen, initialMaterialId, materiales]);
 
   function reset() {
     setMaterialId("");
@@ -156,8 +158,8 @@ export function MovimientoMaterialModal({
     if (requiereProyecto && !proyectoId) {
       return setError("Selecciona el proyecto del movimiento.");
     }
-    if (requiereObservacion && !observacion.trim()) {
-      return setError("Describe el motivo del movimiento.");
+    if (!Number.isInteger(cantidadNumero)) {
+      return setError("La cantidad debe ser un número entero.");
     }
     if (
       existenciaOrigen &&
@@ -215,42 +217,58 @@ export function MovimientoMaterialModal({
               className="flex min-h-0 flex-1 flex-col overflow-hidden"
             >
               <Modal.Body className="min-h-0 space-y-4 overflow-y-auto">
-                <InputField
-                  label="Buscar material"
-                  type="search"
-                  placeholder="Nombre, código, descripción o unidad"
-                  startContent={<Search className="size-4 text-gray-400" />}
-                  value={materialSearch}
-                  onChange={(event) => setMaterialSearch(event.target.value)}
-                />
-                <SelectedField
-                  label="Material"
-                  placeholder="Selecciona un material"
+                <ComboBox
+                  items={materialesVisibles}
+                  inputValue={materialSearch}
                   selectedKey={materialId || null}
-                  onSelectionChange={(key) => setMaterialId(String(key ?? ""))}
+                  onInputChange={(value) => {
+                    setMaterialSearch(value);
+                    if (
+                      materialSeleccionado &&
+                      value !== materialSeleccionado.nombre
+                    ) {
+                      setMaterialId("");
+                    }
+                  }}
+                  onSelectionChange={(key) => {
+                    const id = String(key ?? "");
+                    setMaterialId(id);
+                    setMaterialSearch(
+                      materiales.find((material) => material.id === Number(id))
+                        ?.nombre ?? "",
+                    );
+                    setProyectoId("");
+                  }}
+                  allowsCustomValue={false}
+                  menuTrigger="focus"
+                  variant="secondary"
+                  fullWidth
                   isRequired
                 >
-                  {materialesVisibles.map((material) => (
-                    <ListBox.Item
-                      key={material.id}
-                      id={String(material.id)}
-                      textValue={material.nombre}
-                    >
-                      <div className="flex w-full justify-between gap-4">
-                        <span>{material.nombre}</span>
-                        <span className="text-xs text-gray-500">
-                          {material.codigo || `#${material.id}`} ·{" "}
-                          {material.unidad}
-                        </span>
-                      </div>
-                    </ListBox.Item>
-                  ))}
-                </SelectedField>
-                {materialesVisibles.length === 0 && (
-                  <p className="text-sm text-gray-500">
-                    No se encontraron materiales con esa búsqueda.
-                  </p>
-                )}
+                  <Label>Material</Label>
+                  <ComboBox.InputGroup>
+                    <ComboBox.Value placeholder="Busca por nombre, código, descripción o unidad" />
+                    <ComboBox.Trigger />
+                  </ComboBox.InputGroup>
+                  <ComboBox.Popover>
+                    <ListBox items={materialesVisibles}>
+                      {(material) => (
+                        <ListBox.Item
+                          id={String(material.id)}
+                          textValue={material.nombre}
+                        >
+                          <div className="flex w-full justify-between gap-4">
+                            <span>{material.nombre}</span>
+                            <span className="text-xs text-gray-500">
+                              {material.codigo || `#${material.id}`} ·{" "}
+                              {material.unidad}
+                            </span>
+                          </div>
+                        </ListBox.Item>
+                      )}
+                    </ListBox>
+                  </ComboBox.Popover>
+                </ComboBox>
 
                 {materialId && saldoMostrado !== undefined && (
                   <p className="rounded-lg bg-sky-50 px-3 py-2 text-sm text-sky-800">
@@ -271,8 +289,9 @@ export function MovimientoMaterialModal({
                   <InputField
                     label="Cantidad"
                     type="number"
-                    min="0.01"
-                    step="0.01"
+                    min="1"
+                    step="1"
+                    inputMode="numeric"
                     value={cantidad}
                     onChange={(event) => setCantidad(event.target.value)}
                     isRequired
@@ -336,24 +355,11 @@ export function MovimientoMaterialModal({
                 )}
 
                 <TextAreaField
-                  label={
-                    requiereObservacion
-                      ? "Descripción del motivo"
-                      : "Observación"
-                  }
+                  label="Observación"
                   placeholder="Detalle opcional para la auditoría"
                   value={observacion}
                   onChange={(event) => setObservacion(event.target.value)}
-                  isRequired={requiereObservacion}
                 />
-
-                {requiereObservacion && (
-                  <p className="text-xs text-gray-500">
-                    Usa “Otro” únicamente para un ajuste extraordinario que no
-                    sea compra, devolución, uso en proyecto o venta. La
-                    descripción quedará en el historial.
-                  </p>
-                )}
 
                 {error && (
                   <p

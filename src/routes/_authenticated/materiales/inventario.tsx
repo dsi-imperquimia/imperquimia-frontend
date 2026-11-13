@@ -5,13 +5,11 @@ import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
 import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
-import { userActions } from "@modules/auth/store/authStore";
 import {
   listExistenciasMateriales,
   listMovimientosMateriales,
 } from "@modules/materiales/api/inventario-materiales";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
-import { MovimientoMaterialModal } from "@modules/materiales/components/MovimientoMaterialModal";
 import {
   MOTIVO_LABEL,
   type ExistenciaMaterial,
@@ -19,11 +17,9 @@ import {
 } from "@modules/materiales/types/inventario-material";
 import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import {
-  ArrowDownToLine,
   ArrowRightLeft,
-  ArrowUpFromLine,
   Boxes,
   Building2,
   RefreshCw,
@@ -31,24 +27,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-type InventarioSearch = {
-  movimiento?: "ENTRADA" | "SALIDA";
-  materialId?: number;
-};
-
 export const Route = createFileRoute("/_authenticated/materiales/inventario")({
-  validateSearch: (search: Record<string, unknown>): InventarioSearch => {
-    const movimiento =
-      search.movimiento === "ENTRADA" || search.movimiento === "SALIDA"
-        ? search.movimiento
-        : undefined;
-    const materialId = Number(search.materialId);
-    return {
-      movimiento,
-      materialId:
-        Number.isInteger(materialId) && materialId > 0 ? materialId : undefined,
-    };
-  },
   component: InventarioMateriales,
 });
 
@@ -65,12 +44,7 @@ function formatFecha(value: string) {
 }
 
 function InventarioMateriales() {
-  const navigate = useNavigate();
-  const search = Route.useSearch();
   const queryClient = useQueryClient();
-  const [modal, setModal] = useState<"ENTRADA" | "SALIDA" | null>(
-    search.movimiento ?? null,
-  );
   const [busqueda, setBusqueda] = useState("");
   const [materialId, setMaterialId] = useState("");
   const [proyectoId, setProyectoId] = useState("");
@@ -108,10 +82,6 @@ function InventarioMateriales() {
     if (error) toast.danger("No se pudo cargar el inventario de materiales.");
   }, [error]);
 
-  useEffect(() => {
-    if (search.movimiento) setModal(search.movimiento);
-  }, [search.movimiento]);
-
   const saldos = useMemo(() => {
     const texto = busqueda.trim().toLocaleLowerCase();
     return (existencias.data ?? []).filter((item) =>
@@ -142,20 +112,6 @@ function InventarioMateriales() {
 
   const isRefreshing = existencias.isFetching || movimientos.isFetching;
   const isLoading = existencias.isPending || movimientos.isPending;
-  const puedeEntrada = userActions.hasPermission("INVENTARIO_MATERIAL_ENTRY");
-  const puedeSalida = userActions.hasPermission("INVENTARIO_MATERIAL_EXIT");
-
-  function closeModal() {
-    setModal(null);
-    if (search.movimiento || search.materialId) {
-      void navigate({
-        to: "/materiales/inventario",
-        search: {},
-        replace: true,
-      });
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -164,8 +120,7 @@ function InventarioMateriales() {
             Inventario de materiales
           </h1>
           <p className="text-sm text-gray-500">
-            Consulta saldos por ubicación y registra entradas o salidas con
-            trazabilidad.
+            Consulta saldos por ubicación y el historial de movimientos.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -179,18 +134,6 @@ function InventarioMateriales() {
           >
             <RefreshCw className={isRefreshing ? "animate-spin" : ""} />
           </Button>
-          {puedeEntrada && (
-            <Button variant="outline" onClick={() => setModal("ENTRADA")}>
-              <ArrowDownToLine className="size-4" />
-              Registrar entrada
-            </Button>
-          )}
-          {puedeSalida && (
-            <Button onClick={() => setModal("SALIDA")}>
-              <ArrowUpFromLine className="size-4" />
-              Registrar salida
-            </Button>
-          )}
         </div>
       </div>
 
@@ -433,21 +376,6 @@ function InventarioMateriales() {
           )}
         </div>
       </section>
-
-      {modal && (
-        <MovimientoMaterialModal
-          tipo={modal}
-          isOpen
-          onOpenChange={(open) => !open && closeModal()}
-          materiales={(materiales.data ?? []).filter(
-            (material) => material.estado,
-          )}
-          proyectos={proyectos.data ?? []}
-          existencias={existencias.data ?? []}
-          initialMaterialId={search.materialId}
-          onSuccess={refreshAll}
-        />
-      )}
 
       {error && !isLoading && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
