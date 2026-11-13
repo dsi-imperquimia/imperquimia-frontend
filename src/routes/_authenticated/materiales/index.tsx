@@ -1,14 +1,24 @@
 import { Button } from "@heroui/react/button";
 import { toast } from "@heroui/react/toast";
+import { userActions } from "@modules/auth/store/authStore";
+import { listExistenciasMateriales } from "@modules/materiales/api/inventario-materiales";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
 import { storeMaterial } from "@modules/materiales/api/store-material";
 import { MaterialesSearchPanel } from "@modules/materiales/components/MaterialesSearchPanel";
+import { MovimientoMaterialModal } from "@modules/materiales/components/MovimientoMaterialModal";
 import { isMaterialDisponible } from "@modules/materiales/components/materiales-utils";
 import type { Material } from "@modules/materiales/types/material";
+import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Pencil, Plus, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Pencil,
+  Plus,
+  RefreshCw,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/materiales/")({
   component: RouteComponent,
@@ -17,13 +27,33 @@ export const Route = createFileRoute("/_authenticated/materiales/")({
 function RouteComponent() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const puedeEntrada = userActions.hasPermission("INVENTARIO_MATERIAL_ENTRY");
+  const puedeSalida = userActions.hasPermission("INVENTARIO_MATERIAL_EXIT");
   const [busqueda, setBusqueda] = useState("");
+  const [movimiento, setMovimiento] = useState<{
+    tipo: "ENTRADA" | "SALIDA";
+    materialId: number;
+  } | null>(null);
   const { data, isPending, error, refetch, isRefetching } = useQuery<
     Material[]
   >({
     queryKey: ["materiales"],
     queryFn: listMateriales,
   });
+  const existencias = useQuery({
+    queryKey: ["inventario-materiales", "existencias"],
+    queryFn: listExistenciasMateriales,
+    enabled: movimiento !== null,
+  });
+  const proyectos = useQuery({
+    queryKey: ["proyectos"],
+    queryFn: listProyectos,
+    enabled: movimiento !== null,
+  });
+  const materialesActivos = useMemo(
+    () => (data ?? []).filter(isMaterialDisponible),
+    [data],
+  );
 
   useEffect(() => {
     if (!error) return;
@@ -44,6 +74,13 @@ function RouteComponent() {
     } catch {
       toast.danger("Error al cambiar el estado del material.");
     }
+  }
+
+  async function refreshInventario() {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["inventario-materiales"] }),
+      queryClient.invalidateQueries({ queryKey: ["materiales"] }),
+    ]);
   }
 
   return (
@@ -84,11 +121,40 @@ function RouteComponent() {
         renderAction={(material) => {
           const disponible = isMaterialDisponible(material);
           return (
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 flex-wrap items-center gap-1">
+              {disponible && puedeEntrada && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setMovimiento({ tipo: "ENTRADA", materialId: material.id })
+                  }
+                >
+                  <ArrowDownToLine className="size-3" />
+                  Entrada
+                </Button>
+              )}
+              {disponible && puedeSalida && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setMovimiento({ tipo: "SALIDA", materialId: material.id })
+                  }
+                >
+                  <ArrowUpFromLine className="size-3" />
+                  Salida
+                </Button>
+              )}
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => navigate({ to: "/materiales/gestion", search: { id: material.id } })}
+                onClick={() =>
+                  navigate({
+                    to: "/materiales/gestion",
+                    search: { id: material.id },
+                  })
+                }
               >
                 <Pencil className="mr-1 size-3" />
                 Editar
@@ -104,6 +170,21 @@ function RouteComponent() {
           );
         }}
       />
+
+      {movimiento && (
+        <MovimientoMaterialModal
+          tipo={movimiento.tipo}
+          isOpen
+          onOpenChange={(open) => !open && setMovimiento(null)}
+          materiales={materialesActivos}
+          proyectos={proyectos.data ?? []}
+          existencias={existencias.data ?? []}
+          initialMaterialId={movimiento.materialId}
+          isDataLoading={existencias.isPending || proyectos.isPending}
+          hasDataError={existencias.isError || proyectos.isError}
+          onSuccess={refreshInventario}
+        />
+      )}
     </div>
   );
 }

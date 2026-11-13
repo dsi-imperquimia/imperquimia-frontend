@@ -28,6 +28,7 @@ import { Route as AuthenticatedHerramientasMarcasRouteImport } from './routes/_a
 import { Route as AuthenticatedHerramientasTiposRouteImport } from './routes/_authenticated/herramientas/tipos'
 import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
+import { Route as AuthenticatedMaterialesInventarioRouteImport } from './routes/_authenticated/materiales/inventario'
 import { Route as AuthenticatedProyectosIndexRouteImport } from './routes/_authenticated/proyectos/index'
 import { Route as AuthenticatedProyectosProyectoIdRouteImport } from './routes/_authenticated/proyectos/$proyectoId'
 import { Route as AuthenticatedProyectosCreateRouteImport } from './routes/_authenticated/proyectos/create'
@@ -152,6 +153,12 @@ const AuthenticatedMaterialesGestionRoute =
     path: '/materiales/gestion',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMaterialesInventarioRoute =
+  AuthenticatedMaterialesInventarioRouteImport.update({
+    id: '/materiales/inventario',
+    path: '/materiales/inventario',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProyectosIndexRoute =
   AuthenticatedProyectosIndexRouteImport.update({
     id: '/proyectos/',
@@ -250,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -284,6 +292,7 @@ export interface FileRoutesByTo {
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -320,6 +329,7 @@ export interface FileRoutesById {
   '/_authenticated/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/_authenticated/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/_authenticated/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/_authenticated/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/_authenticated/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/_authenticated/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -356,6 +366,7 @@ export interface FileRouteTypes {
     | '/herramientas/marcas'
     | '/herramientas/tipos'
     | '/materiales/gestion'
+    | '/materiales/inventario'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
@@ -390,6 +401,7 @@ export interface FileRouteTypes {
     | '/herramientas/marcas'
     | '/herramientas/tipos'
     | '/materiales/gestion'
+    | '/materiales/inventario'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
@@ -425,6 +437,7 @@ export interface FileRouteTypes {
     | '/_authenticated/herramientas/marcas'
     | '/_authenticated/herramientas/tipos'
     | '/_authenticated/materiales/gestion'
+    | '/_authenticated/materiales/inventario'
     | '/_authenticated/proyectos/$proyectoId'
     | '/_authenticated/proyectos/create'
     | '/_authenticated/users/$userId'
@@ -586,6 +599,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMaterialesGestionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/materiales/inventario': {
+      id: '/_authenticated/materiales/inventario'
+      path: '/materiales/inventario'
+      fullPath: '/materiales/inventario'
+      preLoaderRoute: typeof AuthenticatedMaterialesInventarioRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/proyectos/': {
       id: '/_authenticated/proyectos/'
       path: '/proyectos'
@@ -700,6 +720,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHerramientasMarcasRoute: typeof AuthenticatedHerramientasMarcasRoute
   AuthenticatedHerramientasTiposRoute: typeof AuthenticatedHerramientasTiposRoute
   AuthenticatedMaterialesGestionRoute: typeof AuthenticatedMaterialesGestionRoute
+  AuthenticatedMaterialesInventarioRoute: typeof AuthenticatedMaterialesInventarioRoute
   AuthenticatedProyectosProyectoIdRoute: typeof AuthenticatedProyectosProyectoIdRoute
   AuthenticatedProyectosCreateRoute: typeof AuthenticatedProyectosCreateRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
@@ -737,6 +758,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHerramientasMarcasRoute: AuthenticatedHerramientasMarcasRoute,
   AuthenticatedHerramientasTiposRoute: AuthenticatedHerramientasTiposRoute,
   AuthenticatedMaterialesGestionRoute: AuthenticatedMaterialesGestionRoute,
+  AuthenticatedMaterialesInventarioRoute:
+    AuthenticatedMaterialesInventarioRoute,
   AuthenticatedProyectosProyectoIdRoute: AuthenticatedProyectosProyectoIdRoute,
   AuthenticatedProyectosCreateRoute: AuthenticatedProyectosCreateRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
