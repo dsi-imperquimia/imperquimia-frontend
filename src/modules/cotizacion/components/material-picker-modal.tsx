@@ -129,7 +129,7 @@ export function MaterialPickerModal({
                         </td>
                         <td className="min-w-0 px-2 md:table-cell md:py-3">
                           {material.unidad}
-                        </td>
+                        </td>sd
                         <td className="min-w-0 px-2 text-right md:table-cell md:py-3">
                           ${Number(material.costoUnitario).toFixed(2)}
                         </td>
