@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAlertasRouteImport } from './routes/_authenticated/alertas'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
@@ -56,6 +57,11 @@ const LoginRoute = LoginRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAlertasRoute = AuthenticatedAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCargoEmpleadoIndexRoute =
@@ -246,6 +252,7 @@ const AuthenticatedUsersRolesCreateRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
@@ -280,6 +287,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/': typeof AuthenticatedIndexRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
@@ -317,6 +325,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/alertas': typeof AuthenticatedAlertasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/_authenticated/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
@@ -355,6 +364,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/alertas'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
     | '/cotizaciones/create'
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/alertas'
     | '/'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
@@ -425,6 +436,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/alertas'
     | '/_authenticated/'
     | '/_authenticated/cargo-empleado/$cargoId'
     | '/_authenticated/cargo-empleado/create'
@@ -485,6 +497,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/alertas': {
+      id: '/_authenticated/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AuthenticatedAlertasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cargo-empleado/': {
@@ -708,6 +727,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAlertasRoute: typeof AuthenticatedAlertasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedCargoEmpleadoCargoIdRoute: typeof AuthenticatedCargoEmpleadoCargoIdRoute
   AuthenticatedCargoEmpleadoCreateRoute: typeof AuthenticatedCargoEmpleadoCreateRoute
@@ -743,6 +763,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAlertasRoute: AuthenticatedAlertasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedCargoEmpleadoCargoIdRoute:
     AuthenticatedCargoEmpleadoCargoIdRoute,

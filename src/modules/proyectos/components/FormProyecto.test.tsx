@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   success: vi.fn(),
   listarMateriales: vi.fn(),
+  listarEmpleados: vi.fn(),
+  listarProyectos: vi.fn(),
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -30,6 +32,12 @@ vi.mock("../api/guardarProyecto", () => ({
 vi.mock("@modules/materiales/api/list-materiales", () => ({
   listMateriales: mocks.listarMateriales,
 }));
+vi.mock("@modules/empleados/api/list-empleados", () => ({
+  listEmpleados: mocks.listarEmpleados,
+}));
+vi.mock("../api/listProyectos", () => ({
+  listProyectos: mocks.listarProyectos,
+}));
 vi.mock("@heroui/react/toast", () => ({ toast: { success: mocks.success } }));
 
 beforeEach(() => {
@@ -44,6 +52,8 @@ beforeEach(() => {
     },
     { id: 2, nombre: "Arena", unidad: "m³", costoUnitario: 20, estado: true },
   ]);
+  mocks.listarEmpleados.mockResolvedValue([]);
+  mocks.listarProyectos.mockResolvedValue([]);
 });
 afterEach(cleanup);
 
