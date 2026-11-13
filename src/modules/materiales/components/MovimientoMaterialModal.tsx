@@ -44,6 +44,8 @@ export function MovimientoMaterialModal({
   proyectos,
   existencias,
   initialMaterialId,
+  isDataLoading = false,
+  hasDataError = false,
   onSuccess,
 }: {
   tipo: TipoFormulario;
@@ -53,6 +55,8 @@ export function MovimientoMaterialModal({
   proyectos: Proyecto[];
   existencias: ExistenciaMaterial[];
   initialMaterialId?: number;
+  isDataLoading?: boolean;
+  hasDataError?: boolean;
   onSuccess: () => Promise<void>;
 }) {
   const [materialId, setMaterialId] = useState(
@@ -152,6 +156,14 @@ export function MovimientoMaterialModal({
     event.preventDefault();
     const cantidadNumero = Number(cantidad);
     if (!materialId) return setError("Selecciona un material.");
+    if (isDataLoading) {
+      return setError("Espera mientras se cargan existencias y proyectos.");
+    }
+    if (hasDataError) {
+      return setError(
+        "No se pudieron cargar las existencias y proyectos. Cierra el formulario e inténtalo de nuevo.",
+      );
+    }
     if (!Number.isFinite(cantidadNumero) || cantidadNumero <= 0) {
       return setError("Ingresa una cantidad mayor que cero.");
     }
@@ -217,6 +229,20 @@ export function MovimientoMaterialModal({
               className="flex min-h-0 flex-1 flex-col overflow-hidden"
             >
               <Modal.Body className="min-h-0 space-y-4 overflow-y-auto">
+                {isDataLoading && (
+                  <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
+                    Cargando existencias y proyectos…
+                  </p>
+                )}
+                {hasDataError && (
+                  <p
+                    className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+                    role="alert"
+                  >
+                    No se pudieron cargar las existencias y proyectos. Cierra el
+                    formulario e inténtalo de nuevo.
+                  </p>
+                )}
                 <ComboBox
                   items={materialesVisibles}
                   inputValue={materialSearch}
@@ -382,7 +408,7 @@ export function MovimientoMaterialModal({
                 <Button
                   type="submit"
                   isPending={isPending}
-                  isDisabled={isPending}
+                  isDisabled={isPending || isDataLoading || hasDataError}
                 >
                   Registrar {tipo === "ENTRADA" ? "entrada" : "salida"}
                 </Button>

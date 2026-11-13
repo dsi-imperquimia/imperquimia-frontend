@@ -43,10 +43,12 @@ function RouteComponent() {
   const existencias = useQuery({
     queryKey: ["inventario-materiales", "existencias"],
     queryFn: listExistenciasMateriales,
+    enabled: movimiento !== null,
   });
   const proyectos = useQuery({
     queryKey: ["proyectos"],
     queryFn: listProyectos,
+    enabled: movimiento !== null,
   });
   const materialesActivos = useMemo(
     () => (data ?? []).filter(isMaterialDisponible),
@@ -178,6 +180,8 @@ function RouteComponent() {
           proyectos={proyectos.data ?? []}
           existencias={existencias.data ?? []}
           initialMaterialId={movimiento.materialId}
+          isDataLoading={existencias.isPending || proyectos.isPending}
+          hasDataError={existencias.isError || proyectos.isError}
           onSuccess={refreshInventario}
         />
       )}
