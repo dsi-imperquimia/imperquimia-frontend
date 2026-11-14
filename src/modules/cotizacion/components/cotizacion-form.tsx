@@ -40,11 +40,11 @@ function validateDescripcion(value: string) {
   if (value.trim().length < 10) return "Mínimo 10 caracteres";
   if (value.length > 255) return "Máximo 255 caracteres";
 }
-
+//1. Agregar una cotización, agregar a cliente una validación para que sean exactamente 10 caracteres.
 function validateCliente(value: string) {
   if (!value.trim()) return "El cliente es obligatorio";
-  if (value.trim().length < 3) return "Mínimo 3 caracteres";
-  if (value.length > 100) return "Máximo 100 caracteres";
+  if (value.trim().length !== 10)
+    return "El cliente debe tener exactamente 10 caracteres";
 }
 
 function validatePhone(value: string) {
@@ -500,17 +500,17 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
                                       {detailErrors[
                                         `detalles[${index}].materialId`
                                       ] && (
-                                        <p
-                                          className="text-xs text-red-600"
-                                          role="alert"
-                                        >
-                                          {
-                                            detailErrors[
+                                          <p
+                                            className="text-xs text-red-600"
+                                            role="alert"
+                                          >
+                                            {
+                                              detailErrors[
                                               `detalles[${index}].materialId`
-                                            ]
-                                          }
-                                        </p>
-                                      )}
+                                              ]
+                                            }
+                                          </p>
+                                        )}
                                     </div>
                                   </td>
                                   <td className="col-span-2 min-w-0 px-2 py-1 lg:table-cell lg:py-3">
@@ -660,14 +660,14 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
                   {(serverErrors.detalles ||
                     serverErrors.materialId ||
                     serverErrors.cantidad) && (
-                    <p className="text-sm text-red-600" role="alert">
-                      {[
-                        ...(serverErrors.detalles ?? []),
-                        ...(serverErrors.materialId ?? []),
-                        ...(serverErrors.cantidad ?? []),
-                      ].join(" ")}
-                    </p>
-                  )}
+                      <p className="text-sm text-red-600" role="alert">
+                        {[
+                          ...(serverErrors.detalles ?? []),
+                          ...(serverErrors.materialId ?? []),
+                          ...(serverErrors.cantidad ?? []),
+                        ].join(" ")}
+                      </p>
+                    )}
 
                   <div className="flex justify-end">
                     <div className="w-full max-w-md space-y-2 rounded-xl border bg-gray-50 p-4">
@@ -675,6 +675,13 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
                         <span>Subtotal general</span>
                         <strong>{money(resumen.subTotal)}</strong>
                       </div>
+
+                      <div className="flex justify-between">
+                        <span>Subtotal * 10</span>
+                        <strong>{money(resumen.subTotal * 10)}</strong>
+                      </div>
+
+
                       <div className="flex justify-between">
                         <span>IVA general</span>
                         <strong>{money(resumen.iva)}</strong>

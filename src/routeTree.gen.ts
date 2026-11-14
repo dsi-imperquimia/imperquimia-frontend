@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAlertasRouteImport } from './routes/_authenticated/alertas'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
@@ -28,6 +29,7 @@ import { Route as AuthenticatedHerramientasMarcasRouteImport } from './routes/_a
 import { Route as AuthenticatedHerramientasTiposRouteImport } from './routes/_authenticated/herramientas/tipos'
 import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
+import { Route as AuthenticatedMaterialesInventarioRouteImport } from './routes/_authenticated/materiales/inventario'
 import { Route as AuthenticatedProyectosIndexRouteImport } from './routes/_authenticated/proyectos/index'
 import { Route as AuthenticatedProyectosProyectoIdRouteImport } from './routes/_authenticated/proyectos/$proyectoId'
 import { Route as AuthenticatedProyectosCreateRouteImport } from './routes/_authenticated/proyectos/create'
@@ -55,6 +57,11 @@ const LoginRoute = LoginRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAlertasRoute = AuthenticatedAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedCargoEmpleadoIndexRoute =
@@ -152,6 +159,12 @@ const AuthenticatedMaterialesGestionRoute =
     path: '/materiales/gestion',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMaterialesInventarioRoute =
+  AuthenticatedMaterialesInventarioRouteImport.update({
+    id: '/materiales/inventario',
+    path: '/materiales/inventario',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProyectosIndexRoute =
   AuthenticatedProyectosIndexRouteImport.update({
     id: '/proyectos/',
@@ -239,6 +252,7 @@ const AuthenticatedUsersRolesCreateRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
@@ -250,6 +264,7 @@ export interface FileRoutesByFullPath {
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -272,6 +287,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/': typeof AuthenticatedIndexRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
@@ -284,6 +300,7 @@ export interface FileRoutesByTo {
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -308,6 +325,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/alertas': typeof AuthenticatedAlertasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/_authenticated/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
@@ -320,6 +338,7 @@ export interface FileRoutesById {
   '/_authenticated/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/_authenticated/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/_authenticated/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/_authenticated/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/_authenticated/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/_authenticated/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -345,6 +364,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/alertas'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
     | '/cotizaciones/create'
@@ -356,6 +376,7 @@ export interface FileRouteTypes {
     | '/herramientas/marcas'
     | '/herramientas/tipos'
     | '/materiales/gestion'
+    | '/materiales/inventario'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
@@ -378,6 +399,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/alertas'
     | '/'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
@@ -390,6 +412,7 @@ export interface FileRouteTypes {
     | '/herramientas/marcas'
     | '/herramientas/tipos'
     | '/materiales/gestion'
+    | '/materiales/inventario'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
@@ -413,6 +436,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/alertas'
     | '/_authenticated/'
     | '/_authenticated/cargo-empleado/$cargoId'
     | '/_authenticated/cargo-empleado/create'
@@ -425,6 +449,7 @@ export interface FileRouteTypes {
     | '/_authenticated/herramientas/marcas'
     | '/_authenticated/herramientas/tipos'
     | '/_authenticated/materiales/gestion'
+    | '/_authenticated/materiales/inventario'
     | '/_authenticated/proyectos/$proyectoId'
     | '/_authenticated/proyectos/create'
     | '/_authenticated/users/$userId'
@@ -472,6 +497,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/alertas': {
+      id: '/_authenticated/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AuthenticatedAlertasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cargo-empleado/': {
@@ -586,6 +618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMaterialesGestionRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/materiales/inventario': {
+      id: '/_authenticated/materiales/inventario'
+      path: '/materiales/inventario'
+      fullPath: '/materiales/inventario'
+      preLoaderRoute: typeof AuthenticatedMaterialesInventarioRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/proyectos/': {
       id: '/_authenticated/proyectos/'
       path: '/proyectos'
@@ -688,6 +727,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAlertasRoute: typeof AuthenticatedAlertasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedCargoEmpleadoCargoIdRoute: typeof AuthenticatedCargoEmpleadoCargoIdRoute
   AuthenticatedCargoEmpleadoCreateRoute: typeof AuthenticatedCargoEmpleadoCreateRoute
@@ -700,6 +740,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHerramientasMarcasRoute: typeof AuthenticatedHerramientasMarcasRoute
   AuthenticatedHerramientasTiposRoute: typeof AuthenticatedHerramientasTiposRoute
   AuthenticatedMaterialesGestionRoute: typeof AuthenticatedMaterialesGestionRoute
+  AuthenticatedMaterialesInventarioRoute: typeof AuthenticatedMaterialesInventarioRoute
   AuthenticatedProyectosProyectoIdRoute: typeof AuthenticatedProyectosProyectoIdRoute
   AuthenticatedProyectosCreateRoute: typeof AuthenticatedProyectosCreateRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
@@ -722,6 +763,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAlertasRoute: AuthenticatedAlertasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedCargoEmpleadoCargoIdRoute:
     AuthenticatedCargoEmpleadoCargoIdRoute,
@@ -737,6 +779,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedHerramientasMarcasRoute: AuthenticatedHerramientasMarcasRoute,
   AuthenticatedHerramientasTiposRoute: AuthenticatedHerramientasTiposRoute,
   AuthenticatedMaterialesGestionRoute: AuthenticatedMaterialesGestionRoute,
+  AuthenticatedMaterialesInventarioRoute:
+    AuthenticatedMaterialesInventarioRoute,
   AuthenticatedProyectosProyectoIdRoute: AuthenticatedProyectosProyectoIdRoute,
   AuthenticatedProyectosCreateRoute: AuthenticatedProyectosCreateRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
