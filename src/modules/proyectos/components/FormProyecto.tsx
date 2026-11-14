@@ -5,6 +5,7 @@ import { Button } from "@heroui/react/button";
 import { toast } from "@heroui/react/toast";
 import { HardHat } from "lucide-react";
 import { InputField } from "@components/fields/InputField";
+import { TextAreaField } from "@components/fields/TextAreaField";
 import { SelectedField } from "@components/fields/SelectedField";
 import { ListBox } from "@heroui/react/list-box";
 import { guardarProyecto, errorProyecto } from "../api/guardarProyecto";
@@ -199,8 +200,6 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     { key: "fechaFin", label: "Fecha de fin", type: "date", required: true },
     { key: "phone", label: "Teléfono", type: "tel" },
     { key: "email", label: "Correo", type: "email" },
-    { key: "ubicacion", label: "Ubicación" },
-    { key: "descripcion", label: "Descripción" },
   ];
   return (
     <form
@@ -357,6 +356,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
         }
       }}
     >
+      <h2 className="text-lg font-semibold">Detalles del proyecto</h2>
       {!proyecto && (
         <p className="text-sm text-gray-500">
           Creación directa, sin cotización. Puedes agregar materiales al
@@ -415,6 +415,92 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
       <p className="text-sm text-gray-500">
         Teléfono o correo: completa al menos uno. Puedes ingresar ambos.
       </p>
+      <TextAreaField
+        label="Ubicación"
+        disabled={guardando}
+        errorMessage={erroresCampo.ubicacion}
+        value={datos.ubicacion}
+        onChange={(e) => setDatos({ ...datos, ubicacion: e.target.value })}
+      />
+      <TextAreaField
+        label="Descripción"
+        disabled={guardando}
+        errorMessage={erroresCampo.descripcion}
+        value={datos.descripcion}
+        onChange={(e) => setDatos({ ...datos, descripcion: e.target.value })}
+      />
+      {proyecto && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <SelectedField
+            label="Tipo de obra"
+            placeholder="Sin definir"
+            isDisabled={guardando}
+            value={datos.tipoObra ?? ""}
+            onChange={(value) =>
+              setDatos({ ...datos, tipoObra: value as TipoObra | "" })
+            }
+          >
+            <ListBox.Item id="" textValue="Sin definir">
+              Sin definir
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
+            {Object.entries(TIPOS_OBRA_LABEL).map(([valor, etiqueta]) => (
+              <ListBox.Item key={valor} id={valor} textValue={etiqueta}>
+                {etiqueta}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </SelectedField>
+          <InputField
+            label="Presupuesto"
+            type="number"
+            min="0"
+            step="0.01"
+            disabled={guardando}
+            errorMessage={erroresCampo.presupuesto}
+            value={datos.presupuesto ?? ""}
+            onChange={(e) => {
+              setDatos({ ...datos, presupuesto: e.target.value });
+              setErroresCampo((actuales) => {
+                const siguientes = { ...actuales };
+                delete siguientes.presupuesto;
+                return siguientes;
+              });
+            }}
+          />
+          {estadoEsEditable(proyecto.estado) ? (
+            <SelectedField
+              label="Estado"
+              isDisabled={guardando}
+              value={datos.estado ?? proyecto.estado}
+              onChange={(value) =>
+                setDatos({
+                  ...datos,
+                  estado: value as EstadoEditableProyecto,
+                })
+              }
+            >
+              {ESTADOS_EDITABLES.map((valor) => (
+                <ListBox.Item
+                  key={valor}
+                  id={valor}
+                  textValue={ESTADO_EDITABLE_LABEL[valor]}
+                >
+                  {ESTADO_EDITABLE_LABEL[valor]}
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              ))}
+            </SelectedField>
+          ) : (
+            <div className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-700">Estado</span>
+              <span className="rounded-lg border border-gray-200 bg-gray-50 p-2 text-gray-500">
+                {proyecto.estado} (no editable aquí)
+              </span>
+            </div>
+          )}
+        </div>
+      )}
       <section className="space-y-4 border-t border-gray-200 pt-5">
         <div>
           <h2 className="text-lg font-semibold">Presupuesto de materiales</h2>
@@ -619,81 +705,6 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           </div>
         </dl>
       </section>
-      {proyecto && (
-        <section className="space-y-4 border-t border-gray-200 pt-5">
-          <h2 className="text-lg font-semibold">Detalles del proyecto</h2>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <SelectedField
-              label="Tipo de obra"
-              placeholder="Sin definir"
-              isDisabled={guardando}
-              value={datos.tipoObra ?? ""}
-              onChange={(value) =>
-                setDatos({ ...datos, tipoObra: value as TipoObra | "" })
-              }
-            >
-              <ListBox.Item id="" textValue="Sin definir">
-                Sin definir
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-              {Object.entries(TIPOS_OBRA_LABEL).map(([valor, etiqueta]) => (
-                <ListBox.Item key={valor} id={valor} textValue={etiqueta}>
-                  {etiqueta}
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-              ))}
-            </SelectedField>
-            <InputField
-              label="Presupuesto"
-              type="number"
-              min="0"
-              step="0.01"
-              disabled={guardando}
-              errorMessage={erroresCampo.presupuesto}
-              value={datos.presupuesto ?? ""}
-              onChange={(e) => {
-                setDatos({ ...datos, presupuesto: e.target.value });
-                setErroresCampo((actuales) => {
-                  const siguientes = { ...actuales };
-                  delete siguientes.presupuesto;
-                  return siguientes;
-                });
-              }}
-            />
-            {estadoEsEditable(proyecto.estado) ? (
-              <SelectedField
-                label="Estado"
-                isDisabled={guardando}
-                value={datos.estado ?? proyecto.estado}
-                onChange={(value) =>
-                  setDatos({
-                    ...datos,
-                    estado: value as EstadoEditableProyecto,
-                  })
-                }
-              >
-                {ESTADOS_EDITABLES.map((valor) => (
-                  <ListBox.Item
-                    key={valor}
-                    id={valor}
-                    textValue={ESTADO_EDITABLE_LABEL[valor]}
-                  >
-                    {ESTADO_EDITABLE_LABEL[valor]}
-                    <ListBox.ItemIndicator />
-                  </ListBox.Item>
-                ))}
-              </SelectedField>
-            ) : (
-              <div className="flex flex-col gap-1 text-sm">
-                <span className="text-gray-700">Estado</span>
-                <span className="rounded-lg border border-gray-200 bg-gray-50 p-2 text-gray-500">
-                  {proyecto.estado} (no editable aquí)
-                </span>
-              </div>
-            )}
-          </div>
-        </section>
-      )}
       {proyecto ? (
         <>
           <AsignarJefeProyecto
