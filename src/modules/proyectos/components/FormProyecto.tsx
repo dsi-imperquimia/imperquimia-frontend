@@ -52,10 +52,9 @@ function etiquetaDetalle(clave: string) {
     : `Cantidad del material ${numeroMaterial}`;
 }
 
-// Todos se pueden alternar entre sí desde la edición general. Cancelar pasa
-// por las mismas validaciones que el flujo dedicado (GPRCIMPER-28): el
-// backend rechaza el cambio si el proyecto tiene empleados o herramientas
-// asignados.
+// Todos se pueden alternar entre sí desde la edición general. Cancelar desde
+// aquí exige motivo y notifica a los empleados asignados, igual que el
+// flujo dedicado (GPRCIMPER-28).
 const ESTADOS_EDITABLES: EstadoEditableProyecto[] = [
   "ACTIVO",
   "EN_PAUSA",
@@ -92,6 +91,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     presupuesto:
       proyecto?.presupuesto != null ? String(proyecto.presupuesto) : "",
   });
+  const [motivo, setMotivo] = useState("");
   const [detalles, setDetalles] = useState(
     proyecto?.detalles.map((detalle) => ({
       materialId: String(detalle.material.id),
@@ -299,6 +299,9 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           nuevosErrores.presupuesto =
             "Ingresa un presupuesto válido, mayor o igual a 0, con hasta dos decimales.";
         }
+        if (proyecto && datos.estado === "CANCELADO" && !motivo.trim()) {
+          nuevosErrores.motivo = "Ingresa el motivo de la cancelación.";
+        }
         if (Object.keys(nuevosErrores).length > 0) {
           setErroresCampo(nuevosErrores);
           setError(
@@ -331,6 +334,10 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
               presupuesto:
                 proyecto && datos.presupuesto
                   ? Number(datos.presupuesto)
+                  : undefined,
+              motivo:
+                proyecto && datos.estado === "CANCELADO"
+                  ? motivo.trim()
                   : undefined,
             },
             proyecto?.id,
@@ -504,6 +511,16 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
             </div>
           )}
         </div>
+      )}
+      {proyecto && datos.estado === "CANCELADO" && (
+        <TextAreaField
+          label="Motivo de la cancelación *"
+          disabled={guardando}
+          errorMessage={erroresCampo.motivo}
+          value={motivo}
+          placeholder="Explica por qué se cancela este proyecto"
+          onChange={(e) => setMotivo(e.target.value)}
+        />
       )}
       <section className="space-y-4 border-t border-gray-200 pt-5">
         <div>

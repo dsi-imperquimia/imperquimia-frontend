@@ -21,6 +21,8 @@ export interface DatosProyecto {
   estado?: EstadoEditableProyecto;
   tipoObra?: TipoObra | "";
   presupuesto?: string | number;
+  // Obligatorio cuando estado se envía como CANCELADO (GPRCIMPER-28).
+  motivo?: string;
 }
 
 export interface ErroresProyecto {
@@ -114,6 +116,7 @@ export function errorProyecto(error: unknown) {
       estado: "Selecciona un estado válido.",
       tipoObra: "Selecciona un tipo de obra válido.",
       presupuesto: "Ingresa un presupuesto válido, mayor o igual a 0.",
+      motivo: "Ingresa el motivo de la cancelación.",
     };
 
     for (const [campo, valor] of Object.entries(errores)) {
