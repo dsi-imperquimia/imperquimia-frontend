@@ -17,9 +17,10 @@ export async function listProyectosDisponiblesActividad() {
   return data;
 }
 
-export async function listActividadesDiarias(proyectoId: number) {
+export async function listActividadesDiarias(proyectoId?: number | null) {
+  const query = proyectoId ? `?proyectoId=${proyectoId}` : "";
   const { data } = await http.get<ActividadDiaria[]>(
-    `/actividades-diarias?proyectoId=${proyectoId}`,
+    `/actividades-diarias${query}`,
   );
   return data;
 }

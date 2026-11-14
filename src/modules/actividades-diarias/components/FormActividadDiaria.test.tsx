@@ -15,8 +15,8 @@ import {
   MENSAJES_ACTIVIDAD,
 } from "../types/actividad-diaria";
 import { FormActividadDiaria } from "./FormActividadDiaria";
-import { ListaProyectosAsignadosActividad } from "./ListaProyectosAsignadosActividad";
 import { ModalResultadoActividad } from "./ModalResultadoActividad";
+import { SelectorProyectoActividad } from "./SelectorProyectoActividad";
 import { TablaActividadesProyecto } from "./TablaActividadesProyecto";
 
 const mocks = vi.hoisted(() => ({
@@ -226,10 +226,10 @@ describe("FormActividadDiaria y ModalResultadoActividad (GPRCIMPER-50)", () => {
   });
 });
 
-describe("ListaProyectosAsignadosActividad (GPRCIMPER-29)", () => {
-  it("CA1: muestra solo los proyectos con estado ACTIVO asignados como Jefe de Proyecto", () => {
+describe("SelectorProyectoActividad (GPRCIMPER-29)", () => {
+  it("CA1: muestra solo los proyectos con estado ACTIVO asignados como Jefe de Proyecto", async () => {
     render(
-      <ListaProyectosAsignadosActividad
+      <SelectorProyectoActividad
         proyectos={[
           {
             id: 1,
@@ -242,21 +242,25 @@ describe("ListaProyectosAsignadosActividad (GPRCIMPER-29)", () => {
             estado: "FINALIZADO",
           },
         ]}
-        selectedProyectoId={1}
+        selectedProyectoId={null}
         onSelectProyecto={vi.fn()}
+        autoSelectSingle={false}
       />,
     );
 
-    expect(screen.getAllByText("Residencial Los Pinos").length).toBeGreaterThan(
-      0,
-    );
-    expect(screen.queryByText("Proyecto Antiguo Finalizado")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Proyecto/i }));
+    expect(
+      await screen.findByRole("option", { name: /Residencial Los Pinos/i }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("option", { name: /Proyecto Antiguo Finalizado/i }),
+    ).toBeNull();
   });
 
   it("CA2: si el usuario solamente tiene un proyecto activo, aparece seleccionado por defecto", async () => {
     const onSelect = vi.fn();
     render(
-      <ListaProyectosAsignadosActividad
+      <SelectorProyectoActividad
         proyectos={[
           {
             id: 15,
@@ -269,19 +273,13 @@ describe("ListaProyectosAsignadosActividad (GPRCIMPER-29)", () => {
       />,
     );
 
-    await waitFor(() =>
-      expect(onSelect).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 15,
-          nombre: "Torre Corporativa Imperquimia",
-        }),
-      ),
-    );
+    await waitFor(() => expect(onSelect).toHaveBeenCalledWith(15));
   });
 
-  it("CA3: permite búsqueda rápida por nombre de proyecto", () => {
+  it("CA3: permite búsqueda rápida por nombre de proyecto en el filtro", async () => {
     render(
-      <ListaProyectosAsignadosActividad
+      <SelectorProyectoActividad
+        label="Filtrar por proyecto"
         proyectos={[
           {
             id: 1,
@@ -294,24 +292,27 @@ describe("ListaProyectosAsignadosActividad (GPRCIMPER-29)", () => {
             estado: "ACTIVO",
           },
         ]}
-        selectedProyectoId={1}
+        selectedProyectoId={null}
         onSelectProyecto={vi.fn()}
       />,
     );
 
-    expect(
-      screen.getAllByText("Bodega Industrial Soyapango").length,
-    ).toBeGreaterThan(0);
-    expect(screen.getByText("Centro Comercial Santa Tecla")).toBeTruthy();
-
-    fireEvent.change(screen.getByLabelText("Buscar proyecto"), {
-      target: { value: "santa tecla" },
+    const inputFiltro = screen.getByRole("combobox", {
+      name: /Filtrar por proyecto/i,
     });
+    act(() => {
+      (inputFiltro as HTMLElement).focus();
+    });
+    fireEvent.change(inputFiltro, { target: { value: "santa tecla" } });
 
     expect(
-      screen.queryByRole("row", { name: /Bodega Industrial Soyapango/i }),
+      screen.queryByRole("option", { name: /Bodega Industrial Soyapango/i }),
     ).toBeNull();
-    expect(screen.getByText("Centro Comercial Santa Tecla")).toBeTruthy();
+    expect(
+      await screen.findByRole("option", {
+        name: /Centro Comercial Santa Tecla/i,
+      }),
+    ).toBeTruthy();
   });
 
   it("CA3 (formulario integrado): permite buscar por nombre directamente dentro del selector Proyecto", async () => {

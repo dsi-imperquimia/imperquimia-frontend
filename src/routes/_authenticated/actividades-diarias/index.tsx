@@ -4,15 +4,14 @@ import {
   listProyectosDisponiblesActividad,
 } from "@modules/actividades-diarias/api/actividades-diarias";
 import { BorradoresActividad } from "@modules/actividades-diarias/components/BorradoresActividad";
-import { ListaProyectosAsignadosActividad } from "@modules/actividades-diarias/components/ListaProyectosAsignadosActividad";
 import { ModalResultadoActividad } from "@modules/actividades-diarias/components/ModalResultadoActividad";
+import { SelectorProyectoActividad } from "@modules/actividades-diarias/components/SelectorProyectoActividad";
 import { TablaActividadesProyecto } from "@modules/actividades-diarias/components/TablaActividadesProyecto";
 import { useBorradoresActividad } from "@modules/actividades-diarias/hooks/useBorradoresActividad";
-import type { ProyectoDisponibleActividad } from "@modules/actividades-diarias/types/actividad-diaria";
 import { userActions } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/actividades-diarias/")({
   component: ActividadesDiariasPage,
@@ -44,21 +43,18 @@ export function ActividadesDiariasPage() {
 
   const actividadesQuery = useQuery({
     queryKey: ["actividades-diarias", "lista", selectedProyectoId],
-    queryFn: () => listActividadesDiarias(selectedProyectoId!),
-    enabled: selectedProyectoId !== null,
+    queryFn: () => listActividadesDiarias(selectedProyectoId),
   });
 
-  const proyectos = proyectosQuery.data ?? [];
-  const proyectoActual = proyectos.find(
-    (item) => item.id === selectedProyectoId,
+  const proyectos = useMemo(
+    () =>
+      (proyectosQuery.data ?? []).filter((item) => item.estado === "ACTIVO"),
+    [proyectosQuery.data],
   );
 
-  const handleSelectProyecto = useCallback(
-    (proyecto: ProyectoDisponibleActividad) => {
-      setSelectedProyectoId(proyecto.id);
-    },
-    [],
-  );
+  const handleSelectProyecto = useCallback((proyectoId: number | null) => {
+    setSelectedProyectoId(proyectoId);
+  }, []);
 
   async function refrescarTodo() {
     await queryClient.invalidateQueries({
@@ -74,8 +70,7 @@ export function ActividadesDiariasPage() {
         <div>
           <h1 className="text-2xl font-bold">Actividades diarias</h1>
           <p className="text-sm text-gray-500">
-            Elige un proyecto asignado para consultar sus actividades o
-            registrar una nueva jornada.
+            Consulta las jornadas registradas y fíltralas por proyecto asignado.
           </p>
         </div>
         <Button
@@ -88,27 +83,15 @@ export function ActividadesDiariasPage() {
       </div>
 
       {puedeCrear && (
-        <div className="flex flex-wrap items-center gap-3">
-          <Link
-            to="/actividades-diarias/create"
-            search={
-              selectedProyectoId
-                ? { proyectoId: selectedProyectoId }
-                : undefined
-            }
-            className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
-          >
-            Crear actividad diaria
-          </Link>
-          {proyectoActual && (
-            <span className="text-sm text-gray-500">
-              Proyecto activo:{" "}
-              <strong className="font-medium text-gray-800">
-                {proyectoActual.nombre}
-              </strong>
-            </span>
-          )}
-        </div>
+        <Link
+          to="/actividades-diarias/create"
+          search={
+            selectedProyectoId ? { proyectoId: selectedProyectoId } : undefined
+          }
+          className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
+        >
+          Crear actividad diaria
+        </Link>
       )}
 
       {puedeCrear && (
@@ -121,56 +104,69 @@ export function ActividadesDiariasPage() {
         />
       )}
 
-      {/* Paso 1 (GPRCIMPER-29): Ver lista de proyectos activos asignados */}
-      <ListaProyectosAsignadosActividad
-        proyectos={proyectos}
-        isPending={proyectosQuery.isPending}
-        isError={proyectosQuery.isError}
-        selectedProyectoId={selectedProyectoId}
-        onSelectProyecto={handleSelectProyecto}
-        onRetry={() => void proyectosQuery.refetch()}
-      />
-
-      {/* Paso 2 (GPRCIMPER-34): Registros guardados del proyecto seleccionado */}
-      <section aria-label="Actividades del proyecto" className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <h2 className="text-base font-semibold text-gray-900">
-              2. Actividades registradas
-              {proyectoActual ? ` · ${proyectoActual.nombre}` : ""}
-            </h2>
-            {proyectoActual && (
-              <p className="text-sm text-gray-500">
-                {proyectoActual.cliente || "Sin cliente"} ·{" "}
-                {proyectoActual.ubicacion || "Sin ubicación"}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {proyectoActual ? (
-          <TablaActividadesProyecto
-            actividades={actividadesQuery.data ?? []}
-            isPending={actividadesQuery.isPending}
-            isError={actividadesQuery.isError}
-            onRetry={() => void actividadesQuery.refetch()}
-            onEditar={
-              puedeEditar
-                ? (actividad) =>
-                    void navigate({
-                      to: "/actividades-diarias/editar/$actividadId",
-                      params: { actividadId: String(actividad.id) },
-                    })
-                : undefined
+      {/* GPRCIMPER-29: Filtro de proyectos activos asignados con búsqueda integrada */}
+      <div className="flex flex-wrap items-end gap-4 rounded-xl border border-gray-200 bg-white p-4">
+        <div className="min-w-60 flex-1">
+          <SelectorProyectoActividad
+            proyectos={proyectos}
+            selectedProyectoId={selectedProyectoId}
+            onSelectProyecto={handleSelectProyecto}
+            label="Filtrar por proyecto"
+            placeholder={
+              proyectos.length > 1
+                ? "Todos los proyectos (escribe para buscar)"
+                : "Proyecto asignado"
             }
+            description=""
           />
-        ) : (
-          <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-            Selecciona un proyecto en el paso 1 para ver y editar sus
-            actividades diarias registradas.
+        </div>
+        {proyectos.length > 1 && selectedProyectoId !== null && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setSelectedProyectoId(null)}
+          >
+            Ver todos
+          </Button>
+        )}
+        {proyectosQuery.isError && (
+          <p role="alert" className="text-sm text-red-700">
+            No se pudieron cargar tus proyectos asignados.{" "}
+            <button
+              type="button"
+              onClick={() => void proyectosQuery.refetch()}
+              className="font-medium underline"
+            >
+              Reintentar
+            </button>
           </p>
         )}
-      </section>
+      </div>
+
+      {!proyectosQuery.isPending &&
+        !proyectosQuery.isError &&
+        proyectos.length === 0 && (
+          <p className="rounded-xl border border-gray-200 bg-white p-4 text-sm text-gray-600">
+            Todavía no tienes proyectos activos asignados como Jefe de Proyecto.
+          </p>
+        )}
+
+      {/* GPRCIMPER-34: Lista única de actividades diarias */}
+      <TablaActividadesProyecto
+        actividades={actividadesQuery.data ?? []}
+        isPending={actividadesQuery.isPending}
+        isError={actividadesQuery.isError}
+        onRetry={() => void actividadesQuery.refetch()}
+        onEditar={
+          puedeEditar
+            ? (actividad) =>
+                void navigate({
+                  to: "/actividades-diarias/editar/$actividadId",
+                  params: { actividadId: String(actividad.id) },
+                })
+            : undefined
+        }
+      />
 
       <ModalResultadoActividad estado={estadoModal} onClose={cerrarModal} />
     </div>

@@ -2,12 +2,6 @@ import { InputField } from "@components/fields/InputField";
 import { TextAreaField } from "@components/fields/TextAreaField";
 import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
-import { ComboBox } from "@heroui/react/combo-box";
-import { Description } from "@heroui/react/description";
-import { FieldError } from "@heroui/react/field-error";
-import { Input } from "@heroui/react/input";
-import { Label } from "@heroui/react/label";
-import { ListBox } from "@heroui/react/list-box";
 import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -15,7 +9,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -29,7 +22,6 @@ import {
 import { useBorradoresActividad } from "../hooks/useBorradoresActividad";
 import {
   fechaHoyIso,
-  normalizarTexto,
   puedeEditarActividad,
   type ActividadDiaria,
   type ErroresActividadDiaria,
@@ -37,6 +29,7 @@ import {
 } from "../types/actividad-diaria";
 import { BorradoresActividad } from "./BorradoresActividad";
 import { ModalResultadoActividad } from "./ModalResultadoActividad";
+import { SelectorProyectoActividad } from "./SelectorProyectoActividad";
 
 function nuevaClaveOperacion(): string {
   if (
@@ -55,7 +48,7 @@ function nuevaClaveOperacion(): string {
  */
 export function FormActividadDiaria({
   actividad,
-  selectedProyectoId,
+  selectedProyectoId: selectedProyectoIdProp,
   onProyectoChange,
   proyectos: proyectosProp,
   onSuccess,
@@ -72,14 +65,9 @@ export function FormActividadDiaria({
   const habilitadoParaEditar =
     !actividad || puedeEditarActividad(actividad.createdAt, user?.role?.name);
 
-  const [proyectoId, setProyectoId] = useState(() =>
-    actividad
-      ? String(actividad.proyectoId)
-      : selectedProyectoId
-        ? String(selectedProyectoId)
-        : "",
+  const [proyectoId, setProyectoId] = useState<number | null>(() =>
+    actividad ? actividad.proyectoId : (selectedProyectoIdProp ?? null),
   );
-  const [busquedaProyecto, setBusquedaProyecto] = useState("");
   const [fecha, setFecha] = useState(() =>
     actividad ? actividad.fecha.slice(0, 10) : fechaHoyIso(),
   );
@@ -119,7 +107,6 @@ export function FormActividadDiaria({
     enabled: !esEdicion && proyectosProp === undefined,
   });
 
-  // CA1 (GPRCIMPER-29): Solo proyectos activos donde el usuario es Jefe de Proyecto
   const proyectos = useMemo(
     () =>
       (proyectosProp ?? proyectosQuery).filter(
@@ -128,82 +115,32 @@ export function FormActividadDiaria({
     [proyectosProp, proyectosQuery],
   );
 
-  const proyectoSeleccionado = useMemo(
-    () => proyectos.find((item) => String(item.id) === proyectoId),
-    [proyectos, proyectoId],
-  );
-
-  // CA3 (GPRCIMPER-29): Filtrado integrado dentro del selector; si coincide con la selección actual, muestra todos para poder cambiar
-  const proyectosFiltrados = useMemo(() => {
-    const termino = normalizarTexto(busquedaProyecto.trim());
-    if (
-      !termino ||
-      (proyectoSeleccionado &&
-        termino === normalizarTexto(proyectoSeleccionado.nombre))
-    ) {
-      return proyectos;
-    }
-    return proyectos.filter((proyecto) =>
-      normalizarTexto(proyecto.nombre).includes(termino),
-    );
-  }, [busquedaProyecto, proyectos, proyectoSeleccionado]);
-
-  const autoSeleccionadoRef = useRef(false);
-
   useEffect(() => {
-    if (!esEdicion && selectedProyectoId !== undefined) {
-      setProyectoId(selectedProyectoId ? String(selectedProyectoId) : "");
-      setBusquedaProyecto("");
+    if (!esEdicion && selectedProyectoIdProp !== undefined) {
+      setProyectoId(selectedProyectoIdProp);
     }
-  }, [esEdicion, selectedProyectoId]);
-
-  useEffect(() => {
-    if (!esEdicion && proyectoSeleccionado && !busquedaProyecto) {
-      setBusquedaProyecto(proyectoSeleccionado.nombre);
-    }
-  }, [esEdicion, proyectoSeleccionado, busquedaProyecto]);
-
-  // CA2 (GPRCIMPER-29): Si el usuario solamente tiene un proyecto activo, aparece seleccionado por defecto una vez
-  useEffect(() => {
-    if (
-      !esEdicion &&
-      !autoSeleccionadoRef.current &&
-      proyectos.length === 1 &&
-      !proyectoId
-    ) {
-      autoSeleccionadoRef.current = true;
-      const unico = proyectos[0];
-      setProyectoId(String(unico.id));
-      setBusquedaProyecto(unico.nombre);
-      onProyectoChange?.(unico.id);
-    }
-  }, [esEdicion, proyectos, proyectoId, onProyectoChange]);
+  }, [esEdicion, selectedProyectoIdProp]);
 
   const limpiarFormulario = useCallback(() => {
     const defecto =
       proyectos.length === 1
-        ? proyectos[0]
-        : proyectos.find((item) => item.id === selectedProyectoId);
-    setProyectoId(defecto ? String(defecto.id) : "");
-    setBusquedaProyecto(defecto?.nombre ?? "");
+        ? proyectos[0].id
+        : (selectedProyectoIdProp ?? null);
+    setProyectoId(defecto);
     setFecha(fechaHoyIso());
     setDescripcion("");
     setObservaciones("");
     setClaveOperacion(nuevaClaveOperacion());
     setErrores({ campos: {} });
-  }, [proyectos, selectedProyectoId]);
+  }, [proyectos, selectedProyectoIdProp]);
 
   function validarFormulario(): boolean {
     const camposValidacion: ErroresActividadDiaria["campos"] = {};
-    if (!esEdicion) {
-      const proyectoNumero = Number(proyectoId);
-      if (
-        !proyectoId ||
-        !Number.isInteger(proyectoNumero) ||
-        proyectoNumero < 1
-      ) {
-        camposValidacion.proyectoId = "Selecciona un proyecto válido.";
-      }
+    if (
+      !esEdicion &&
+      (!proyectoId || !Number.isInteger(proyectoId) || proyectoId < 1)
+    ) {
+      camposValidacion.proyectoId = "Selecciona un proyecto válido.";
     }
     if (!fecha.trim()) {
       camposValidacion.fecha =
@@ -224,10 +161,10 @@ export function FormActividadDiaria({
   }
 
   async function ejecutarCreacion() {
-    const proyectoNumero = Number(proyectoId);
+    if (!proyectoId) return;
     const payload = {
       claveOperacion,
-      proyectoId: proyectoNumero,
+      proyectoId,
       fecha: fecha.trim(),
       descripcion: descripcion.trim(),
       observaciones: observaciones.trim() || undefined,
@@ -246,6 +183,9 @@ export function FormActividadDiaria({
       mostrarModal("exito");
     } catch (error) {
       if (esErrorDeConexion(error)) {
+        const proyectoSeleccionado = proyectos.find(
+          (item) => item.id === proyectoId,
+        );
         agregarBorrador({
           claveOperacion,
           payload,
@@ -375,83 +315,21 @@ export function FormActividadDiaria({
             )}
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <ComboBox
-                items={proyectosFiltrados}
-                inputValue={busquedaProyecto}
-                selectedKey={proyectoId || null}
-                onInputChange={(value) => {
-                  setBusquedaProyecto(value);
-                  if (
-                    proyectoSeleccionado &&
-                    value !== proyectoSeleccionado.nombre
-                  ) {
-                    setProyectoId("");
-                    onProyectoChange?.(null);
-                  }
-                }}
-                onSelectionChange={(key) => {
-                  const valor = String(key ?? "");
-                  setProyectoId(valor);
-                  const elegido = proyectos.find(
-                    (item) => String(item.id) === valor,
-                  );
-                  setBusquedaProyecto(elegido?.nombre ?? "");
-                  onProyectoChange?.(valor ? Number(valor) : null);
+              <SelectorProyectoActividad
+                proyectos={proyectos}
+                selectedProyectoId={proyectoId}
+                onSelectProyecto={(id) => {
+                  setProyectoId(id);
+                  onProyectoChange?.(id);
                   setErrores((prev) => ({
                     ...prev,
                     campos: { ...prev.campos, proyectoId: undefined },
                   }));
                 }}
-                allowsCustomValue={false}
-                menuTrigger="focus"
-                variant="secondary"
-                validationBehavior="aria"
-                isInvalid={!!errores.campos.proyectoId}
+                errorMessage={errores.campos.proyectoId}
                 isDisabled={isPending}
-                fullWidth
                 isRequired
-              >
-                <Label>Proyecto</Label>
-                <ComboBox.InputGroup>
-                  <Input placeholder="Buscar o seleccionar proyecto" />
-                  <ComboBox.Trigger aria-label="Mostrar proyectos" />
-                </ComboBox.InputGroup>
-                {proyectos.length === 1 && !errores.campos.proyectoId && (
-                  <Description>
-                    Tu único proyecto activo fue seleccionado automáticamente.
-                  </Description>
-                )}
-                <ComboBox.Popover>
-                  <ListBox
-                    items={proyectosFiltrados}
-                    renderEmptyState={() => (
-                      <p className="px-3 py-2 text-sm text-gray-500">
-                        No se encontraron proyectos con ese nombre.
-                      </p>
-                    )}
-                  >
-                    {(proyecto) => (
-                      <ListBox.Item
-                        id={String(proyecto.id)}
-                        textValue={proyecto.nombre}
-                      >
-                        <div className="flex w-full items-center justify-between gap-3">
-                          <span>{proyecto.nombre}</span>
-                          {proyecto.ubicacion && (
-                            <span className="text-xs text-gray-500">
-                              {proyecto.ubicacion}
-                            </span>
-                          )}
-                        </div>
-                        <ListBox.ItemIndicator />
-                      </ListBox.Item>
-                    )}
-                  </ListBox>
-                </ComboBox.Popover>
-                {errores.campos.proyectoId && (
-                  <FieldError>{errores.campos.proyectoId}</FieldError>
-                )}
-              </ComboBox>
+              />
 
               {campoFecha}
             </div>

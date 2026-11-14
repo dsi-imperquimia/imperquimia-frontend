@@ -49,6 +49,7 @@ export function TablaActividadesProyecto({
 
   const columnas = [
     "Fecha",
+    "Proyecto",
     "Descripción",
     "Observaciones",
     "Registrado por",
@@ -58,9 +59,7 @@ export function TablaActividadesProyecto({
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
       <table className="w-full text-left text-sm">
-        <caption className="sr-only">
-          Listado de actividades diarias del proyecto
-        </caption>
+        <caption className="sr-only">Listado de actividades diarias</caption>
         <thead className="bg-gray-100 text-gray-600">
           <tr>
             {columnas.map((t) => (
@@ -77,6 +76,9 @@ export function TablaActividadesProyecto({
               <tr key={a.id} className="border-t border-gray-200">
                 <td className="whitespace-nowrap px-4 py-4">
                   {fecha(a.fecha)}
+                </td>
+                <td className="px-4 py-4 font-medium text-gray-900">
+                  {a.proyecto?.nombre ?? `Proyecto #${a.proyectoId}`}
                 </td>
                 <td className="px-4 py-4">{a.descripcion}</td>
                 <td className="px-4 py-4 text-gray-500">
