@@ -28,6 +28,7 @@ const PAGE_LABELS: Record<string, string> = {
   "/cargo-empleado/create": "Crear cargo",
   "/cotizaciones/create": "Crear cotización",
   "/proyectos/create": "Crear proyecto",
+  "/actividades-diarias/create": "Crear actividad diaria",
   "/materiales/gestion": "Gestionar materiales",
 };
 

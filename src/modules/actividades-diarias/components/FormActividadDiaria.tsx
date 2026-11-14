@@ -5,7 +5,14 @@ import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
 import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Link } from "@tanstack/react-router";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+} from "react";
 import {
   errorActividadDiaria,
   esErrorDeConexion,
@@ -22,6 +29,7 @@ import {
 import type {
   BorradorActividad,
   ErroresActividadDiaria,
+  ProyectoDisponibleActividad,
 } from "../types/actividad-diaria";
 import { BorradoresActividad } from "./BorradoresActividad";
 import {
@@ -47,12 +55,30 @@ function nuevaClaveOperacion(): string {
   return "00000000-0000-4000-8000-000000000000";
 }
 
-export function FormActividadDiaria() {
+function normalizarTexto(valor: string): string {
+  return valor
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase();
+}
+
+export function FormActividadDiaria({
+  selectedProyectoId,
+  onProyectoChange,
+  proyectos: proyectosProp,
+}: {
+  selectedProyectoId?: number | null;
+  onProyectoChange?: (proyectoId: number | null) => void;
+  proyectos?: ProyectoDisponibleActividad[];
+} = {}) {
   const { user } = useAuth();
   const userId = user?.id ?? null;
   const queryClient = useQueryClient();
 
-  const [proyectoId, setProyectoId] = useState("");
+  const [busquedaProyecto, setBusquedaProyecto] = useState("");
+  const [proyectoId, setProyectoId] = useState(() =>
+    selectedProyectoId ? String(selectedProyectoId) : "",
+  );
   const [fecha, setFecha] = useState(fechaHoyIso);
   const [descripcion, setDescripcion] = useState("");
   const [observaciones, setObservaciones] = useState("");
@@ -71,13 +97,49 @@ export function FormActividadDiaria() {
   const [isReenviandoTodos, setIsReenviandoTodos] = useState(false);
 
   const {
-    data: proyectos = [],
+    data: proyectosQuery = [],
     isLoading: isLoadingProyectos,
     isError: isErrorProyectos,
   } = useQuery({
     queryKey: ["actividades-diarias", "proyectos-disponibles"],
     queryFn: listProyectosDisponiblesActividad,
+    enabled: proyectosProp === undefined,
   });
+
+  // CA1 (GPRCIMPER-29): Solo proyectos activos donde el usuario es Jefe de Proyecto
+  const proyectos = useMemo(
+    () =>
+      (proyectosProp ?? proyectosQuery).filter(
+        (item) => item.estado === "ACTIVO",
+      ),
+    [proyectosProp, proyectosQuery],
+  );
+
+  // CA3 (GPRCIMPER-29): Búsqueda rápida por nombre de proyecto
+  const proyectosFiltrados = useMemo(() => {
+    const termino = normalizarTexto(busquedaProyecto.trim());
+    if (!termino) return proyectos;
+    return proyectos.filter(
+      (proyecto) =>
+        String(proyecto.id) === proyectoId ||
+        normalizarTexto(proyecto.nombre).includes(termino),
+    );
+  }, [busquedaProyecto, proyectos, proyectoId]);
+
+  useEffect(() => {
+    if (selectedProyectoId !== undefined) {
+      setProyectoId(selectedProyectoId ? String(selectedProyectoId) : "");
+    }
+  }, [selectedProyectoId]);
+
+  // CA2 (GPRCIMPER-29): Si el usuario solamente tiene un proyecto activo, debe aparecer seleccionado por defecto
+  useEffect(() => {
+    if (proyectos.length === 1 && !proyectoId) {
+      const unicoId = proyectos[0].id;
+      setProyectoId(String(unicoId));
+      onProyectoChange?.(unicoId);
+    }
+  }, [proyectos, proyectoId, onProyectoChange]);
 
   useEffect(() => {
     setBorradores(listarBorradoresActividad(userId));
@@ -113,13 +175,20 @@ export function FormActividadDiaria() {
   }, [sincronizarBorradores]);
 
   const limpiarFormulario = useCallback(() => {
-    setProyectoId("");
+    const idPorDefecto =
+      proyectos.length === 1
+        ? String(proyectos[0].id)
+        : selectedProyectoId
+          ? String(selectedProyectoId)
+          : "";
+    setProyectoId(idPorDefecto);
+    setBusquedaProyecto("");
     setFecha(fechaHoyIso());
     setDescripcion("");
     setObservaciones("");
     setClaveOperacion(nuevaClaveOperacion());
     setErrores({ campos: {} });
-  }, []);
+  }, [proyectos, selectedProyectoId]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -244,21 +313,31 @@ export function FormActividadDiaria() {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="space-y-5 rounded-xl border border-gray-200 bg-white p-6 shadow-xs"
+        className="max-w-3xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
       >
+        <p className="text-sm text-gray-500">
+          Selecciona uno de tus proyectos activos asignados como Jefe de
+          Proyecto y registra las labores realizadas durante la jornada.
+        </p>
+
         {isLoadingProyectos && (
-          <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
-            Cargando proyectos asignados…
-          </p>
+          <p role="status">Cargando proyectos asignados…</p>
         )}
 
         {isErrorProyectos && (
-          <p
-            className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800"
-            role="alert"
-          >
+          <p role="alert" className="text-sm text-red-700">
             No se pudieron cargar los proyectos disponibles en este momento.
           </p>
+        )}
+
+        {proyectos.length > 1 && (
+          <InputField
+            label="Buscar proyecto asignado"
+            placeholder="Filtrar por nombre de proyecto"
+            value={busquedaProyecto}
+            disabled={isPending}
+            onChange={(event) => setBusquedaProyecto(event.target.value)}
+          />
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -267,7 +346,9 @@ export function FormActividadDiaria() {
             placeholder="Selecciona un proyecto"
             selectedKey={proyectoId || null}
             onSelectionChange={(key) => {
-              setProyectoId(String(key ?? ""));
+              const valor = String(key ?? "");
+              setProyectoId(valor);
+              onProyectoChange?.(valor ? Number(valor) : null);
               setErrores((prev) => ({
                 ...prev,
                 campos: { ...prev.campos, proyectoId: undefined },
@@ -276,13 +357,14 @@ export function FormActividadDiaria() {
             errorMessage={errores.campos.proyectoId}
             isRequired
           >
-            {proyectos.map((proyecto) => (
+            {proyectosFiltrados.map((proyecto) => (
               <ListBox.Item
                 key={proyecto.id}
                 id={String(proyecto.id)}
                 textValue={proyecto.nombre}
               >
                 {proyecto.nombre}
+                <ListBox.ItemIndicator />
               </ListBox.Item>
             ))}
           </SelectedField>
@@ -337,25 +419,20 @@ export function FormActividadDiaria() {
 
         {errores.general && Object.keys(errores.campos).length === 0 && (
           <p
-            className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
             role="alert"
           >
             {errores.general}
           </p>
         )}
 
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="tertiary"
-            onClick={limpiarFormulario}
-            isDisabled={isPending}
-          >
-            Limpiar
-          </Button>
+        <div className="flex items-center gap-4">
           <Button type="submit" isPending={isPending} isDisabled={isPending}>
             Enviar
           </Button>
+          <Link to="/actividades-diarias" className="text-sm text-gray-600">
+            Cancelar
+          </Link>
         </div>
       </form>
 

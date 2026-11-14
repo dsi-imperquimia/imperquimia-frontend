@@ -1,8 +1,11 @@
 export interface ProyectoDisponibleActividad {
   id: number;
   nombre: string;
+  cliente?: string | null;
   ubicacion?: string | null;
   estado: string;
+  fechaInicio?: string | null;
+  fechaFin?: string | null;
 }
 
 export interface ActividadDiaria {
@@ -21,6 +24,15 @@ export interface ActividadDiaria {
     nombre: string;
     estado: string;
   };
+  usuario?: {
+    id: number;
+    name: string;
+    lastName: string;
+  };
+  empleado?: {
+    id: number;
+    nombreCompleto: string;
+  } | null;
 }
 
 export interface RegistrarActividadDiaria {

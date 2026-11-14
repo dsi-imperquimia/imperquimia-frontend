@@ -131,12 +131,12 @@ export const NAV_ITEMS: NavItem[] = [
   {
     label: "Actividades diarias",
     icon: ClipboardList,
-    to: "/actividades-diarias/create",
+    to: "/actividades-diarias",
     children: [
       {
-        label: "Registrar actividad",
-        to: "/actividades-diarias/create",
-        permission: ["ACTIVIDAD_CREATE"],
+        label: "Lista de actividades",
+        to: "/actividades-diarias",
+        permission: ["ACTIVIDAD_READ", "ACTIVIDAD_CREATE"],
       },
     ],
     permission: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ"],

@@ -16,6 +16,13 @@ export async function listProyectosDisponiblesActividad() {
   return data;
 }
 
+export async function listActividadesDiarias(proyectoId: number) {
+  const { data } = await http.get<ActividadDiaria[]>(
+    `/actividades-diarias?proyectoId=${proyectoId}`,
+  );
+  return data;
+}
+
 export async function registrarActividadDiaria(
   payload: RegistrarActividadDiaria,
 ) {

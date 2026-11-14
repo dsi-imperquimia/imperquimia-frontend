@@ -15,11 +15,18 @@ import {
   MENSAJES_ACTIVIDAD,
 } from "../types/actividad-diaria";
 import { FormActividadDiaria } from "./FormActividadDiaria";
+import { ListaProyectosAsignadosActividad } from "./ListaProyectosAsignadosActividad";
 import { ModalResultadoActividad } from "./ModalResultadoActividad";
 
 const mocks = vi.hoisted(() => ({
   registrar: vi.fn(),
   listarProyectos: vi.fn(),
+}));
+
+vi.mock("@tanstack/react-router", () => ({
+  Link: ({ children }: { children: React.ReactNode }) => (
+    <span>{children}</span>
+  ),
 }));
 
 vi.mock("@modules/auth/store/authStore", () => ({
@@ -201,5 +208,94 @@ describe("FormActividadDiaria y ModalResultadoActividad (GPRCIMPER-50)", () => {
     await screen.findByText("La descripción admite hasta 2000 caracteres.");
     expect(listarBorradoresActividad(7)).toHaveLength(0);
     expect(screen.queryByText(MENSAJES_ACTIVIDAD.errorConexion)).toBeNull();
+  });
+});
+
+describe("ListaProyectosAsignadosActividad (GPRCIMPER-29)", () => {
+  it("CA1: muestra solo los proyectos con estado ACTIVO asignados como Jefe de Proyecto", () => {
+    render(
+      <ListaProyectosAsignadosActividad
+        proyectos={[
+          {
+            id: 1,
+            nombre: "Residencial Los Pinos",
+            estado: "ACTIVO",
+          },
+          {
+            id: 2,
+            nombre: "Proyecto Antiguo Finalizado",
+            estado: "FINALIZADO",
+          },
+        ]}
+        selectedProyectoId={1}
+        onSelectProyecto={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText("Residencial Los Pinos").length).toBeGreaterThan(
+      0,
+    );
+    expect(screen.queryByText("Proyecto Antiguo Finalizado")).toBeNull();
+  });
+
+  it("CA2: si el usuario solamente tiene un proyecto activo, aparece seleccionado por defecto", async () => {
+    const onSelect = vi.fn();
+    render(
+      <ListaProyectosAsignadosActividad
+        proyectos={[
+          {
+            id: 15,
+            nombre: "Torre Corporativa Imperquimia",
+            estado: "ACTIVO",
+          },
+        ]}
+        selectedProyectoId={null}
+        onSelectProyecto={onSelect}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(onSelect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 15,
+          nombre: "Torre Corporativa Imperquimia",
+        }),
+      ),
+    );
+  });
+
+  it("CA3: permite búsqueda rápida por nombre de proyecto", () => {
+    render(
+      <ListaProyectosAsignadosActividad
+        proyectos={[
+          {
+            id: 1,
+            nombre: "Bodega Industrial Soyapango",
+            estado: "ACTIVO",
+          },
+          {
+            id: 2,
+            nombre: "Centro Comercial Santa Tecla",
+            estado: "ACTIVO",
+          },
+        ]}
+        selectedProyectoId={1}
+        onSelectProyecto={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getAllByText("Bodega Industrial Soyapango").length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText("Centro Comercial Santa Tecla")).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Buscar proyecto"), {
+      target: { value: "santa tecla" },
+    });
+
+    expect(
+      screen.queryByRole("row", { name: /Bodega Industrial Soyapango/i }),
+    ).toBeNull();
+    expect(screen.getByText("Centro Comercial Santa Tecla")).toBeTruthy();
   });
 });

@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAlertasRouteImport } from './routes/_authenticated/alertas'
+import { Route as AuthenticatedActividadesDiariasIndexRouteImport } from './routes/_authenticated/actividades-diarias/index'
 import { Route as AuthenticatedActividadesDiariasCreateRouteImport } from './routes/_authenticated/actividades-diarias/create'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
@@ -65,6 +66,12 @@ const AuthenticatedAlertasRoute = AuthenticatedAlertasRouteImport.update({
   path: '/alertas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedActividadesDiariasIndexRoute =
+  AuthenticatedActividadesDiariasIndexRouteImport.update({
+    id: '/actividades-diarias/',
+    path: '/actividades-diarias/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedActividadesDiariasCreateRoute =
   AuthenticatedActividadesDiariasCreateRouteImport.update({
     id: '/actividades-diarias/create',
@@ -277,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
+  '/actividades-diarias/': typeof AuthenticatedActividadesDiariasIndexRoute
   '/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
@@ -314,6 +322,7 @@ export interface FileRoutesByTo {
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
+  '/actividades-diarias': typeof AuthenticatedActividadesDiariasIndexRoute
   '/cargo-empleado': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/cotizaciones': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
@@ -353,6 +362,7 @@ export interface FileRoutesById {
   '/_authenticated/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/users/create': typeof AuthenticatedUsersCreateRoute
+  '/_authenticated/actividades-diarias/': typeof AuthenticatedActividadesDiariasIndexRoute
   '/_authenticated/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/_authenticated/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
@@ -392,6 +402,7 @@ export interface FileRouteTypes {
     | '/proyectos/create'
     | '/users/$userId'
     | '/users/create'
+    | '/actividades-diarias/'
     | '/cargo-empleado/'
     | '/cotizaciones/'
     | '/empleados/'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/proyectos/create'
     | '/users/$userId'
     | '/users/create'
+    | '/actividades-diarias'
     | '/cargo-empleado'
     | '/cotizaciones'
     | '/empleados'
@@ -467,6 +479,7 @@ export interface FileRouteTypes {
     | '/_authenticated/proyectos/create'
     | '/_authenticated/users/$userId'
     | '/_authenticated/users/create'
+    | '/_authenticated/actividades-diarias/'
     | '/_authenticated/cargo-empleado/'
     | '/_authenticated/cotizaciones/'
     | '/_authenticated/empleados/'
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       path: '/alertas'
       fullPath: '/alertas'
       preLoaderRoute: typeof AuthenticatedAlertasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/actividades-diarias/': {
+      id: '/_authenticated/actividades-diarias/'
+      path: '/actividades-diarias'
+      fullPath: '/actividades-diarias/'
+      preLoaderRoute: typeof AuthenticatedActividadesDiariasIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/actividades-diarias/create': {
@@ -766,6 +786,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProyectosCreateRoute: typeof AuthenticatedProyectosCreateRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedUsersCreateRoute: typeof AuthenticatedUsersCreateRoute
+  AuthenticatedActividadesDiariasIndexRoute: typeof AuthenticatedActividadesDiariasIndexRoute
   AuthenticatedCargoEmpleadoIndexRoute: typeof AuthenticatedCargoEmpleadoIndexRoute
   AuthenticatedCotizacionesIndexRoute: typeof AuthenticatedCotizacionesIndexRoute
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
@@ -808,6 +829,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedProyectosCreateRoute: AuthenticatedProyectosCreateRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedUsersCreateRoute: AuthenticatedUsersCreateRoute,
+  AuthenticatedActividadesDiariasIndexRoute:
+    AuthenticatedActividadesDiariasIndexRoute,
   AuthenticatedCargoEmpleadoIndexRoute: AuthenticatedCargoEmpleadoIndexRoute,
   AuthenticatedCotizacionesIndexRoute: AuthenticatedCotizacionesIndexRoute,
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,

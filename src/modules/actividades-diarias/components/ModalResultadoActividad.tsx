@@ -1,6 +1,5 @@
 import { Button } from "@heroui/react/button";
 import { Modal } from "@heroui/react/modal";
-import { CheckCircle2, WifiOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   DURACION_MINIMA_MODAL_MS,
@@ -52,35 +51,17 @@ export function ModalResultadoActividad({
         <Modal.Container>
           <Modal.Dialog className="w-full sm:max-w-md">
             <Modal.Header>
-              <div className="flex items-center gap-3">
-                {esExito ? (
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                    <CheckCircle2 className="h-5 w-5" />
-                  </span>
-                ) : (
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-                    <WifiOff className="h-5 w-5" />
-                  </span>
-                )}
-                <Modal.Heading>
-                  {esExito ? "Enviado con éxito" : "Sin conexión"}
-                </Modal.Heading>
-              </div>
+              <Modal.Heading>
+                {esExito ? "Enviado con éxito" : "Sin conexión"}
+              </Modal.Heading>
             </Modal.Header>
             <Modal.Body>
               {esExito ? (
-                <p
-                  role="status"
-                  aria-live="polite"
-                  className="text-base font-medium text-gray-800"
-                >
+                <p role="status" aria-live="polite">
                   {MENSAJES_ACTIVIDAD.exito}
                 </p>
               ) : (
-                <p
-                  role="alert"
-                  className="text-base font-medium text-amber-900"
-                >
+                <p role="alert" className="text-red-700">
                   {MENSAJES_ACTIVIDAD.errorConexion}
                 </p>
               )}
