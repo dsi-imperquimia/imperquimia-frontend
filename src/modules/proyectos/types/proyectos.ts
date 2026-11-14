@@ -41,6 +41,7 @@ export interface Proyecto {
   estado: EstadoProyecto;
   tipoObra?: TipoObra | null;
   presupuesto?: string | number | null;
+  motivoCancelacion?: string | null;
   subTotal: string | number;
   totalIva: string | number;
   total: string | number;

@@ -10,6 +10,7 @@ import type { Proyecto } from "../types/proyectos";
 export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [motivo, setMotivo] = useState("");
   const navigate = useNavigate();
   const client = useQueryClient();
   return (
@@ -24,9 +25,20 @@ export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
             <AlertDialog.Body>
               <p>
                 ¿Cancelar «{proyecto.nombre}»? Permanecerá en el listado para
-                consulta. Antes debes retirar sus herramientas y empleados
-                asignados.
+                consulta, con una etiqueta de "Cancelado". Los empleados
+                asignados serán notificados. Esta acción no se puede
+                deshacer.
               </p>
+              <label className="mt-3 flex flex-col gap-1 text-sm">
+                Motivo de la cancelación *
+                <textarea
+                  className="min-h-20 rounded-lg border border-gray-300 p-2"
+                  value={motivo}
+                  disabled={pending}
+                  onChange={(e) => setMotivo(e.target.value)}
+                  placeholder="Explica por qué se cancela este proyecto"
+                />
+              </label>
               {error && (
                 <p role="alert" className="mt-3 text-red-700">
                   {error}
@@ -40,12 +52,12 @@ export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
               <Button
                 variant="danger"
                 isPending={pending}
-                isDisabled={pending}
+                isDisabled={pending || !motivo.trim()}
                 onClick={async () => {
                   setPending(true);
                   setError("");
                   try {
-                    await cancelarProyecto(proyecto.id);
+                    await cancelarProyecto(proyecto.id, motivo.trim());
                     await client.invalidateQueries({ queryKey: ["proyectos"] });
                     await client.invalidateQueries({
                       queryKey: ["proyectos-filter"],
