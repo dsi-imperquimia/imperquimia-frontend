@@ -1,6 +1,7 @@
 import {
   BriefcaseBusiness,
   FileText,
+  HardHat,
   Layers,
   LayoutDashboard,
   ShieldUser,
@@ -27,6 +28,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
+  { label: "Mis proyectos", icon: HardHat, to: "/mis-proyectos" },
   {
     label: "Usuarios",
     icon: Users,
