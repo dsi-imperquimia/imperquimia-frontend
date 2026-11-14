@@ -51,10 +51,24 @@ function etiquetaDetalle(clave: string) {
     : `Cantidad del material ${numeroMaterial}`;
 }
 
-// Solo Activo/En pausa se pueden alternar desde la edición general;
-// cancelar es un flujo dedicado (GPRCIMPER-28) y los demás estados son finales.
+// Activo, En pausa, Finalizado, Pagado y Garantía se pueden alternar entre
+// sí desde la edición general; cancelar es un flujo dedicado (GPRCIMPER-28).
+const ESTADOS_EDITABLES: EstadoEditableProyecto[] = [
+  "ACTIVO",
+  "EN_PAUSA",
+  "FINALIZADO",
+  "PAGADO",
+  "GARANTIA",
+];
+const ESTADO_EDITABLE_LABEL: Record<EstadoEditableProyecto, string> = {
+  ACTIVO: "Activo",
+  EN_PAUSA: "En pausa",
+  FINALIZADO: "Finalizado",
+  PAGADO: "Pagado",
+  GARANTIA: "Garantía",
+};
 const estadoEsEditable = (estado?: string): estado is EstadoEditableProyecto =>
-  estado === "ACTIVO" || estado === "EN_PAUSA";
+  (ESTADOS_EDITABLES as string[]).includes(estado ?? "");
 
 export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -658,14 +672,16 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
                   })
                 }
               >
-                <ListBox.Item id="ACTIVO" textValue="Activo">
-                  Activo
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
-                <ListBox.Item id="EN_PAUSA" textValue="En pausa">
-                  En pausa
-                  <ListBox.ItemIndicator />
-                </ListBox.Item>
+                {ESTADOS_EDITABLES.map((valor) => (
+                  <ListBox.Item
+                    key={valor}
+                    id={valor}
+                    textValue={ESTADO_EDITABLE_LABEL[valor]}
+                  >
+                    {ESTADO_EDITABLE_LABEL[valor]}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
               </SelectedField>
             ) : (
               <div className="flex flex-col gap-1 text-sm">
