@@ -15,7 +15,6 @@ import {
   MENSAJES_ACTIVIDAD,
 } from "../types/actividad-diaria";
 import { FormActividadDiaria } from "./FormActividadDiaria";
-import { FormEditarActividadDiaria } from "./FormEditarActividadDiaria";
 import { ListaProyectosAsignadosActividad } from "./ListaProyectosAsignadosActividad";
 import { ModalResultadoActividad } from "./ModalResultadoActividad";
 import { TablaActividadesProyecto } from "./TablaActividadesProyecto";
@@ -398,7 +397,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
 
     render(
       <QueryClientProvider client={queryClient}>
-        <FormEditarActividadDiaria
+        <FormActividadDiaria
           actividad={{
             id: 101,
             claveOperacion: "00000000-0000-4000-8000-000000000101",
@@ -447,5 +446,54 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     expect(
       await screen.findByText(MENSAJES_ACTIVIDAD.editadoExito),
     ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Aceptar" }));
+    await waitFor(() =>
+      expect(screen.queryByText(MENSAJES_ACTIVIDAD.editadoExito)).toBeNull(),
+    );
+  });
+
+  it("CA1 (formulario): bloquea la edición directa si pasaron más de 48 horas y no es administración", () => {
+    const hace50Horas = new Date(
+      Date.now() - 50 * 60 * 60 * 1000,
+    ).toISOString();
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FormActividadDiaria
+          actividad={{
+            id: 104,
+            claveOperacion: "00000000-0000-4000-8000-000000000104",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-11",
+            descripcion: "Registro vencido",
+            createdAt: hace50Horas,
+            updatedAt: hace50Horas,
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByText(/El plazo de 48 horas para editar este registro/i),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("button", { name: "Guardar cambios" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+  });
+
+  it("ModalResultadoActividad estado 'editado' muestra el mensaje de edición y se cierra al aceptar", () => {
+    const onClose = vi.fn();
+    render(<ModalResultadoActividad estado="editado" onClose={onClose} />);
+    expect(screen.getByText(MENSAJES_ACTIVIDAD.editadoExito)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Aceptar" }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

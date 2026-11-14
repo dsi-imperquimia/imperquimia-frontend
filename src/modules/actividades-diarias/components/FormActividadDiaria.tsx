@@ -1,6 +1,7 @@
 import { InputField } from "@components/fields/InputField";
 import { SelectedField } from "@components/fields/SelectedField";
 import { TextAreaField } from "@components/fields/TextAreaField";
+import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
 import { useAuth } from "@modules/auth/store/authStore";
@@ -14,36 +15,23 @@ import {
   type FormEvent,
 } from "react";
 import {
+  actualizarActividadDiaria,
   errorActividadDiaria,
   esErrorDeConexion,
   listProyectosDisponiblesActividad,
   registrarActividadDiaria,
 } from "../api/actividades-diarias";
+import { useBorradoresActividad } from "../hooks/useBorradoresActividad";
 import {
-  eliminarBorradorActividad,
-  guardarBorradorActividad,
-  listarBorradoresActividad,
-  marcarErrorBorradorActividad,
-  reenviarBorradoresActividad,
-} from "../api/borradores-actividad";
-import type {
-  BorradorActividad,
-  ErroresActividadDiaria,
-  ProyectoDisponibleActividad,
+  fechaHoyIso,
+  normalizarTexto,
+  puedeEditarActividad,
+  type ActividadDiaria,
+  type ErroresActividadDiaria,
+  type ProyectoDisponibleActividad,
 } from "../types/actividad-diaria";
 import { BorradoresActividad } from "./BorradoresActividad";
-import {
-  ModalResultadoActividad,
-  type EstadoModalResultadoActividad,
-} from "./ModalResultadoActividad";
-
-function fechaHoyIso(): string {
-  const ahora = new Date();
-  const anio = ahora.getFullYear();
-  const mes = String(ahora.getMonth() + 1).padStart(2, "0");
-  const dia = String(ahora.getDate()).padStart(2, "0");
-  return `${anio}-${mes}-${dia}`;
-}
+import { ModalResultadoActividad } from "./ModalResultadoActividad";
 
 function nuevaClaveOperacion(): string {
   if (
@@ -55,46 +43,66 @@ function nuevaClaveOperacion(): string {
   return "00000000-0000-4000-8000-000000000000";
 }
 
-function normalizarTexto(valor: string): string {
-  return valor
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase();
-}
-
+/**
+ * Formulario unificado de actividad diaria:
+ * - Sin `actividad`: crea un registro (GPRCIMPER-50) sobre proyectos asignados activos (GPRCIMPER-29).
+ * - Con `actividad`: edita un registro existente previo diálogo de confirmación (GPRCIMPER-34).
+ */
 export function FormActividadDiaria({
+  actividad,
   selectedProyectoId,
   onProyectoChange,
   proyectos: proyectosProp,
+  onSuccess,
 }: {
+  actividad?: ActividadDiaria;
   selectedProyectoId?: number | null;
   onProyectoChange?: (proyectoId: number | null) => void;
   proyectos?: ProyectoDisponibleActividad[];
+  onSuccess?: (actualizada: ActividadDiaria) => void;
 } = {}) {
   const { user } = useAuth();
-  const userId = user?.id ?? null;
   const queryClient = useQueryClient();
+  const esEdicion = Boolean(actividad);
+  const habilitadoParaEditar =
+    !actividad || puedeEditarActividad(actividad.createdAt, user?.role?.name);
 
   const [busquedaProyecto, setBusquedaProyecto] = useState("");
   const [proyectoId, setProyectoId] = useState(() =>
-    selectedProyectoId ? String(selectedProyectoId) : "",
+    actividad
+      ? String(actividad.proyectoId)
+      : selectedProyectoId
+        ? String(selectedProyectoId)
+        : "",
   );
-  const [fecha, setFecha] = useState(fechaHoyIso);
-  const [descripcion, setDescripcion] = useState("");
-  const [observaciones, setObservaciones] = useState("");
+  const [fecha, setFecha] = useState(() =>
+    actividad ? actividad.fecha.slice(0, 10) : fechaHoyIso(),
+  );
+  const [descripcion, setDescripcion] = useState(
+    () => actividad?.descripcion ?? "",
+  );
+  const [observaciones, setObservaciones] = useState(
+    () => actividad?.observaciones ?? "",
+  );
   const [claveOperacion, setClaveOperacion] = useState(nuevaClaveOperacion);
+  const [confirmando, setConfirmando] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [errores, setErrores] = useState<ErroresActividadDiaria>({
     campos: {},
   });
-  const [estadoModal, setEstadoModal] =
-    useState<EstadoModalResultadoActividad>(null);
 
-  const [borradores, setBorradores] = useState<BorradorActividad[]>(() =>
-    listarBorradoresActividad(userId),
-  );
-  const [claveEnProceso, setClaveEnProceso] = useState<string | null>(null);
-  const [isReenviandoTodos, setIsReenviandoTodos] = useState(false);
+  const {
+    borradores,
+    claveEnProceso,
+    isReenviandoTodos,
+    reenviar,
+    descartar,
+    agregarBorrador,
+    eliminarBorrador,
+    estadoModal,
+    mostrarModal,
+    cerrarModal,
+  } = useBorradoresActividad({ autoSync: !esEdicion });
 
   const {
     data: proyectosQuery = [],
@@ -103,7 +111,7 @@ export function FormActividadDiaria({
   } = useQuery({
     queryKey: ["actividades-diarias", "proyectos-disponibles"],
     queryFn: listProyectosDisponiblesActividad,
-    enabled: proyectosProp === undefined,
+    enabled: !esEdicion && proyectosProp === undefined,
   });
 
   // CA1 (GPRCIMPER-29): Solo proyectos activos donde el usuario es Jefe de Proyecto
@@ -127,52 +135,19 @@ export function FormActividadDiaria({
   }, [busquedaProyecto, proyectos, proyectoId]);
 
   useEffect(() => {
-    if (selectedProyectoId !== undefined) {
+    if (!esEdicion && selectedProyectoId !== undefined) {
       setProyectoId(selectedProyectoId ? String(selectedProyectoId) : "");
     }
-  }, [selectedProyectoId]);
+  }, [esEdicion, selectedProyectoId]);
 
   // CA2 (GPRCIMPER-29): Si el usuario solamente tiene un proyecto activo, debe aparecer seleccionado por defecto
   useEffect(() => {
-    if (proyectos.length === 1 && !proyectoId) {
+    if (!esEdicion && proyectos.length === 1 && !proyectoId) {
       const unicoId = proyectos[0].id;
       setProyectoId(String(unicoId));
       onProyectoChange?.(unicoId);
     }
-  }, [proyectos, proyectoId, onProyectoChange]);
-
-  useEffect(() => {
-    setBorradores(listarBorradoresActividad(userId));
-  }, [userId]);
-
-  const sincronizarBorradores = useCallback(async () => {
-    const actuales = listarBorradoresActividad(userId);
-    if (actuales.length === 0) return;
-    setIsReenviandoTodos(true);
-    try {
-      const resultado = await reenviarBorradoresActividad(userId);
-      setBorradores(resultado.pendientes);
-      if (resultado.enviados > 0) {
-        await queryClient.invalidateQueries({
-          queryKey: ["actividades-diarias"],
-        });
-        setEstadoModal("exito");
-      }
-    } finally {
-      setIsReenviandoTodos(false);
-    }
-  }, [queryClient, userId]);
-
-  useEffect(() => {
-    void sincronizarBorradores();
-    const handleOnline = () => {
-      void sincronizarBorradores();
-    };
-    window.addEventListener("online", handleOnline);
-    return () => {
-      window.removeEventListener("online", handleOnline);
-    };
-  }, [sincronizarBorradores]);
+  }, [esEdicion, proyectos, proyectoId, onProyectoChange]);
 
   const limpiarFormulario = useCallback(() => {
     const idPorDefecto =
@@ -190,18 +165,17 @@ export function FormActividadDiaria({
     setErrores({ campos: {} });
   }, [proyectos, selectedProyectoId]);
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    if (isPending) return;
-
+  function validarFormulario(): boolean {
     const camposValidacion: ErroresActividadDiaria["campos"] = {};
-    const proyectoNumero = Number(proyectoId);
-    if (
-      !proyectoId ||
-      !Number.isInteger(proyectoNumero) ||
-      proyectoNumero < 1
-    ) {
-      camposValidacion.proyectoId = "Selecciona un proyecto válido.";
+    if (!esEdicion) {
+      const proyectoNumero = Number(proyectoId);
+      if (
+        !proyectoId ||
+        !Number.isInteger(proyectoNumero) ||
+        proyectoNumero < 1
+      ) {
+        camposValidacion.proyectoId = "Selecciona un proyecto válido.";
+      }
     }
     if (!fecha.trim()) {
       camposValidacion.fecha =
@@ -215,9 +189,14 @@ export function FormActividadDiaria({
 
     if (Object.keys(camposValidacion).length > 0) {
       setErrores({ campos: camposValidacion });
-      return;
+      return false;
     }
+    setErrores({ campos: {} });
+    return true;
+  }
 
+  async function ejecutarCreacion() {
+    const proyectoNumero = Number(proyectoId);
     const payload = {
       claveOperacion,
       proyectoId: proyectoNumero,
@@ -231,27 +210,25 @@ export function FormActividadDiaria({
 
     try {
       await registrarActividadDiaria(payload);
-      const siguientes = eliminarBorradorActividad(userId, claveOperacion);
-      setBorradores(siguientes);
+      eliminarBorrador(claveOperacion);
       await queryClient.invalidateQueries({
         queryKey: ["actividades-diarias"],
       });
       limpiarFormulario();
-      setEstadoModal("exito");
+      mostrarModal("exito");
     } catch (error) {
       if (esErrorDeConexion(error)) {
         const proyectoSeleccionado = proyectos.find(
           (item) => item.id === proyectoNumero,
         );
-        const siguientes = guardarBorradorActividad(userId, {
+        agregarBorrador({
           claveOperacion,
           payload,
           proyectoNombre: proyectoSeleccionado?.nombre,
           guardadoEn: new Date().toISOString(),
         });
-        setBorradores(siguientes);
         limpiarFormulario();
-        setEstadoModal("error_conexion");
+        mostrarModal("error_conexion");
       } else {
         setErrores(errorActividadDiaria(error));
       }
@@ -260,137 +237,166 @@ export function FormActividadDiaria({
     }
   }
 
-  async function handleReenviarBorrador(borrador: BorradorActividad) {
-    if (claveEnProceso || isReenviandoTodos) return;
-    setClaveEnProceso(borrador.claveOperacion);
+  async function confirmarEdicion() {
+    if (!actividad || isPending) return;
+    setIsPending(true);
+    setErrores({ campos: {} });
     try {
-      await registrarActividadDiaria(borrador.payload);
-      const siguientes = eliminarBorradorActividad(
-        userId,
-        borrador.claveOperacion,
-      );
-      setBorradores(siguientes);
+      const actualizada = await actualizarActividadDiaria(actividad.id, {
+        fecha: fecha.trim(),
+        descripcion: descripcion.trim(),
+        observaciones: observaciones.trim() || undefined,
+      });
       await queryClient.invalidateQueries({
         queryKey: ["actividades-diarias"],
       });
-      setEstadoModal("exito");
+      setConfirmando(false);
+      // CA3 (GPRCIMPER-34): Mostrar al usuario que ha podido editar el registro
+      mostrarModal("editado");
+      onSuccess?.(actualizada);
     } catch (error) {
-      if (esErrorDeConexion(error)) {
-        setEstadoModal("error_conexion");
-      } else {
-        const detalle = errorActividadDiaria(error);
-        const siguientes = marcarErrorBorradorActividad(
-          userId,
-          borrador.claveOperacion,
-          detalle.general ?? "No se pudo reenviar el borrador.",
-        );
-        setBorradores(siguientes);
-      }
+      setConfirmando(false);
+      setErrores(errorActividadDiaria(error));
     } finally {
-      setClaveEnProceso(null);
+      setIsPending(false);
     }
   }
 
-  function handleDescartarBorrador(clave: string) {
-    const siguientes = eliminarBorradorActividad(userId, clave);
-    setBorradores(siguientes);
+  function handleSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (isPending || !habilitadoParaEditar) return;
+    if (!validarFormulario()) return;
+    if (esEdicion) {
+      // CA2 (GPRCIMPER-34): Solicitar confirmación antes de sobrescribir el registro anterior
+      setConfirmando(true);
+      return;
+    }
+    void ejecutarCreacion();
   }
 
-  const handleCloseModal = useCallback(() => {
-    setEstadoModal(null);
-  }, []);
+  const campoFecha = (
+    <InputField
+      label="Fecha de la actividad"
+      type="date"
+      max={fechaHoyIso()}
+      value={fecha}
+      disabled={isPending || !habilitadoParaEditar}
+      onChange={(event) => {
+        setFecha(event.target.value);
+        setErrores((prev) => ({
+          ...prev,
+          campos: { ...prev.campos, fecha: undefined },
+        }));
+      }}
+      errorMessage={errores.campos.fecha}
+      isRequired
+    />
+  );
 
   return (
     <div className="space-y-6">
-      <BorradoresActividad
-        borradores={borradores}
-        claveEnProceso={claveEnProceso}
-        isReenviandoTodos={isReenviandoTodos}
-        onReenviar={handleReenviarBorrador}
-        onDescartar={handleDescartarBorrador}
-      />
+      {!esEdicion && (
+        <BorradoresActividad
+          borradores={borradores}
+          claveEnProceso={claveEnProceso}
+          isReenviandoTodos={isReenviandoTodos}
+          onReenviar={reenviar}
+          onDescartar={descartar}
+        />
+      )}
 
       <form
         onSubmit={handleSubmit}
         noValidate
         className="max-w-3xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
       >
-        <p className="text-sm text-gray-500">
-          Selecciona uno de tus proyectos activos asignados como Jefe de
-          Proyecto y registra las labores realizadas durante la jornada.
-        </p>
-
-        {isLoadingProyectos && (
-          <p role="status">Cargando proyectos asignados…</p>
-        )}
-
-        {isErrorProyectos && (
-          <p role="alert" className="text-sm text-red-700">
-            No se pudieron cargar los proyectos disponibles en este momento.
-          </p>
-        )}
-
-        {proyectos.length > 1 && (
-          <InputField
-            label="Buscar proyecto asignado"
-            placeholder="Filtrar por nombre de proyecto"
-            value={busquedaProyecto}
-            disabled={isPending}
-            onChange={(event) => setBusquedaProyecto(event.target.value)}
-          />
-        )}
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <SelectedField
-            label="Proyecto"
-            placeholder="Selecciona un proyecto"
-            selectedKey={proyectoId || null}
-            onSelectionChange={(key) => {
-              const valor = String(key ?? "");
-              setProyectoId(valor);
-              onProyectoChange?.(valor ? Number(valor) : null);
-              setErrores((prev) => ({
-                ...prev,
-                campos: { ...prev.campos, proyectoId: undefined },
-              }));
-            }}
-            errorMessage={errores.campos.proyectoId}
-            isRequired
-          >
-            {proyectosFiltrados.map((proyecto) => (
-              <ListBox.Item
-                key={proyecto.id}
-                id={String(proyecto.id)}
-                textValue={proyecto.nombre}
+        {esEdicion ? (
+          <>
+            <p className="text-sm text-gray-500">
+              Proyecto:{" "}
+              <span className="font-semibold text-gray-900">
+                {actividad?.proyecto?.nombre ??
+                  `Proyecto #${actividad?.proyectoId}`}
+              </span>
+            </p>
+            {!habilitadoParaEditar && (
+              <p
+                role="alert"
+                className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
               >
-                {proyecto.nombre}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-            ))}
-          </SelectedField>
+                El plazo de 48 horas para editar este registro ha vencido. Solo
+                administración puede editarlo.
+              </p>
+            )}
+            {campoFecha}
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-gray-500">
+              Selecciona uno de tus proyectos activos asignados como Jefe de
+              Proyecto y registra las labores realizadas durante la jornada.
+            </p>
 
-          <InputField
-            label="Fecha de la actividad"
-            type="date"
-            max={fechaHoyIso()}
-            value={fecha}
-            onChange={(event) => {
-              setFecha(event.target.value);
-              setErrores((prev) => ({
-                ...prev,
-                campos: { ...prev.campos, fecha: undefined },
-              }));
-            }}
-            errorMessage={errores.campos.fecha}
-            isRequired
-          />
-        </div>
+            {isLoadingProyectos && (
+              <p role="status">Cargando proyectos asignados…</p>
+            )}
+
+            {isErrorProyectos && (
+              <p role="alert" className="text-sm text-red-700">
+                No se pudieron cargar los proyectos disponibles en este momento.
+              </p>
+            )}
+
+            {proyectos.length > 1 && (
+              <InputField
+                label="Buscar proyecto asignado"
+                placeholder="Filtrar por nombre de proyecto"
+                value={busquedaProyecto}
+                disabled={isPending}
+                onChange={(event) => setBusquedaProyecto(event.target.value)}
+              />
+            )}
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <SelectedField
+                label="Proyecto"
+                placeholder="Selecciona un proyecto"
+                selectedKey={proyectoId || null}
+                onSelectionChange={(key) => {
+                  const valor = String(key ?? "");
+                  setProyectoId(valor);
+                  onProyectoChange?.(valor ? Number(valor) : null);
+                  setErrores((prev) => ({
+                    ...prev,
+                    campos: { ...prev.campos, proyectoId: undefined },
+                  }));
+                }}
+                errorMessage={errores.campos.proyectoId}
+                isRequired
+              >
+                {proyectosFiltrados.map((proyecto) => (
+                  <ListBox.Item
+                    key={proyecto.id}
+                    id={String(proyecto.id)}
+                    textValue={proyecto.nombre}
+                  >
+                    {proyecto.nombre}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </SelectedField>
+
+              {campoFecha}
+            </div>
+          </>
+        )}
 
         <TextAreaField
           label="Descripción de la actividad"
           placeholder="Describe el trabajo realizado durante la jornada"
           rows={4}
           value={descripcion}
+          disabled={isPending || !habilitadoParaEditar}
           onChange={(event) => {
             setDescripcion(event.target.value);
             setErrores((prev) => ({
@@ -407,6 +413,7 @@ export function FormActividadDiaria({
           placeholder="Incidentes, notas adicionales o comentarios opcionales"
           rows={3}
           value={observaciones}
+          disabled={isPending || !habilitadoParaEditar}
           onChange={(event) => {
             setObservaciones(event.target.value);
             setErrores((prev) => ({
@@ -427,8 +434,12 @@ export function FormActividadDiaria({
         )}
 
         <div className="flex items-center gap-4">
-          <Button type="submit" isPending={isPending} isDisabled={isPending}>
-            Enviar
+          <Button
+            type="submit"
+            isPending={isPending}
+            isDisabled={isPending || !habilitadoParaEditar}
+          >
+            {esEdicion ? "Guardar cambios" : "Enviar"}
           </Button>
           <Link to="/actividades-diarias" className="text-sm text-gray-600">
             Cancelar
@@ -436,10 +447,52 @@ export function FormActividadDiaria({
         </div>
       </form>
 
-      <ModalResultadoActividad
-        estado={estadoModal}
-        onClose={handleCloseModal}
-      />
+      {esEdicion && (
+        <AlertDialog
+          isOpen={confirmando}
+          onOpenChange={(open) => {
+            if (!isPending) setConfirmando(open);
+          }}
+        >
+          <AlertDialog.Backdrop>
+            <AlertDialog.Container>
+              <AlertDialog.Dialog>
+                <AlertDialog.Header>
+                  <AlertDialog.Heading>
+                    Confirmar edición de registro
+                  </AlertDialog.Heading>
+                </AlertDialog.Header>
+                <AlertDialog.Body>
+                  <p>
+                    ¿Estás seguro de sobrescribir el registro anterior con las
+                    correcciones realizadas?
+                  </p>
+                </AlertDialog.Body>
+                <AlertDialog.Footer>
+                  <Button
+                    type="button"
+                    variant="tertiary"
+                    isDisabled={isPending}
+                    onClick={() => setConfirmando(false)}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    isPending={isPending}
+                    isDisabled={isPending}
+                    onClick={() => void confirmarEdicion()}
+                  >
+                    Confirmar cambios
+                  </Button>
+                </AlertDialog.Footer>
+              </AlertDialog.Dialog>
+            </AlertDialog.Container>
+          </AlertDialog.Backdrop>
+        </AlertDialog>
+      )}
+
+      <ModalResultadoActividad estado={estadoModal} onClose={cerrarModal} />
     </div>
   );
 }

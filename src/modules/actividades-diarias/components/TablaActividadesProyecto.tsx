@@ -17,7 +17,7 @@ export function TablaActividadesProyecto({
   isPending?: boolean;
   isError?: boolean;
   onRetry?: () => void;
-  onEditar: (actividad: ActividadDiaria) => void;
+  onEditar?: (actividad: ActividadDiaria) => void;
 }) {
   const { user } = useAuth();
   const rolNombre = user?.role?.name;
@@ -47,6 +47,14 @@ export function TablaActividadesProyecto({
     );
   }
 
+  const columnas = [
+    "Fecha",
+    "Descripción",
+    "Observaciones",
+    "Registrado por",
+    ...(onEditar ? ["Acciones"] : []),
+  ];
+
   return (
     <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
       <table className="w-full text-left text-sm">
@@ -55,13 +63,7 @@ export function TablaActividadesProyecto({
         </caption>
         <thead className="bg-gray-100 text-gray-600">
           <tr>
-            {[
-              "Fecha",
-              "Descripción",
-              "Observaciones",
-              "Registrado por",
-              "Acciones",
-            ].map((t) => (
+            {columnas.map((t) => (
               <th key={t} className="px-4 py-3">
                 {t}
               </th>
@@ -86,17 +88,19 @@ export function TablaActividadesProyecto({
                       ? `${a.usuario.name} ${a.usuario.lastName}`
                       : "Sin definir")}
                 </td>
-                <td className="px-4 py-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    isDisabled={!habilitado}
-                    onClick={() => onEditar(a)}
-                  >
-                    Editar
-                  </Button>
-                </td>
+                {onEditar && (
+                  <td className="px-4 py-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      isDisabled={!habilitado}
+                      onClick={() => onEditar(a)}
+                    >
+                      Editar
+                    </Button>
+                  </td>
+                )}
               </tr>
             );
           })}

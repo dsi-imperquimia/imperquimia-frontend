@@ -3,8 +3,11 @@ import {
   listActividadesDiarias,
   listProyectosDisponiblesActividad,
 } from "@modules/actividades-diarias/api/actividades-diarias";
+import { BorradoresActividad } from "@modules/actividades-diarias/components/BorradoresActividad";
 import { ListaProyectosAsignadosActividad } from "@modules/actividades-diarias/components/ListaProyectosAsignadosActividad";
+import { ModalResultadoActividad } from "@modules/actividades-diarias/components/ModalResultadoActividad";
 import { TablaActividadesProyecto } from "@modules/actividades-diarias/components/TablaActividadesProyecto";
+import { useBorradoresActividad } from "@modules/actividades-diarias/hooks/useBorradoresActividad";
 import type { ProyectoDisponibleActividad } from "@modules/actividades-diarias/types/actividad-diaria";
 import { userActions } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -21,6 +24,18 @@ export function ActividadesDiariasPage() {
   const [selectedProyectoId, setSelectedProyectoId] = useState<number | null>(
     null,
   );
+
+  const puedeCrear = userActions.hasPermission("ACTIVIDAD_CREATE");
+  const puedeEditar = userActions.hasPermission("ACTIVIDAD_UPDATE");
+  const {
+    borradores,
+    claveEnProceso,
+    isReenviandoTodos,
+    reenviar,
+    descartar,
+    estadoModal,
+    cerrarModal,
+  } = useBorradoresActividad({ autoSync: puedeCrear });
 
   const proyectosQuery = useQuery({
     queryKey: ["actividades-diarias", "proyectos-disponibles"],
@@ -72,16 +87,28 @@ export function ActividadesDiariasPage() {
         </Button>
       </div>
 
-      {userActions.hasPermission("ACTIVIDAD_CREATE") && (
-        <Link
-          to="/actividades-diarias/create"
-          search={
-            selectedProyectoId ? { proyectoId: selectedProyectoId } : undefined
-          }
-          className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
-        >
-          Crear actividad diaria
-        </Link>
+      {puedeCrear && (
+        <>
+          <Link
+            to="/actividades-diarias/create"
+            search={
+              selectedProyectoId
+                ? { proyectoId: selectedProyectoId }
+                : undefined
+            }
+            className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
+          >
+            Crear actividad diaria
+          </Link>
+
+          <BorradoresActividad
+            borradores={borradores}
+            claveEnProceso={claveEnProceso}
+            isReenviandoTodos={isReenviandoTodos}
+            onReenviar={reenviar}
+            onDescartar={descartar}
+          />
+        </>
       )}
 
       {/* HU GPRCIMPER-29: Ver lista de los proyectos asignados */}
@@ -105,15 +132,20 @@ export function ActividadesDiariasPage() {
             isPending={actividadesQuery.isPending}
             isError={actividadesQuery.isError}
             onRetry={() => void actividadesQuery.refetch()}
-            onEditar={(actividad) =>
-              void navigate({
-                to: "/actividades-diarias/editar/$actividadId",
-                params: { actividadId: String(actividad.id) },
-              })
+            onEditar={
+              puedeEditar
+                ? (actividad) =>
+                    void navigate({
+                      to: "/actividades-diarias/editar/$actividadId",
+                      params: { actividadId: String(actividad.id) },
+                    })
+                : undefined
             }
           />
         </div>
       )}
+
+      <ModalResultadoActividad estado={estadoModal} onClose={cerrarModal} />
     </div>
   );
 }

@@ -72,12 +72,26 @@ export const DURACION_MINIMA_MODAL_MS = 3000;
 export const PLAZO_EDICION_HORAS = 48;
 export const PLAZO_EDICION_MS = PLAZO_EDICION_HORAS * 60 * 60 * 1000;
 
-export function esRolAdministrador(rolNombre?: string | null): boolean {
-  if (!rolNombre) return false;
-  const normalizado = rolNombre
+/** Fecha local de hoy en formato AAAA-MM-DD (para inputs type="date"). */
+export function fechaHoyIso(): string {
+  const ahora = new Date();
+  const anio = ahora.getFullYear();
+  const mes = String(ahora.getMonth() + 1).padStart(2, "0");
+  const dia = String(ahora.getDate()).padStart(2, "0");
+  return `${anio}-${mes}-${dia}`;
+}
+
+/** Normaliza texto para búsquedas sin tildes ni mayúsculas. */
+export function normalizarTexto(valor: string): string {
+  return valor
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase();
+}
+
+export function esRolAdministrador(rolNombre?: string | null): boolean {
+  if (!rolNombre) return false;
+  const normalizado = normalizarTexto(rolNombre);
   return normalizado === "administrador" || normalizado === "administracion";
 }
 

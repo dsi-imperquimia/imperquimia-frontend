@@ -6,7 +6,32 @@ import {
   MENSAJES_ACTIVIDAD,
 } from "../types/actividad-diaria";
 
-export type EstadoModalResultadoActividad = "exito" | "error_conexion" | null;
+export type EstadoModalResultadoActividad =
+  "exito" | "editado" | "error_conexion" | null;
+
+const CONTENIDO: Record<
+  Exclude<EstadoModalResultadoActividad, null>,
+  { titulo: string; mensaje: string; boton: string }
+> = {
+  // GPRCIMPER-50 CA1
+  exito: {
+    titulo: "Enviado con éxito",
+    mensaje: MENSAJES_ACTIVIDAD.exito,
+    boton: "Aceptar",
+  },
+  // GPRCIMPER-34 CA3
+  editado: {
+    titulo: "Edición completada",
+    mensaje: MENSAJES_ACTIVIDAD.editadoExito,
+    boton: "Aceptar",
+  },
+  // GPRCIMPER-50 CA3
+  error_conexion: {
+    titulo: "Sin conexión",
+    mensaje: MENSAJES_ACTIVIDAD.errorConexion,
+    boton: "Entendido",
+  },
+};
 
 export function ModalResultadoActividad({
   estado,
@@ -15,73 +40,60 @@ export function ModalResultadoActividad({
   estado: EstadoModalResultadoActividad;
   onClose: () => void;
 }) {
-  const [puedeCerrarExito, setPuedeCerrarExito] = useState(false);
-  const esExito = estado === "exito";
-  const isOpen = estado !== null;
+  // GPRCIMPER-50 CA2: el indicador de "guardado" se mantiene al menos 3 s.
+  const requiereEspera = estado === "exito";
+  const [puedeCerrar, setPuedeCerrar] = useState(!requiereEspera);
 
   useEffect(() => {
     if (estado !== "exito") {
-      setPuedeCerrarExito(false);
+      setPuedeCerrar(true);
       return;
     }
-    setPuedeCerrarExito(false);
+    setPuedeCerrar(false);
     const timer = globalThis.setTimeout(() => {
-      setPuedeCerrarExito(true);
+      setPuedeCerrar(true);
       onClose();
     }, DURACION_MINIMA_MODAL_MS);
-    return () => {
-      globalThis.clearTimeout(timer);
-    };
+    return () => globalThis.clearTimeout(timer);
   }, [estado, onClose]);
 
-  function handleOpenChange(open: boolean) {
-    if (open) return;
-    if (esExito && !puedeCerrarExito) return;
-    onClose();
+  if (estado === null) return null;
+  const contenido = CONTENIDO[estado];
+  const esError = estado === "error_conexion";
+
+  function cerrar() {
+    if (puedeCerrar) onClose();
   }
 
   return (
     <Modal
-      isOpen={isOpen}
-      onOpenChange={handleOpenChange}
-      isDismissable={!esExito || puedeCerrarExito}
-      isKeyboardDismissDisabled={esExito && !puedeCerrarExito}
+      isOpen
+      onOpenChange={(open) => {
+        if (!open) cerrar();
+      }}
     >
-      <Modal.Backdrop>
+      <Modal.Backdrop
+        isDismissable={puedeCerrar}
+        isKeyboardDismissDisabled={!puedeCerrar}
+      >
         <Modal.Container>
           <Modal.Dialog className="w-full sm:max-w-md">
             <Modal.Header>
-              <Modal.Heading>
-                {esExito ? "Enviado con éxito" : "Sin conexión"}
-              </Modal.Heading>
+              <Modal.Heading>{contenido.titulo}</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
-              {esExito ? (
-                <p role="status" aria-live="polite">
-                  {MENSAJES_ACTIVIDAD.exito}
-                </p>
-              ) : (
-                <p role="alert" className="text-red-700">
-                  {MENSAJES_ACTIVIDAD.errorConexion}
-                </p>
-              )}
+              <p
+                role={esError ? "alert" : "status"}
+                aria-live={esError ? undefined : "polite"}
+                className={esError ? "text-red-700" : undefined}
+              >
+                {contenido.mensaje}
+              </p>
             </Modal.Body>
             <Modal.Footer>
-              {esExito ? (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    if (puedeCerrarExito) onClose();
-                  }}
-                  isDisabled={!puedeCerrarExito}
-                >
-                  Aceptar
-                </Button>
-              ) : (
-                <Button type="button" onClick={onClose}>
-                  Entendido
-                </Button>
-              )}
+              <Button type="button" onClick={cerrar} isDisabled={!puedeCerrar}>
+                {contenido.boton}
+              </Button>
             </Modal.Footer>
           </Modal.Dialog>
         </Modal.Container>

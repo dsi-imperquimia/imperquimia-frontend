@@ -1,6 +1,6 @@
 import { Button } from "@heroui/react/button";
 import { getActividadDiaria } from "@modules/actividades-diarias/api/actividades-diarias";
-import { FormEditarActividadDiaria } from "@modules/actividades-diarias/components/FormEditarActividadDiaria";
+import { FormActividadDiaria } from "@modules/actividades-diarias/components/FormActividadDiaria";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -40,7 +40,7 @@ function EditarActividadDiariaPage() {
       <h1 className="text-2xl font-bold">
         Editar registro de actividad diaria
       </h1>
-      <FormEditarActividadDiaria key={data.id} actividad={data} />
+      <FormActividadDiaria key={data.id} actividad={data} />
     </div>
   );
 }

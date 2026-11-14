@@ -1,14 +1,10 @@
 import { Button } from "@heroui/react/button";
 import { fecha } from "@modules/proyectos/types/proyectos";
 import { useEffect, useMemo, useState } from "react";
-import type { ProyectoDisponibleActividad } from "../types/actividad-diaria";
-
-function normalizarTexto(valor: string): string {
-  return valor
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase();
-}
+import {
+  normalizarTexto,
+  type ProyectoDisponibleActividad,
+} from "../types/actividad-diaria";
 
 export function ListaProyectosAsignadosActividad({
   proyectos,
