@@ -74,8 +74,8 @@ export function ActividadesDiariasPage() {
         <div>
           <h1 className="text-2xl font-bold">Actividades diarias</h1>
           <p className="text-sm text-gray-500">
-            Selecciona uno de tus proyectos activos asignados como Jefe de
-            Proyecto para trabajar.
+            Elige un proyecto asignado para consultar sus actividades o
+            registrar una nueva jornada.
           </p>
         </div>
         <Button
@@ -88,7 +88,7 @@ export function ActividadesDiariasPage() {
       </div>
 
       {puedeCrear && (
-        <>
+        <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/actividades-diarias/create"
             search={
@@ -100,18 +100,28 @@ export function ActividadesDiariasPage() {
           >
             Crear actividad diaria
           </Link>
-
-          <BorradoresActividad
-            borradores={borradores}
-            claveEnProceso={claveEnProceso}
-            isReenviandoTodos={isReenviandoTodos}
-            onReenviar={reenviar}
-            onDescartar={descartar}
-          />
-        </>
+          {proyectoActual && (
+            <span className="text-sm text-gray-500">
+              Proyecto activo:{" "}
+              <strong className="font-medium text-gray-800">
+                {proyectoActual.nombre}
+              </strong>
+            </span>
+          )}
+        </div>
       )}
 
-      {/* HU GPRCIMPER-29: Ver lista de los proyectos asignados */}
+      {puedeCrear && (
+        <BorradoresActividad
+          borradores={borradores}
+          claveEnProceso={claveEnProceso}
+          isReenviandoTodos={isReenviandoTodos}
+          onReenviar={reenviar}
+          onDescartar={descartar}
+        />
+      )}
+
+      {/* Paso 1 (GPRCIMPER-29): Ver lista de proyectos activos asignados */}
       <ListaProyectosAsignadosActividad
         proyectos={proyectos}
         isPending={proyectosQuery.isPending}
@@ -121,12 +131,24 @@ export function ActividadesDiariasPage() {
         onRetry={() => void proyectosQuery.refetch()}
       />
 
-      {/* HU GPRCIMPER-34: Registros guardados del proyecto seleccionado con botón Editar (< 48h o Administración) */}
-      {proyectoActual && (
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold">
-            Registros de actividad diaria · {proyectoActual.nombre}
-          </h2>
+      {/* Paso 2 (GPRCIMPER-34): Registros guardados del proyecto seleccionado */}
+      <section aria-label="Actividades del proyecto" className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold text-gray-900">
+              2. Actividades registradas
+              {proyectoActual ? ` · ${proyectoActual.nombre}` : ""}
+            </h2>
+            {proyectoActual && (
+              <p className="text-sm text-gray-500">
+                {proyectoActual.cliente || "Sin cliente"} ·{" "}
+                {proyectoActual.ubicacion || "Sin ubicación"}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {proyectoActual ? (
           <TablaActividadesProyecto
             actividades={actividadesQuery.data ?? []}
             isPending={actividadesQuery.isPending}
@@ -142,8 +164,13 @@ export function ActividadesDiariasPage() {
                 : undefined
             }
           />
-        </div>
-      )}
+        ) : (
+          <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+            Selecciona un proyecto en el paso 1 para ver y editar sus
+            actividades diarias registradas.
+          </p>
+        )}
+      </section>
 
       <ModalResultadoActividad estado={estadoModal} onClose={cerrarModal} />
     </div>

@@ -113,12 +113,17 @@ async function montarYCompletarFormulario() {
     expect(screen.queryByText("Cargando proyectos asignados…")).toBeNull(),
   );
 
+  const comboProyecto = screen.getByRole("combobox", {
+    name: /Proyecto/i,
+  }) as HTMLInputElement;
+  expect(comboProyecto.value).toBe("Proyecto Edificio Central");
+
   const selectTrigger = screen.getByRole("button", {
     name: /Proyecto/i,
   });
   fireEvent.click(selectTrigger);
   const opcionProyecto = await screen.findByRole("option", {
-    name: "Proyecto Edificio Central",
+    name: /Proyecto Edificio Central/i,
   });
   fireEvent.click(opcionProyecto);
 
@@ -307,6 +312,65 @@ describe("ListaProyectosAsignadosActividad (GPRCIMPER-29)", () => {
       screen.queryByRole("row", { name: /Bodega Industrial Soyapango/i }),
     ).toBeNull();
     expect(screen.getByText("Centro Comercial Santa Tecla")).toBeTruthy();
+  });
+
+  it("CA3 (formulario integrado): permite buscar por nombre directamente dentro del selector Proyecto", async () => {
+    mocks.registrar.mockResolvedValue({
+      actividad: { id: 2 },
+      repetido: false,
+    });
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FormActividadDiaria
+          proyectos={[
+            {
+              id: 1,
+              nombre: "Residencial Los Pinos",
+              estado: "ACTIVO",
+            },
+            {
+              id: 2,
+              nombre: "Bodega Industrial Soyapango",
+              estado: "ACTIVO",
+            },
+          ]}
+        />
+      </QueryClientProvider>,
+    );
+
+    const inputProyecto = screen.getByRole("combobox", {
+      name: /Proyecto/i,
+    });
+    act(() => {
+      (inputProyecto as HTMLElement).focus();
+    });
+    fireEvent.change(inputProyecto, { target: { value: "bodega" } });
+
+    expect(
+      screen.queryByRole("option", { name: /Residencial Los Pinos/i }),
+    ).toBeNull();
+    const opcionFiltrada = await screen.findByRole("option", {
+      name: /Bodega Industrial Soyapango/i,
+    });
+    fireEvent.click(opcionFiltrada);
+
+    fireEvent.change(screen.getByLabelText(/Descripción de la actividad/i), {
+      target: { value: "Revisión de drenaje pluvial" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    await waitFor(() =>
+      expect(mocks.registrar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          proyectoId: 2,
+          descripcion: "Revisión de drenaje pluvial",
+        }),
+      ),
+    );
   });
 });
 

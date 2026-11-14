@@ -90,15 +90,22 @@ export function TablaActividadesProyecto({
                 </td>
                 {onEditar && (
                   <td className="px-4 py-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      isDisabled={!habilitado}
-                      onClick={() => onEditar(a)}
-                    >
-                      Editar
-                    </Button>
+                    <div className="flex flex-col items-start gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        isDisabled={!habilitado}
+                        onClick={() => onEditar(a)}
+                      >
+                        Editar
+                      </Button>
+                      {!habilitado && (
+                        <span className="text-xs text-gray-500">
+                          Plazo &gt; 48 h (solo admin)
+                        </span>
+                      )}
+                    </div>
                   </td>
                 )}
               </tr>

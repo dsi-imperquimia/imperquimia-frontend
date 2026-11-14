@@ -2,7 +2,7 @@ import { Button } from "@heroui/react/button";
 import { getActividadDiaria } from "@modules/actividades-diarias/api/actividades-diarias";
 import { FormActividadDiaria } from "@modules/actividades-diarias/components/FormActividadDiaria";
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
   "/_authenticated/actividades-diarias/editar/$actividadId",
@@ -37,6 +37,12 @@ function EditarActividadDiariaPage() {
 
   return (
     <div className="space-y-5">
+      <Link
+        to="/actividades-diarias"
+        className="text-sm text-blue-700 hover:underline"
+      >
+        ← Volver a actividades diarias
+      </Link>
       <h1 className="text-2xl font-bold">
         Editar registro de actividad diaria
       </h1>

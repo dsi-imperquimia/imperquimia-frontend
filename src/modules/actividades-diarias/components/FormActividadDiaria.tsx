@@ -1,8 +1,12 @@
 import { InputField } from "@components/fields/InputField";
-import { SelectedField } from "@components/fields/SelectedField";
 import { TextAreaField } from "@components/fields/TextAreaField";
 import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
+import { ComboBox } from "@heroui/react/combo-box";
+import { Description } from "@heroui/react/description";
+import { FieldError } from "@heroui/react/field-error";
+import { Input } from "@heroui/react/input";
+import { Label } from "@heroui/react/label";
 import { ListBox } from "@heroui/react/list-box";
 import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +15,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -45,7 +50,7 @@ function nuevaClaveOperacion(): string {
 
 /**
  * Formulario unificado de actividad diaria:
- * - Sin `actividad`: crea un registro (GPRCIMPER-50) sobre proyectos asignados activos (GPRCIMPER-29).
+ * - Sin `actividad`: crea un registro (GPRCIMPER-50) con selector buscable integrado (GPRCIMPER-29).
  * - Con `actividad`: edita un registro existente previo diálogo de confirmación (GPRCIMPER-34).
  */
 export function FormActividadDiaria({
@@ -67,7 +72,6 @@ export function FormActividadDiaria({
   const habilitadoParaEditar =
     !actividad || puedeEditarActividad(actividad.createdAt, user?.role?.name);
 
-  const [busquedaProyecto, setBusquedaProyecto] = useState("");
   const [proyectoId, setProyectoId] = useState(() =>
     actividad
       ? String(actividad.proyectoId)
@@ -75,6 +79,7 @@ export function FormActividadDiaria({
         ? String(selectedProyectoId)
         : "",
   );
+  const [busquedaProyecto, setBusquedaProyecto] = useState("");
   const [fecha, setFecha] = useState(() =>
     actividad ? actividad.fecha.slice(0, 10) : fechaHoyIso(),
   );
@@ -123,41 +128,64 @@ export function FormActividadDiaria({
     [proyectosProp, proyectosQuery],
   );
 
-  // CA3 (GPRCIMPER-29): Búsqueda rápida por nombre de proyecto
+  const proyectoSeleccionado = useMemo(
+    () => proyectos.find((item) => String(item.id) === proyectoId),
+    [proyectos, proyectoId],
+  );
+
+  // CA3 (GPRCIMPER-29): Filtrado integrado dentro del selector; si coincide con la selección actual, muestra todos para poder cambiar
   const proyectosFiltrados = useMemo(() => {
     const termino = normalizarTexto(busquedaProyecto.trim());
-    if (!termino) return proyectos;
-    return proyectos.filter(
-      (proyecto) =>
-        String(proyecto.id) === proyectoId ||
-        normalizarTexto(proyecto.nombre).includes(termino),
+    if (
+      !termino ||
+      (proyectoSeleccionado &&
+        termino === normalizarTexto(proyectoSeleccionado.nombre))
+    ) {
+      return proyectos;
+    }
+    return proyectos.filter((proyecto) =>
+      normalizarTexto(proyecto.nombre).includes(termino),
     );
-  }, [busquedaProyecto, proyectos, proyectoId]);
+  }, [busquedaProyecto, proyectos, proyectoSeleccionado]);
+
+  const autoSeleccionadoRef = useRef(false);
 
   useEffect(() => {
     if (!esEdicion && selectedProyectoId !== undefined) {
       setProyectoId(selectedProyectoId ? String(selectedProyectoId) : "");
+      setBusquedaProyecto("");
     }
   }, [esEdicion, selectedProyectoId]);
 
-  // CA2 (GPRCIMPER-29): Si el usuario solamente tiene un proyecto activo, debe aparecer seleccionado por defecto
   useEffect(() => {
-    if (!esEdicion && proyectos.length === 1 && !proyectoId) {
-      const unicoId = proyectos[0].id;
-      setProyectoId(String(unicoId));
-      onProyectoChange?.(unicoId);
+    if (!esEdicion && proyectoSeleccionado && !busquedaProyecto) {
+      setBusquedaProyecto(proyectoSeleccionado.nombre);
+    }
+  }, [esEdicion, proyectoSeleccionado, busquedaProyecto]);
+
+  // CA2 (GPRCIMPER-29): Si el usuario solamente tiene un proyecto activo, aparece seleccionado por defecto una vez
+  useEffect(() => {
+    if (
+      !esEdicion &&
+      !autoSeleccionadoRef.current &&
+      proyectos.length === 1 &&
+      !proyectoId
+    ) {
+      autoSeleccionadoRef.current = true;
+      const unico = proyectos[0];
+      setProyectoId(String(unico.id));
+      setBusquedaProyecto(unico.nombre);
+      onProyectoChange?.(unico.id);
     }
   }, [esEdicion, proyectos, proyectoId, onProyectoChange]);
 
   const limpiarFormulario = useCallback(() => {
-    const idPorDefecto =
+    const defecto =
       proyectos.length === 1
-        ? String(proyectos[0].id)
-        : selectedProyectoId
-          ? String(selectedProyectoId)
-          : "";
-    setProyectoId(idPorDefecto);
-    setBusquedaProyecto("");
+        ? proyectos[0]
+        : proyectos.find((item) => item.id === selectedProyectoId);
+    setProyectoId(defecto ? String(defecto.id) : "");
+    setBusquedaProyecto(defecto?.nombre ?? "");
     setFecha(fechaHoyIso());
     setDescripcion("");
     setObservaciones("");
@@ -218,9 +246,6 @@ export function FormActividadDiaria({
       mostrarModal("exito");
     } catch (error) {
       if (esErrorDeConexion(error)) {
-        const proyectoSeleccionado = proyectos.find(
-          (item) => item.id === proyectoNumero,
-        );
         agregarBorrador({
           claveOperacion,
           payload,
@@ -312,13 +337,20 @@ export function FormActividadDiaria({
       >
         {esEdicion ? (
           <>
-            <p className="text-sm text-gray-500">
-              Proyecto:{" "}
-              <span className="font-semibold text-gray-900">
-                {actividad?.proyecto?.nombre ??
-                  `Proyecto #${actividad?.proyectoId}`}
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm">
+              <span className="text-gray-600">
+                Proyecto:{" "}
+                <strong className="font-semibold text-gray-900">
+                  {actividad?.proyecto?.nombre ??
+                    `Proyecto #${actividad?.proyectoId}`}
+                </strong>
               </span>
-            </p>
+              {habilitadoParaEditar && (
+                <span className="rounded-full bg-gray-200 px-3 py-0.5 text-xs font-medium text-gray-800">
+                  Edición habilitada
+                </span>
+              )}
+            </div>
             {!habilitadoParaEditar && (
               <p
                 role="alert"
@@ -332,11 +364,6 @@ export function FormActividadDiaria({
           </>
         ) : (
           <>
-            <p className="text-sm text-gray-500">
-              Selecciona uno de tus proyectos activos asignados como Jefe de
-              Proyecto y registra las labores realizadas durante la jornada.
-            </p>
-
             {isLoadingProyectos && (
               <p role="status">Cargando proyectos asignados…</p>
             )}
@@ -347,44 +374,84 @@ export function FormActividadDiaria({
               </p>
             )}
 
-            {proyectos.length > 1 && (
-              <InputField
-                label="Buscar proyecto asignado"
-                placeholder="Filtrar por nombre de proyecto"
-                value={busquedaProyecto}
-                disabled={isPending}
-                onChange={(event) => setBusquedaProyecto(event.target.value)}
-              />
-            )}
-
             <div className="grid gap-4 sm:grid-cols-2">
-              <SelectedField
-                label="Proyecto"
-                placeholder="Selecciona un proyecto"
+              <ComboBox
+                items={proyectosFiltrados}
+                inputValue={busquedaProyecto}
                 selectedKey={proyectoId || null}
+                onInputChange={(value) => {
+                  setBusquedaProyecto(value);
+                  if (
+                    proyectoSeleccionado &&
+                    value !== proyectoSeleccionado.nombre
+                  ) {
+                    setProyectoId("");
+                    onProyectoChange?.(null);
+                  }
+                }}
                 onSelectionChange={(key) => {
                   const valor = String(key ?? "");
                   setProyectoId(valor);
+                  const elegido = proyectos.find(
+                    (item) => String(item.id) === valor,
+                  );
+                  setBusquedaProyecto(elegido?.nombre ?? "");
                   onProyectoChange?.(valor ? Number(valor) : null);
                   setErrores((prev) => ({
                     ...prev,
                     campos: { ...prev.campos, proyectoId: undefined },
                   }));
                 }}
-                errorMessage={errores.campos.proyectoId}
+                allowsCustomValue={false}
+                menuTrigger="focus"
+                variant="secondary"
+                validationBehavior="aria"
+                isInvalid={!!errores.campos.proyectoId}
+                isDisabled={isPending}
+                fullWidth
                 isRequired
               >
-                {proyectosFiltrados.map((proyecto) => (
-                  <ListBox.Item
-                    key={proyecto.id}
-                    id={String(proyecto.id)}
-                    textValue={proyecto.nombre}
+                <Label>Proyecto</Label>
+                <ComboBox.InputGroup>
+                  <Input placeholder="Buscar o seleccionar proyecto" />
+                  <ComboBox.Trigger aria-label="Mostrar proyectos" />
+                </ComboBox.InputGroup>
+                {proyectos.length === 1 && !errores.campos.proyectoId && (
+                  <Description>
+                    Tu único proyecto activo fue seleccionado automáticamente.
+                  </Description>
+                )}
+                <ComboBox.Popover>
+                  <ListBox
+                    items={proyectosFiltrados}
+                    renderEmptyState={() => (
+                      <p className="px-3 py-2 text-sm text-gray-500">
+                        No se encontraron proyectos con ese nombre.
+                      </p>
+                    )}
                   >
-                    {proyecto.nombre}
-                    <ListBox.ItemIndicator />
-                  </ListBox.Item>
-                ))}
-              </SelectedField>
+                    {(proyecto) => (
+                      <ListBox.Item
+                        id={String(proyecto.id)}
+                        textValue={proyecto.nombre}
+                      >
+                        <div className="flex w-full items-center justify-between gap-3">
+                          <span>{proyecto.nombre}</span>
+                          {proyecto.ubicacion && (
+                            <span className="text-xs text-gray-500">
+                              {proyecto.ubicacion}
+                            </span>
+                          )}
+                        </div>
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    )}
+                  </ListBox>
+                </ComboBox.Popover>
+                {errores.campos.proyectoId && (
+                  <FieldError>{errores.campos.proyectoId}</FieldError>
+                )}
+              </ComboBox>
 
               {campoFecha}
             </div>
@@ -433,7 +500,7 @@ export function FormActividadDiaria({
           </p>
         )}
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             type="submit"
             isPending={isPending}
@@ -441,7 +508,10 @@ export function FormActividadDiaria({
           >
             {esEdicion ? "Guardar cambios" : "Enviar"}
           </Button>
-          <Link to="/actividades-diarias" className="text-sm text-gray-600">
+          <Link
+            to="/actividades-diarias"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+          >
             Cancelar
           </Link>
         </div>
