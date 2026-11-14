@@ -1,10 +1,14 @@
 import { Button } from "@heroui/react/button";
-import { listProyectosDisponiblesActividad } from "@modules/actividades-diarias/api/actividades-diarias";
+import {
+  listActividadesDiarias,
+  listProyectosDisponiblesActividad,
+} from "@modules/actividades-diarias/api/actividades-diarias";
 import { ListaProyectosAsignadosActividad } from "@modules/actividades-diarias/components/ListaProyectosAsignadosActividad";
+import { TablaActividadesProyecto } from "@modules/actividades-diarias/components/TablaActividadesProyecto";
 import type { ProyectoDisponibleActividad } from "@modules/actividades-diarias/types/actividad-diaria";
 import { userActions } from "@modules/auth/store/authStore";
-import { useQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/actividades-diarias/")({
@@ -12,20 +16,27 @@ export const Route = createFileRoute("/_authenticated/actividades-diarias/")({
 });
 
 export function ActividadesDiariasPage() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [selectedProyectoId, setSelectedProyectoId] = useState<number | null>(
     null,
   );
 
-  const {
-    data: proyectos = [],
-    isPending,
-    isError,
-    refetch,
-    isFetching,
-  } = useQuery({
+  const proyectosQuery = useQuery({
     queryKey: ["actividades-diarias", "proyectos-disponibles"],
     queryFn: listProyectosDisponiblesActividad,
   });
+
+  const actividadesQuery = useQuery({
+    queryKey: ["actividades-diarias", "lista", selectedProyectoId],
+    queryFn: () => listActividadesDiarias(selectedProyectoId!),
+    enabled: selectedProyectoId !== null,
+  });
+
+  const proyectos = proyectosQuery.data ?? [];
+  const proyectoActual = proyectos.find(
+    (item) => item.id === selectedProyectoId,
+  );
 
   const handleSelectProyecto = useCallback(
     (proyecto: ProyectoDisponibleActividad) => {
@@ -33,6 +44,14 @@ export function ActividadesDiariasPage() {
     },
     [],
   );
+
+  async function refrescarTodo() {
+    await queryClient.invalidateQueries({
+      queryKey: ["actividades-diarias"],
+    });
+  }
+
+  const isRefreshing = proyectosQuery.isFetching || actividadesQuery.isFetching;
 
   return (
     <div className="space-y-6">
@@ -46,8 +65,8 @@ export function ActividadesDiariasPage() {
         </div>
         <Button
           variant="outline"
-          onClick={() => void refetch()}
-          isDisabled={isFetching}
+          onClick={() => void refrescarTodo()}
+          isDisabled={isRefreshing}
         >
           Actualizar
         </Button>
@@ -68,12 +87,33 @@ export function ActividadesDiariasPage() {
       {/* HU GPRCIMPER-29: Ver lista de los proyectos asignados */}
       <ListaProyectosAsignadosActividad
         proyectos={proyectos}
-        isPending={isPending}
-        isError={isError}
+        isPending={proyectosQuery.isPending}
+        isError={proyectosQuery.isError}
         selectedProyectoId={selectedProyectoId}
         onSelectProyecto={handleSelectProyecto}
-        onRetry={() => void refetch()}
+        onRetry={() => void proyectosQuery.refetch()}
       />
+
+      {/* HU GPRCIMPER-34: Registros guardados del proyecto seleccionado con botón Editar (< 48h o Administración) */}
+      {proyectoActual && (
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold">
+            Registros de actividad diaria · {proyectoActual.nombre}
+          </h2>
+          <TablaActividadesProyecto
+            actividades={actividadesQuery.data ?? []}
+            isPending={actividadesQuery.isPending}
+            isError={actividadesQuery.isError}
+            onRetry={() => void actividadesQuery.refetch()}
+            onEditar={(actividad) =>
+              void navigate({
+                to: "/actividades-diarias/editar/$actividadId",
+                params: { actividadId: String(actividad.id) },
+              })
+            }
+          />
+        </div>
+      )}
     </div>
   );
 }

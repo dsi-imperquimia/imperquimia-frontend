@@ -136,10 +136,10 @@ export const NAV_ITEMS: NavItem[] = [
       {
         label: "Lista de actividades",
         to: "/actividades-diarias",
-        permission: ["ACTIVIDAD_READ", "ACTIVIDAD_CREATE"],
+        permission: ["ACTIVIDAD_READ", "ACTIVIDAD_CREATE", "ACTIVIDAD_UPDATE"],
       },
     ],
-    permission: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ"],
+    permission: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ", "ACTIVIDAD_UPDATE"],
   },
   {
     label: "Herramientas",

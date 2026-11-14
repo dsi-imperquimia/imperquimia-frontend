@@ -15,12 +15,16 @@ import {
   MENSAJES_ACTIVIDAD,
 } from "../types/actividad-diaria";
 import { FormActividadDiaria } from "./FormActividadDiaria";
+import { FormEditarActividadDiaria } from "./FormEditarActividadDiaria";
 import { ListaProyectosAsignadosActividad } from "./ListaProyectosAsignadosActividad";
 import { ModalResultadoActividad } from "./ModalResultadoActividad";
+import { TablaActividadesProyecto } from "./TablaActividadesProyecto";
 
 const mocks = vi.hoisted(() => ({
   registrar: vi.fn(),
+  actualizar: vi.fn(),
   listarProyectos: vi.fn(),
+  rolUsuario: "Jefe de proyecto",
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -31,7 +35,12 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("@modules/auth/store/authStore", () => ({
   useAuth: () => ({
-    user: { id: 7, name: "Carlos", lastName: "Pérez" },
+    user: {
+      id: 7,
+      name: "Carlos",
+      lastName: "Pérez",
+      role: { name: mocks.rolUsuario },
+    },
     isAuthenticated: true,
   }),
 }));
@@ -41,6 +50,7 @@ vi.mock("../api/actividades-diarias", async (importOriginal) => {
   return {
     ...actual,
     registrarActividadDiaria: mocks.registrar,
+    actualizarActividadDiaria: mocks.actualizar,
     listProyectosDisponiblesActividad: mocks.listarProyectos,
   };
 });
@@ -49,6 +59,7 @@ const store = new Map<string, string>();
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mocks.rolUsuario = "Jefe de proyecto";
   store.clear();
   if (typeof window.CSS === "undefined") {
     Object.defineProperty(window, "CSS", {
@@ -297,5 +308,144 @@ describe("ListaProyectosAsignadosActividad (GPRCIMPER-29)", () => {
       screen.queryByRole("row", { name: /Bodega Industrial Soyapango/i }),
     ).toBeNull();
     expect(screen.getByText("Centro Comercial Santa Tecla")).toBeTruthy();
+  });
+});
+
+describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
+  it("CA1: el botón Editar está habilitado si la diferencia es menor a 48 horas y deshabilitado si es mayor para Jefe de Proyecto", () => {
+    const hace12Horas = new Date(
+      Date.now() - 12 * 60 * 60 * 1000,
+    ).toISOString();
+    const hace50Horas = new Date(
+      Date.now() - 50 * 60 * 60 * 1000,
+    ).toISOString();
+
+    render(
+      <TablaActividadesProyecto
+        actividades={[
+          {
+            id: 101,
+            claveOperacion: "00000000-0000-4000-8000-000000000101",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-14",
+            descripcion: "Registro reciente dentro de 48h",
+            createdAt: hace12Horas,
+            updatedAt: hace12Horas,
+          },
+          {
+            id: 102,
+            claveOperacion: "00000000-0000-4000-8000-000000000102",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-11",
+            descripcion: "Registro antiguo mayor a 48h",
+            createdAt: hace50Horas,
+            updatedAt: hace50Horas,
+          },
+        ]}
+        onEditar={vi.fn()}
+      />,
+    );
+
+    const botonesEditar = screen.getAllByRole("button", { name: "Editar" });
+    expect(botonesEditar).toHaveLength(2);
+    expect(botonesEditar[0]?.hasAttribute("disabled")).toBe(false);
+    expect(botonesEditar[1]?.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("CA1: el botón Editar sigue habilitado después de 48 horas cuando el usuario es de administración", () => {
+    mocks.rolUsuario = "Administrador";
+    const hace72Horas = new Date(
+      Date.now() - 72 * 60 * 60 * 1000,
+    ).toISOString();
+
+    render(
+      <TablaActividadesProyecto
+        actividades={[
+          {
+            id: 103,
+            claveOperacion: "00000000-0000-4000-8000-000000000103",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-10",
+            descripcion: "Registro antiguo editable por administración",
+            createdAt: hace72Horas,
+            updatedAt: hace72Horas,
+          },
+        ]}
+        onEditar={vi.fn()}
+      />,
+    );
+
+    const botonEditar = screen.getByRole("button", { name: "Editar" });
+    expect(botonEditar.hasAttribute("disabled")).toBe(false);
+  });
+
+  it("CA2 y CA3: solicita confirmación antes de sobrescribir el registro y al finalizar muestra que pudo editarlo", async () => {
+    const hace2Horas = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    mocks.actualizar.mockResolvedValue({
+      id: 101,
+      descripcion: "Sellado de juntas corregido",
+    });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FormEditarActividadDiaria
+          actividad={{
+            id: 101,
+            claveOperacion: "00000000-0000-4000-8000-000000000101",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-14",
+            descripcion: "Sellado de juntas con error",
+            observaciones: "Observación inicial",
+            createdAt: hace2Horas,
+            updatedAt: hace2Horas,
+            proyecto: {
+              id: 10,
+              nombre: "Proyecto Edificio Central",
+              estado: "ACTIVO",
+            },
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText(/Descripción de la actividad/i), {
+      target: { value: "Sellado de juntas corregido" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+
+    // CA2: No debe haber sobrescrito aún sin confirmación previa
+    expect(mocks.actualizar).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText("Confirmar edición de registro"),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar cambios" }));
+
+    await waitFor(() =>
+      expect(mocks.actualizar).toHaveBeenCalledWith(
+        101,
+        expect.objectContaining({
+          descripcion: "Sellado de juntas corregido",
+        }),
+      ),
+    );
+
+    // CA3: Muestra al usuario que ha podido editar el registro
+    expect(
+      await screen.findByText(MENSAJES_ACTIVIDAD.editadoExito),
+    ).toBeTruthy();
   });
 });

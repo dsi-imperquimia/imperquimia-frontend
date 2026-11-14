@@ -35,6 +35,13 @@ const PAGE_LABELS: Record<string, string> = {
 function findCrumbs(pathname: string): Crumb[] | null {
   if (pathname === "/") return [{ label: "Dashboard", to: "/", icon: Home }];
 
+  if (pathname.startsWith("/actividades-diarias/editar/")) {
+    const parentCrumbs = findCrumbs("/actividades-diarias");
+    if (parentCrumbs) {
+      return [...parentCrumbs, { label: "Editar actividad diaria" }];
+    }
+  }
+
   const pageLabel = PAGE_LABELS[pathname];
   if (pageLabel) {
     const parentPath = pathname.slice(0, pathname.lastIndexOf("/"));

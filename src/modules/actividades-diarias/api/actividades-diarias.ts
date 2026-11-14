@@ -2,6 +2,7 @@ import { http } from "@lib/http";
 import { isAxiosError } from "axios";
 import type {
   ActividadDiaria,
+  ActualizarActividadDiaria,
   ErroresActividadDiaria,
   ProyectoDisponibleActividad,
   RegistrarActividadDiaria,
@@ -23,6 +24,13 @@ export async function listActividadesDiarias(proyectoId: number) {
   return data;
 }
 
+export async function getActividadDiaria(id: number) {
+  const { data } = await http.get<ActividadDiaria>(
+    `/actividades-diarias/${id}`,
+  );
+  return data;
+}
+
 export async function registrarActividadDiaria(
   payload: RegistrarActividadDiaria,
 ) {
@@ -30,6 +38,17 @@ export async function registrarActividadDiaria(
     actividad: ActividadDiaria;
     repetido: boolean;
   }>("/actividades-diarias", payload);
+  return data;
+}
+
+export async function actualizarActividadDiaria(
+  id: number,
+  payload: ActualizarActividadDiaria,
+) {
+  const { data } = await http.patch<ActividadDiaria>(
+    `/actividades-diarias/${id}`,
+    payload,
+  );
   return data;
 }
 

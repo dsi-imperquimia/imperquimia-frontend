@@ -38,6 +38,7 @@ import { Route as AuthenticatedProyectosCreateRouteImport } from './routes/_auth
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
 import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
+import { Route as AuthenticatedActividadesDiariasEditarActividadIdRouteImport } from './routes/_authenticated/actividades-diarias/editar/$actividadId'
 import { Route as AuthenticatedCotizacionesCotizacionIdEditRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/edit'
 import { Route as AuthenticatedCotizacionesCotizacionIdViewRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/view'
 import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
@@ -214,6 +215,12 @@ const AuthenticatedUsersCreateRoute =
     path: '/users/create',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedActividadesDiariasEditarActividadIdRoute =
+  AuthenticatedActividadesDiariasEditarActividadIdRouteImport.update({
+    id: '/actividades-diarias/editar/$actividadId',
+    path: '/actividades-diarias/editar/$actividadId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCotizacionesCotizacionIdEditRoute =
   AuthenticatedCotizacionesCotizacionIdEditRouteImport.update({
     id: '/cotizaciones/$cotizacionId/edit',
@@ -292,6 +299,7 @@ export interface FileRoutesByFullPath {
   '/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/proyectos/': typeof AuthenticatedProyectosIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/actividades-diarias/editar/$actividadId': typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -330,6 +338,7 @@ export interface FileRoutesByTo {
   '/materiales': typeof AuthenticatedMaterialesIndexRoute
   '/proyectos': typeof AuthenticatedProyectosIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/actividades-diarias/editar/$actividadId': typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -370,6 +379,7 @@ export interface FileRoutesById {
   '/_authenticated/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/_authenticated/proyectos/': typeof AuthenticatedProyectosIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/actividades-diarias/editar/$actividadId': typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   '/_authenticated/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/_authenticated/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/_authenticated/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -410,6 +420,7 @@ export interface FileRouteTypes {
     | '/materiales/'
     | '/proyectos/'
     | '/users/'
+    | '/actividades-diarias/editar/$actividadId'
     | '/cotizaciones/$cotizacionId/edit'
     | '/cotizaciones/$cotizacionId/view'
     | '/herramientas/$herramientaId/edit'
@@ -448,6 +459,7 @@ export interface FileRouteTypes {
     | '/materiales'
     | '/proyectos'
     | '/users'
+    | '/actividades-diarias/editar/$actividadId'
     | '/cotizaciones/$cotizacionId/edit'
     | '/cotizaciones/$cotizacionId/view'
     | '/herramientas/$herramientaId/edit'
@@ -487,6 +499,7 @@ export interface FileRouteTypes {
     | '/_authenticated/materiales/'
     | '/_authenticated/proyectos/'
     | '/_authenticated/users/'
+    | '/_authenticated/actividades-diarias/editar/$actividadId'
     | '/_authenticated/cotizaciones/$cotizacionId/edit'
     | '/_authenticated/cotizaciones/$cotizacionId/view'
     | '/_authenticated/herramientas/$herramientaId/edit'
@@ -707,6 +720,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/actividades-diarias/editar/$actividadId': {
+      id: '/_authenticated/actividades-diarias/editar/$actividadId'
+      path: '/actividades-diarias/editar/$actividadId'
+      fullPath: '/actividades-diarias/editar/$actividadId'
+      preLoaderRoute: typeof AuthenticatedActividadesDiariasEditarActividadIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/cotizaciones/$cotizacionId/edit': {
       id: '/_authenticated/cotizaciones/$cotizacionId/edit'
       path: '/cotizaciones/$cotizacionId/edit'
@@ -794,6 +814,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMaterialesIndexRoute: typeof AuthenticatedMaterialesIndexRoute
   AuthenticatedProyectosIndexRoute: typeof AuthenticatedProyectosIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedActividadesDiariasEditarActividadIdRoute: typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   AuthenticatedCotizacionesCotizacionIdEditRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   AuthenticatedCotizacionesCotizacionIdViewRoute: typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   AuthenticatedHerramientasHerramientaIdEditRoute: typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -838,6 +859,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMaterialesIndexRoute: AuthenticatedMaterialesIndexRoute,
   AuthenticatedProyectosIndexRoute: AuthenticatedProyectosIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedActividadesDiariasEditarActividadIdRoute:
+    AuthenticatedActividadesDiariasEditarActividadIdRoute,
   AuthenticatedCotizacionesCotizacionIdEditRoute:
     AuthenticatedCotizacionesCotizacionIdEditRoute,
   AuthenticatedCotizacionesCotizacionIdViewRoute:
