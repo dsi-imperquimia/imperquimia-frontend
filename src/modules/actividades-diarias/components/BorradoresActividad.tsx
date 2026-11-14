@@ -42,6 +42,9 @@ export function BorradoresActividad({
             >
               <div>
                 <p className="font-medium">
+                  {borrador.payload.nombre
+                    ? `${borrador.payload.nombre} · `
+                    : ""}
                   {borrador.proyectoNombre ??
                     `Proyecto #${borrador.payload.proyectoId}`}
                 </p>

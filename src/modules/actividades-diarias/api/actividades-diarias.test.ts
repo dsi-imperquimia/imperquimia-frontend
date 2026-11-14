@@ -20,6 +20,7 @@ function crearBorrador(claveOperacion = uuid1): BorradorActividad {
       claveOperacion,
       proyectoId: 10,
       fecha: "2026-11-14",
+      nombre: "Sellado de junta de dilatación",
       descripcion: "Aplicación de sellador en junta de dilatación",
     },
     proyectoNombre: "Torre Norte",

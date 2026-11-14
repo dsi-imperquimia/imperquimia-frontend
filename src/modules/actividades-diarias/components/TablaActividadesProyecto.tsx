@@ -49,6 +49,7 @@ export function TablaActividadesProyecto({
 
   const columnas = [
     "Fecha",
+    "Actividad",
     "Proyecto",
     "Descripción",
     "Observaciones",
@@ -78,6 +79,9 @@ export function TablaActividadesProyecto({
                   {fecha(a.fecha)}
                 </td>
                 <td className="px-4 py-4 font-medium text-gray-900">
+                  {a.nombre}
+                </td>
+                <td className="px-4 py-4 text-gray-700">
                   {a.proyecto?.nombre ?? `Proyecto #${a.proyectoId}`}
                 </td>
                 <td className="px-4 py-4">{a.descripcion}</td>

@@ -15,6 +15,7 @@ export interface ActividadDiaria {
   usuarioId: number;
   empleadoId: number | null;
   fecha: string;
+  nombre: string;
   descripcion: string;
   observaciones?: string | null;
   createdAt: string;
@@ -39,12 +40,14 @@ export interface RegistrarActividadDiaria {
   claveOperacion: string;
   proyectoId: number;
   fecha: string;
+  nombre: string;
   descripcion: string;
   observaciones?: string;
 }
 
 export interface ActualizarActividadDiaria {
   fecha?: string;
+  nombre: string;
   descripcion: string;
   observaciones?: string;
 }

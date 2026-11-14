@@ -71,6 +71,7 @@ export function FormActividadDiaria({
   const [fecha, setFecha] = useState(() =>
     actividad ? actividad.fecha.slice(0, 10) : fechaHoyIso(),
   );
+  const [nombre, setNombre] = useState(() => actividad?.nombre ?? "");
   const [descripcion, setDescripcion] = useState(
     () => actividad?.descripcion ?? "",
   );
@@ -128,6 +129,7 @@ export function FormActividadDiaria({
         : (selectedProyectoIdProp ?? null);
     setProyectoId(defecto);
     setFecha(fechaHoyIso());
+    setNombre("");
     setDescripcion("");
     setObservaciones("");
     setClaveOperacion(nuevaClaveOperacion());
@@ -148,6 +150,11 @@ export function FormActividadDiaria({
     } else if (fecha.trim() > fechaHoyIso()) {
       camposValidacion.fecha = "La fecha no puede ser futura.";
     }
+    if (!nombre.trim()) {
+      camposValidacion.nombre = "Ingresa el nombre de la actividad.";
+    } else if (nombre.trim().length > 150) {
+      camposValidacion.nombre = "El nombre admite hasta 150 caracteres.";
+    }
     if (!descripcion.trim()) {
       camposValidacion.descripcion = "Ingresa la descripción de la actividad.";
     }
@@ -166,6 +173,7 @@ export function FormActividadDiaria({
       claveOperacion,
       proyectoId,
       fecha: fecha.trim(),
+      nombre: nombre.trim(),
       descripcion: descripcion.trim(),
       observaciones: observaciones.trim() || undefined,
     };
@@ -209,6 +217,7 @@ export function FormActividadDiaria({
     try {
       const actualizada = await actualizarActividadDiaria(actividad.id, {
         fecha: fecha.trim(),
+        nombre: nombre.trim(),
         descripcion: descripcion.trim(),
         observaciones: observaciones.trim() || undefined,
       });
@@ -335,6 +344,23 @@ export function FormActividadDiaria({
             </div>
           </>
         )}
+
+        <InputField
+          label="Nombre de la actividad"
+          placeholder="Ej. Impermeabilización de losa"
+          maxLength={150}
+          value={nombre}
+          disabled={isPending || !habilitadoParaEditar}
+          onChange={(event) => {
+            setNombre(event.target.value);
+            setErrores((prev) => ({
+              ...prev,
+              campos: { ...prev.campos, nombre: undefined },
+            }));
+          }}
+          errorMessage={errores.campos.nombre}
+          isRequired
+        />
 
         <TextAreaField
           label="Descripción de la actividad"

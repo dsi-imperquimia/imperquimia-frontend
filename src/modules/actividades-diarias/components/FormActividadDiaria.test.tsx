@@ -127,6 +127,9 @@ async function montarYCompletarFormulario() {
   });
   fireEvent.click(opcionProyecto);
 
+  fireEvent.change(screen.getByLabelText(/Nombre de la actividad/i), {
+    target: { value: "Impermeabilización de losa" },
+  });
   fireEvent.change(screen.getByLabelText(/Descripción de la actividad/i), {
     target: { value: "Impermeabilización de losa en nivel 3" },
   });
@@ -146,6 +149,7 @@ describe("FormActividadDiaria y ModalResultadoActividad (GPRCIMPER-50)", () => {
       expect(mocks.registrar).toHaveBeenCalledWith(
         expect.objectContaining({
           proyectoId: 10,
+          nombre: "Impermeabilización de losa",
           descripcion: "Impermeabilización de losa en nivel 3",
         }),
       ),
@@ -359,6 +363,9 @@ describe("SelectorProyectoActividad (GPRCIMPER-29)", () => {
     });
     fireEvent.click(opcionFiltrada);
 
+    fireEvent.change(screen.getByLabelText(/Nombre de la actividad/i), {
+      target: { value: "Inspección de drenaje" },
+    });
     fireEvent.change(screen.getByLabelText(/Descripción de la actividad/i), {
       target: { value: "Revisión de drenaje pluvial" },
     });
@@ -368,6 +375,7 @@ describe("SelectorProyectoActividad (GPRCIMPER-29)", () => {
       expect(mocks.registrar).toHaveBeenCalledWith(
         expect.objectContaining({
           proyectoId: 2,
+          nombre: "Inspección de drenaje",
           descripcion: "Revisión de drenaje pluvial",
         }),
       ),
@@ -394,6 +402,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
             usuarioId: 7,
             empleadoId: 7,
             fecha: "2026-11-14",
+            nombre: "Sellado reciente",
             descripcion: "Registro reciente dentro de 48h",
             createdAt: hace12Horas,
             updatedAt: hace12Horas,
@@ -405,6 +414,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
             usuarioId: 7,
             empleadoId: 7,
             fecha: "2026-11-11",
+            nombre: "Sellado vencido",
             descripcion: "Registro antiguo mayor a 48h",
             createdAt: hace50Horas,
             updatedAt: hace50Horas,
@@ -418,6 +428,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     expect(botonesEditar).toHaveLength(2);
     expect(botonesEditar[0]?.hasAttribute("disabled")).toBe(false);
     expect(botonesEditar[1]?.hasAttribute("disabled")).toBe(true);
+    expect(screen.getByText("Sellado reciente")).toBeTruthy();
   });
 
   it("CA1: el botón Editar sigue habilitado después de 48 horas cuando el usuario es de administración", () => {
@@ -436,6 +447,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
             usuarioId: 7,
             empleadoId: 7,
             fecha: "2026-11-10",
+            nombre: "Inspección de cubiertas",
             descripcion: "Registro antiguo editable por administración",
             createdAt: hace72Horas,
             updatedAt: hace72Horas,
@@ -453,6 +465,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     const hace2Horas = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     mocks.actualizar.mockResolvedValue({
       id: 101,
+      nombre: "Sellado de juntas",
       descripcion: "Sellado de juntas corregido",
     });
 
@@ -470,6 +483,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
             usuarioId: 7,
             empleadoId: 7,
             fecha: "2026-11-14",
+            nombre: "Sellado con errata",
             descripcion: "Sellado de juntas con error",
             observaciones: "Observación inicial",
             createdAt: hace2Horas,
@@ -484,6 +498,9 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
       </QueryClientProvider>,
     );
 
+    fireEvent.change(screen.getByLabelText(/Nombre de la actividad/i), {
+      target: { value: "Sellado de juntas" },
+    });
     fireEvent.change(screen.getByLabelText(/Descripción de la actividad/i), {
       target: { value: "Sellado de juntas corregido" },
     });
@@ -502,6 +519,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
       expect(mocks.actualizar).toHaveBeenCalledWith(
         101,
         expect.objectContaining({
+          nombre: "Sellado de juntas",
           descripcion: "Sellado de juntas corregido",
         }),
       ),
@@ -536,6 +554,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
             usuarioId: 7,
             empleadoId: 7,
             fecha: "2026-11-11",
+            nombre: "Actividad vencida",
             descripcion: "Registro vencido",
             createdAt: hace50Horas,
             updatedAt: hace50Horas,
