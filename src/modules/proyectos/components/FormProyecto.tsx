@@ -52,14 +52,17 @@ function etiquetaDetalle(clave: string) {
     : `Cantidad del material ${numeroMaterial}`;
 }
 
-// Activo, En pausa, Finalizado, Pagado y Garantía se pueden alternar entre
-// sí desde la edición general; cancelar es un flujo dedicado (GPRCIMPER-28).
+// Todos se pueden alternar entre sí desde la edición general. Cancelar pasa
+// por las mismas validaciones que el flujo dedicado (GPRCIMPER-28): el
+// backend rechaza el cambio si el proyecto tiene empleados o herramientas
+// asignados.
 const ESTADOS_EDITABLES: EstadoEditableProyecto[] = [
   "ACTIVO",
   "EN_PAUSA",
   "FINALIZADO",
   "PAGADO",
   "GARANTIA",
+  "CANCELADO",
 ];
 const ESTADO_EDITABLE_LABEL: Record<EstadoEditableProyecto, string> = {
   ACTIVO: "Activo",
@@ -67,6 +70,7 @@ const ESTADO_EDITABLE_LABEL: Record<EstadoEditableProyecto, string> = {
   FINALIZADO: "Finalizado",
   PAGADO: "Pagado",
   GARANTIA: "Garantía",
+  CANCELADO: "Cancelado",
 };
 const estadoEsEditable = (estado?: string): estado is EstadoEditableProyecto =>
   (ESTADOS_EDITABLES as string[]).includes(estado ?? "");

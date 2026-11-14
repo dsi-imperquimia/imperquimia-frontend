@@ -111,7 +111,7 @@ export function errorProyecto(error: unknown) {
       fechaFin:
         "Ingresa una fecha de fin válida en formato AAAA-MM-DD y que no sea anterior al inicio.",
       detalles: "Revisa los materiales y sus cantidades.",
-      estado: "Selecciona un estado válido (Activo o En pausa).",
+      estado: "Selecciona un estado válido.",
       tipoObra: "Selecciona un tipo de obra válido.",
       presupuesto: "Ingresa un presupuesto válido, mayor o igual a 0.",
     };

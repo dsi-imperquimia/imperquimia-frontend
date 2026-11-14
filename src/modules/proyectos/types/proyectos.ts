@@ -6,13 +6,14 @@ export type EstadoProyecto =
   | "GARANTIA"
   | "CANCELADO";
 // Estados que se pueden asignar desde la edición general del proyecto (GPRCIMPER-27).
-// CANCELADO queda fuera: solo se asigna por el flujo dedicado de cancelación (GPRCIMPER-28).
+// CANCELADO pasa por las mismas validaciones que el flujo dedicado (GPRCIMPER-28).
 export type EstadoEditableProyecto =
   | "ACTIVO"
   | "EN_PAUSA"
   | "FINALIZADO"
   | "PAGADO"
-  | "GARANTIA";
+  | "GARANTIA"
+  | "CANCELADO";
 export type TipoObra =
   | "RESIDENCIAL"
   | "COMERCIAL"
