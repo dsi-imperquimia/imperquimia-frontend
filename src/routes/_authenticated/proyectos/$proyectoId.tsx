@@ -2,7 +2,12 @@ import { Button } from "@heroui/react/button";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
-import { dinero, fecha } from "@modules/proyectos/types/proyectos";
+import { dinero, fecha, TIPOS_OBRA_LABEL } from "@modules/proyectos/types/proyectos";
+
+const ESTADO_LABEL: Record<string, string> = {
+  GARANTIA: "GARANTÍA",
+  EN_PAUSA: "EN PAUSA",
+};
 import { DialogCancelarProyecto } from "@modules/proyectos/components/DialogCancelarProyecto";
 import { AsignarJefeProyecto } from "@modules/proyectos/components/AsignarJefeProyecto";
 import { AsignarEmpleadosProyecto } from "@modules/proyectos/components/AsignarEmpleadosProyecto";
@@ -46,8 +51,7 @@ function Detalle() {
       <div>
         <h1 className="text-2xl font-bold">{p.nombre}</h1>
         <p className="mt-1 text-gray-500">
-          {p.estado === "GARANTIA" ? "GARANTÍA" : p.estado} ·{" "}
-          {p.ubicacion || "Sin ubicación"}
+          {ESTADO_LABEL[p.estado] ?? p.estado} · {p.ubicacion || "Sin ubicación"}
         </p>
       </div>
       <section className="rounded-xl border border-gray-200 bg-white p-6">
@@ -75,6 +79,8 @@ function Detalle() {
             ["Correo", p.email],
             ["Fecha de inicio", fecha(p.fechaInicio)],
             ["Fecha de fin", fecha(p.fechaFin)],
+            ["Tipo de obra", p.tipoObra ? TIPOS_OBRA_LABEL[p.tipoObra] : null],
+            ["Presupuesto", p.presupuesto != null ? dinero(p.presupuesto) : null],
             [
               "Creado por",
               p.creadoPor

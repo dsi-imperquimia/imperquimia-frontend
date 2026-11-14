@@ -3,7 +3,7 @@ import { Label } from "@heroui/react/label";
 import { TextArea, type TextAreaProps } from "@heroui/react/textarea";
 import { TextField } from "@heroui/react/textfield";
 import type { ReactNode } from "react";
-import { useId } from "react";
+import { useEffect, useId, useRef } from "react";
 
 export interface TextAreaFieldProps extends TextAreaProps {
   label?: string;
@@ -18,10 +18,23 @@ export function TextAreaField({
   variant = "secondary",
   fullWidth = true,
   id,
+  value,
+  rows = 2,
+  maxLength,
+  style,
   ...textAreaProps
 }: TextAreaFieldProps) {
   const generatedId = useId();
   const textAreaId = id ?? generatedId;
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Autosize: el textarea crece con el contenido en vez de mostrar scroll interno.
+  useEffect(() => {
+    const el = textAreaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
 
   return (
     <TextField
@@ -32,11 +45,21 @@ export function TextAreaField({
     >
       {label && <Label htmlFor={textAreaId}>{label}</Label>}
       <TextArea
+        ref={textAreaRef}
         id={textAreaId}
         variant={variant}
         fullWidth={fullWidth}
+        rows={rows}
+        value={value}
+        maxLength={maxLength}
+        style={{ overflow: "hidden", resize: "none", ...style }}
         {...textAreaProps}
       />
+      {maxLength !== undefined && (
+        <span className="self-end text-xs text-gray-400">
+          {String(value ?? "").length}/{maxLength}
+        </span>
+      )}
       {errorMessage && <FieldError>{errorMessage}</FieldError>}
     </TextField>
   );
