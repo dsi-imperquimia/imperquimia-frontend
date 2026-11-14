@@ -1,5 +1,32 @@
 export type EstadoProyecto =
-  "ACTIVO" | "FINALIZADO" | "PAGADO" | "GARANTIA" | "CANCELADO";
+  | "ACTIVO"
+  | "EN_PAUSA"
+  | "FINALIZADO"
+  | "PAGADO"
+  | "GARANTIA"
+  | "CANCELADO";
+// Estados que se pueden asignar desde la edición general del proyecto (GPRCIMPER-27).
+// CANCELADO pasa por las mismas validaciones que el flujo dedicado (GPRCIMPER-28).
+export type EstadoEditableProyecto =
+  | "ACTIVO"
+  | "EN_PAUSA"
+  | "FINALIZADO"
+  | "PAGADO"
+  | "GARANTIA"
+  | "CANCELADO";
+export type TipoObra =
+  | "RESIDENCIAL"
+  | "COMERCIAL"
+  | "INDUSTRIAL"
+  | "INFRAESTRUCTURA"
+  | "OTRO";
+export const TIPOS_OBRA_LABEL: Record<TipoObra, string> = {
+  RESIDENCIAL: "Residencial",
+  COMERCIAL: "Comercial",
+  INDUSTRIAL: "Industrial",
+  INFRAESTRUCTURA: "Infraestructura",
+  OTRO: "Otro",
+};
 export interface Proyecto {
   id: number;
   nombre: string;
@@ -12,6 +39,8 @@ export interface Proyecto {
   fechaFin?: string | null;
   cotizacionId?: number | null;
   estado: EstadoProyecto;
+  tipoObra?: TipoObra | null;
+  presupuesto?: string | number | null;
   motivoCancelacion?: string | null;
   subTotal: string | number;
   totalIva: string | number;

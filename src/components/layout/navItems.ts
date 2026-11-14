@@ -158,6 +158,13 @@ export const NAV_ITEMS: NavItem[] = [
     label: "Materiales",
     icon: Layers,
     to: "/materiales",
-    children: [{ label: "Lista de materiales", to: "/materiales" }],
+    children: [
+      { label: "Lista de materiales", to: "/materiales" },
+      {
+        label: "Inventario de materiales",
+        to: "/materiales/inventario",
+        permission: ["INVENTARIO_MATERIAL_READ"],
+      },
+    ],
   },
 ];

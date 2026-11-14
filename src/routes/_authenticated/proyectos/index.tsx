@@ -6,6 +6,11 @@ import { userActions } from "@modules/auth/store/authStore";
 import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { dinero, fecha } from "@modules/proyectos/types/proyectos";
 
+const ESTADO_LABEL: Record<string, string> = {
+  GARANTIA: "GARANTÍA",
+  EN_PAUSA: "EN PAUSA",
+};
+
 export const Route = createFileRoute("/_authenticated/proyectos/")({
   component: Proyectos,
 });
@@ -69,13 +74,18 @@ function Proyectos() {
             onChange={(e) => setEstado(e.target.value)}
           >
             <option value="">Todos</option>
-            {["ACTIVO", "FINALIZADO", "PAGADO", "GARANTIA", "CANCELADO"].map(
-              (e) => (
-                <option key={e} value={e}>
-                  {e === "GARANTIA" ? "GARANTÍA" : e}
-                </option>
-              ),
-            )}
+            {[
+              "ACTIVO",
+              "EN_PAUSA",
+              "FINALIZADO",
+              "PAGADO",
+              "GARANTIA",
+              "CANCELADO",
+            ].map((e) => (
+              <option key={e} value={e}>
+                {ESTADO_LABEL[e] ?? e}
+              </option>
+            ))}
           </select>
         </label>
       </div>
@@ -130,14 +140,8 @@ function Proyectos() {
                     {fecha(p.fechaFin)}
                   </td>
                   <td className="px-4 py-4">
-                    <span
-                      className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${
-                        p.estado === "CANCELADO"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      {p.estado === "GARANTIA" ? "GARANTÍA" : p.estado}
+                    <span className="inline-flex whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold">
+                      {ESTADO_LABEL[p.estado] ?? p.estado}
                     </span>
                   </td>
                   <td className="px-4 py-4">{dinero(p.total)}</td>

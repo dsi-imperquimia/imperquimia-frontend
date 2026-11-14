@@ -67,11 +67,11 @@ function SidebarLink({ item }: { item: NavItem }) {
     >
       <item.icon size={18} className="shrink-0" />
       <span className="flex-1">{item.label}</span>
-      {item.badge && (
+      {item.badge ? (
         <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">
           {item.badge}
         </span>
-      )}
+      ) : null}
       {item.hasArrow && <ChevronRight size={16} className="text-gray-400" />}
     </Link>
   );
