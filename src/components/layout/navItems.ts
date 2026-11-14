@@ -1,5 +1,6 @@
 import {
   BriefcaseBusiness,
+  ClipboardList,
   FileText,
   Layers,
   LayoutDashboard,
@@ -126,6 +127,19 @@ export const NAV_ITEMS: NavItem[] = [
     to: "/proyectos",
     children: [{ label: "Lista de proyectos", to: "/proyectos" }],
     permission: ["PROYECTO_READ"],
+  },
+  {
+    label: "Actividades diarias",
+    icon: ClipboardList,
+    to: "/actividades-diarias/create",
+    children: [
+      {
+        label: "Registrar actividad",
+        to: "/actividades-diarias/create",
+        permission: ["ACTIVIDAD_CREATE"],
+      },
+    ],
+    permission: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ"],
   },
   {
     label: "Herramientas",

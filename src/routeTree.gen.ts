@@ -13,6 +13,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedAlertasRouteImport } from './routes/_authenticated/alertas'
+import { Route as AuthenticatedActividadesDiariasCreateRouteImport } from './routes/_authenticated/actividades-diarias/create'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
@@ -64,6 +65,12 @@ const AuthenticatedAlertasRoute = AuthenticatedAlertasRouteImport.update({
   path: '/alertas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedActividadesDiariasCreateRoute =
+  AuthenticatedActividadesDiariasCreateRouteImport.update({
+    id: '/actividades-diarias/create',
+    path: '/actividades-diarias/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCargoEmpleadoIndexRoute =
   AuthenticatedCargoEmpleadoIndexRouteImport.update({
     id: '/cargo-empleado/',
@@ -253,6 +260,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/alertas': typeof AuthenticatedAlertasRoute
+  '/actividades-diarias/create': typeof AuthenticatedActividadesDiariasCreateRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
@@ -289,6 +297,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/alertas': typeof AuthenticatedAlertasRoute
   '/': typeof AuthenticatedIndexRoute
+  '/actividades-diarias/create': typeof AuthenticatedActividadesDiariasCreateRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
@@ -327,6 +336,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authenticated/alertas': typeof AuthenticatedAlertasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/actividades-diarias/create': typeof AuthenticatedActividadesDiariasCreateRoute
   '/_authenticated/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/_authenticated/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/_authenticated/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/alertas'
+    | '/actividades-diarias/create'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
     | '/cotizaciones/create'
@@ -401,6 +412,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/alertas'
     | '/'
+    | '/actividades-diarias/create'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
     | '/cotizaciones/create'
@@ -438,6 +450,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authenticated/alertas'
     | '/_authenticated/'
+    | '/_authenticated/actividades-diarias/create'
     | '/_authenticated/cargo-empleado/$cargoId'
     | '/_authenticated/cargo-empleado/create'
     | '/_authenticated/cotizaciones/create'
@@ -504,6 +517,13 @@ declare module '@tanstack/react-router' {
       path: '/alertas'
       fullPath: '/alertas'
       preLoaderRoute: typeof AuthenticatedAlertasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/actividades-diarias/create': {
+      id: '/_authenticated/actividades-diarias/create'
+      path: '/actividades-diarias/create'
+      fullPath: '/actividades-diarias/create'
+      preLoaderRoute: typeof AuthenticatedActividadesDiariasCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cargo-empleado/': {
@@ -729,6 +749,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedAlertasRoute: typeof AuthenticatedAlertasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedActividadesDiariasCreateRoute: typeof AuthenticatedActividadesDiariasCreateRoute
   AuthenticatedCargoEmpleadoCargoIdRoute: typeof AuthenticatedCargoEmpleadoCargoIdRoute
   AuthenticatedCargoEmpleadoCreateRoute: typeof AuthenticatedCargoEmpleadoCreateRoute
   AuthenticatedCotizacionesCreateRoute: typeof AuthenticatedCotizacionesCreateRoute
@@ -765,6 +786,8 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAlertasRoute: AuthenticatedAlertasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedActividadesDiariasCreateRoute:
+    AuthenticatedActividadesDiariasCreateRoute,
   AuthenticatedCargoEmpleadoCargoIdRoute:
     AuthenticatedCargoEmpleadoCargoIdRoute,
   AuthenticatedCargoEmpleadoCreateRoute: AuthenticatedCargoEmpleadoCreateRoute,
