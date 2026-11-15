@@ -146,7 +146,60 @@ afterEach(() => {
 });
 
 describe("ActividadesDiariasPage", () => {
-  it("mantiene el filtro de la lista sin auto-seleccionar proyecto ni preseleccionarlo para Crear", async () => {
+  it("autoselecciona el único proyecto activo como bitácora y preselecciona ese proyecto al crear (GPRCIMPER-29)", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ActividadesDiariasPage />
+      </QueryClientProvider>,
+    );
+
+    const filtroProyecto = screen.getByRole("combobox", {
+      name: /Filtrar por proyecto/i,
+    }) as HTMLInputElement;
+
+    await waitFor(() =>
+      expect(filtroProyecto.value).toBe("Proyecto Edificio Central"),
+    );
+    await waitFor(() =>
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith(10),
+    );
+
+    expect(
+      screen.getByLabelText("Proyecto seleccionado en bitácora").textContent,
+    ).toContain("1 registro(s)");
+    expect(
+      screen.queryByRole("button", { name: "Ver todos los proyectos" }),
+    ).toBeNull();
+
+    const linkCrear = screen.getByRole("link", {
+      name: "Crear actividad diaria",
+    });
+    expect(linkCrear.getAttribute("href")).toBe("/actividades-diarias/create");
+    expect(linkCrear.getAttribute("data-search")).toBe(
+      JSON.stringify({ proyectoId: 10 }),
+    );
+  });
+
+  it("permite buscar y seleccionar entre múltiples proyectos activos y volver a ver todos (GPRCIMPER-29)", async () => {
+    mocks.listarProyectos.mockResolvedValue([
+      {
+        id: 10,
+        nombre: "Proyecto Edificio Central",
+        ubicacion: "San Salvador",
+        estado: "ACTIVO",
+      },
+      {
+        id: 22,
+        nombre: "Bodega Industrial Norte",
+        ubicacion: "Soyapango",
+        estado: "ACTIVO",
+      },
+    ]);
+
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -165,25 +218,37 @@ describe("ActividadesDiariasPage", () => {
       name: /Filtrar por proyecto/i,
     }) as HTMLInputElement;
     expect(filtroProyecto.value).toBe("");
-    expect(mocks.listarActividades).toHaveBeenCalledWith(null);
+    expect(mocks.listarActividades).toHaveBeenLastCalledWith(null);
+
+    const linkInicial = screen.getByRole("link", {
+      name: "Crear actividad diaria",
+    });
+    expect(linkInicial.getAttribute("data-search")).toBe("");
 
     fireEvent.click(
       screen.getByRole("button", { name: /Mostrar opciones de Filtrar/i }),
     );
     const opcion = await screen.findByRole("option", {
-      name: /Proyecto Edificio Central/i,
+      name: /Bodega Industrial Norte/i,
     });
     fireEvent.click(opcion);
 
     await waitFor(() =>
-      expect(mocks.listarActividades).toHaveBeenLastCalledWith(10),
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith(22),
     );
+    expect(
+      screen
+        .getByRole("link", { name: "Crear actividad diaria" })
+        .getAttribute("data-search"),
+    ).toBe(JSON.stringify({ proyectoId: 22 }));
 
-    const linkCrear = screen.getByRole("link", {
-      name: "Crear actividad diaria",
-    });
-    expect(linkCrear.getAttribute("href")).toBe("/actividades-diarias/create");
-    expect(linkCrear.getAttribute("data-search")).toBe("");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Ver todos los proyectos" }),
+    );
+    await waitFor(() =>
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith(null),
+    );
+    expect(filtroProyecto.value).toBe("");
   });
 
   it("muestra el botón Editar en cada fila y permite abrir la edición desde el botón o al hacer clic en la fila", async () => {
@@ -229,7 +294,7 @@ describe("ActividadesDiariasPage", () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith(10),
     );
 
     const inputInicio = screen.getByLabelText(
@@ -242,7 +307,7 @@ describe("ActividadesDiariasPage", () => {
 
     await waitFor(() =>
       expect(mocks.listarActividades).toHaveBeenLastCalledWith({
-        proyectoId: null,
+        proyectoId: 10,
         fechaInicio: "2026-11-01",
         fechaFin: "2026-11-10",
       }),
@@ -256,7 +321,7 @@ describe("ActividadesDiariasPage", () => {
     expect(inputFin.value).toBe(hoyIso);
     await waitFor(() =>
       expect(mocks.listarActividades).toHaveBeenLastCalledWith({
-        proyectoId: null,
+        proyectoId: 10,
         fechaInicio: inicioSemana,
         fechaFin: hoyIso,
       }),
@@ -298,7 +363,7 @@ describe("ActividadesDiariasPage", () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith(10),
     );
 
     fireEvent.change(screen.getByLabelText("Fecha inicio"), {
@@ -310,7 +375,7 @@ describe("ActividadesDiariasPage", () => {
 
     await waitFor(() =>
       expect(mocks.listarActividades).toHaveBeenLastCalledWith({
-        proyectoId: null,
+        proyectoId: 10,
         fechaInicio: "2026-11-07",
         fechaFin: "2026-11-14",
       }),
@@ -329,7 +394,7 @@ describe("ActividadesDiariasPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Exportar PDF" }));
     await waitFor(() =>
       expect(mocks.exportarActividades).toHaveBeenCalledWith("pdf", {
-        proyectoId: null,
+        proyectoId: 10,
         fechaInicio: "2026-11-07",
         fechaFin: "2026-11-14",
       }),
@@ -338,7 +403,7 @@ describe("ActividadesDiariasPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "Exportar Excel" }));
     await waitFor(() =>
       expect(mocks.exportarActividades).toHaveBeenCalledWith("excel", {
-        proyectoId: null,
+        proyectoId: 10,
         fechaInicio: "2026-11-07",
         fechaFin: "2026-11-14",
       }),

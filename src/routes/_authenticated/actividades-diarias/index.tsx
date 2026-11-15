@@ -101,6 +101,13 @@ export function ActividadesDiariasPage() {
       (proyectosQuery.data ?? []).filter((item) => item.estado === "ACTIVO"),
     [proyectosQuery.data],
   );
+  const proyectoSeleccionado = useMemo(
+    () =>
+      selectedProyectoId !== null
+        ? (proyectos.find((item) => item.id === selectedProyectoId) ?? null)
+        : null,
+    [proyectos, selectedProyectoId],
+  );
 
   const handleSelectProyecto = useCallback((proyectoId: number | null) => {
     setSelectedProyectoId(proyectoId);
@@ -170,10 +177,13 @@ export function ActividadesDiariasPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Actividades diarias</h1>
+          <h1 className="text-2xl font-bold">
+            Bitácora de actividades diarias
+          </h1>
           <p className="text-sm text-gray-500">
-            Consulta las jornadas registradas, fíltralas por proyecto o rango de
-            fechas y expórtalas a PDF o Excel.
+            Selecciona tu proyecto activo para revisar el historial de
+            actividades, filtrar por fechas, exportar a PDF o Excel y adjuntar
+            evidencia fotográfica.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -208,6 +218,11 @@ export function ActividadesDiariasPage() {
       {puedeCrear && (
         <Link
           to="/actividades-diarias/create"
+          search={
+            selectedProyectoId !== null
+              ? { proyectoId: selectedProyectoId }
+              : undefined
+          }
           className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
         >
           Crear actividad diaria
@@ -232,7 +247,7 @@ export function ActividadesDiariasPage() {
               proyectos={proyectos}
               selectedProyectoId={selectedProyectoId}
               onSelectProyecto={handleSelectProyecto}
-              autoSelectSingle={false}
+              autoSelectSingle={true}
               label="Filtrar por proyecto"
               placeholder="Todos los proyectos (escribe para buscar)"
               description=""
@@ -311,6 +326,38 @@ export function ActividadesDiariasPage() {
             Todavía no tienes proyectos activos asignados como Jefe de Proyecto.
           </p>
         )}
+
+      {proyectoSeleccionado && (
+        <div
+          aria-label="Proyecto seleccionado en bitácora"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm"
+        >
+          <div className="flex flex-wrap items-center gap-2 text-gray-700">
+            <span className="font-semibold text-gray-900">
+              {proyectoSeleccionado.nombre}
+            </span>
+            {proyectoSeleccionado.ubicacion && (
+              <span>· {proyectoSeleccionado.ubicacion}</span>
+            )}
+            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+              {proyectoSeleccionado.estado}
+            </span>
+            <span className="text-gray-500">
+              · {actividades.length} registro(s)
+            </span>
+          </div>
+          {proyectos.length > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedProyectoId(null)}
+            >
+              Ver todos los proyectos
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* GPRCIMPER-34: Lista única de actividades diarias */}
       {!rangoInvalido && (
