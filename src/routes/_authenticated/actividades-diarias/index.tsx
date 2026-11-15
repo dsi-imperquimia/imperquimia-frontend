@@ -7,6 +7,7 @@ import {
 } from "@modules/actividades-diarias/api/actividades-diarias";
 import { BorradoresActividad } from "@modules/actividades-diarias/components/BorradoresActividad";
 import { ModalResultadoActividad } from "@modules/actividades-diarias/components/ModalResultadoActividad";
+import { ModalEvidenciasActividad } from "@modules/actividades-diarias/components/PanelEvidenciasActividad";
 import { SelectorProyectoActividad } from "@modules/actividades-diarias/components/SelectorProyectoActividad";
 import { TablaActividadesProyecto } from "@modules/actividades-diarias/components/TablaActividadesProyecto";
 import { useBorradoresActividad } from "@modules/actividades-diarias/hooks/useBorradoresActividad";
@@ -36,6 +37,9 @@ export function ActividadesDiariasPage() {
   const [exportandoFormato, setExportandoFormato] =
     useState<FormatoExportacionActividad | null>(null);
   const [exportError, setExportError] = useState<string | null>(null);
+  const [actividadEvidenciasId, setActividadEvidenciasId] = useState<
+    number | null
+  >(null);
 
   const hoyIso = fechaHoyIso();
   const inicioUltimaSemana = restarDiasIso(7, hoyIso);
@@ -89,6 +93,8 @@ export function ActividadesDiariasPage() {
   });
 
   const actividades = rangoInvalido ? [] : (actividadesQuery.data ?? []);
+  const actividadEvidencias =
+    actividades.find((item) => item.id === actividadEvidenciasId) ?? null;
 
   const proyectos = useMemo(
     () =>
@@ -313,6 +319,7 @@ export function ActividadesDiariasPage() {
           isPending={actividadesQuery.isPending}
           isError={actividadesQuery.isError}
           onRetry={() => void actividadesQuery.refetch()}
+          onEvidencias={(actividad) => setActividadEvidenciasId(actividad.id)}
           onEditar={
             puedeEditar
               ? (actividad) =>
@@ -324,6 +331,12 @@ export function ActividadesDiariasPage() {
           }
         />
       )}
+
+      <ModalEvidenciasActividad
+        actividad={actividadEvidencias}
+        soloLectura={!puedeEditar}
+        onClose={() => setActividadEvidenciasId(null)}
+      />
 
       <ModalResultadoActividad estado={estadoModal} onClose={cerrarModal} />
     </div>

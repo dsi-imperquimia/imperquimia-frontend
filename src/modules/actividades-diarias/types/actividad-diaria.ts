@@ -8,6 +8,30 @@ export interface ProyectoDisponibleActividad {
   fechaFin?: string | null;
 }
 
+export interface EvidenciaActividadDiaria {
+  id: number;
+  actividadDiariaId: number;
+  nombreOriginal: string;
+  mimeType: string;
+  tamanoBytes: number;
+  createdAt: string;
+}
+
+export const MAX_TAMANO_IMAGEN_BYTES = 10 * 1024 * 1024;
+export const MAX_ARCHIVOS_EVIDENCIA = 10;
+export const TIPOS_IMAGEN_PERMITIDOS = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+]);
+
+export function formatearTamanoArchivo(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 export interface ActividadDiaria {
   id: number;
   claveOperacion: string;
@@ -34,6 +58,7 @@ export interface ActividadDiaria {
     id: number;
     nombreCompleto: string;
   } | null;
+  evidencias?: EvidenciaActividadDiaria[];
 }
 
 export interface RegistrarActividadDiaria {

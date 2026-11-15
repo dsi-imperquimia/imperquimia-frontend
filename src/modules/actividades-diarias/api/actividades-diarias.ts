@@ -4,6 +4,7 @@ import type {
   ActividadDiaria,
   ActualizarActividadDiaria,
   ErroresActividadDiaria,
+  EvidenciaActividadDiaria,
   ProyectoDisponibleActividad,
   RegistrarActividadDiaria,
 } from "../types/actividad-diaria";
@@ -131,6 +132,68 @@ export async function actualizarActividadDiaria(
   const { data } = await http.patch<ActividadDiaria>(
     `/actividades-diarias/${id}`,
     payload,
+  );
+  return data;
+}
+
+export async function listEvidenciasActividad(actividadId: number) {
+  const { data } = await http.get<EvidenciaActividadDiaria[]>(
+    `/actividades-diarias/${actividadId}/evidencias`,
+  );
+  return data;
+}
+
+export async function subirEvidenciasActividad(
+  actividadId: number,
+  archivos: File[],
+  onProgress?: (porcentaje: number) => void,
+) {
+  const formData = new FormData();
+  let tamanoTotal = 0;
+  for (const archivo of archivos) {
+    formData.append("archivos", archivo);
+    tamanoTotal += archivo.size;
+  }
+
+  const { data } = await http.post<EvidenciaActividadDiaria[]>(
+    `/actividades-diarias/${actividadId}/evidencias`,
+    formData,
+    {
+      headers: { "Content-Type": undefined },
+      onUploadProgress: (evento) => {
+        if (!onProgress) return;
+        const total = evento.total ?? tamanoTotal;
+        if (total > 0) {
+          const porcentaje = Math.min(
+            100,
+            Math.max(0, Math.round((evento.loaded * 100) / total)),
+          );
+          onProgress(porcentaje);
+        }
+      },
+    },
+  );
+  onProgress?.(100);
+  return data;
+}
+
+export async function obtenerImagenEvidenciaUrlBlob(
+  actividadId: number,
+  evidenciaId: number,
+) {
+  const { data } = await http.get<Blob>(
+    `/actividades-diarias/${actividadId}/evidencias/${evidenciaId}/archivo`,
+    { responseType: "blob" },
+  );
+  return URL.createObjectURL(data);
+}
+
+export async function eliminarEvidenciaActividad(
+  actividadId: number,
+  evidenciaId: number,
+) {
+  const { data } = await http.delete<{ id: number }>(
+    `/actividades-diarias/${actividadId}/evidencias/${evidenciaId}`,
   );
   return data;
 }

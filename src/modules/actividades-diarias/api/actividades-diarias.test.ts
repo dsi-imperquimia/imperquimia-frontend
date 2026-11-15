@@ -6,6 +6,7 @@ import {
   esErrorDeConexion,
   exportarActividadesDiarias,
   listActividadesDiarias,
+  subirEvidenciasActividad,
 } from "./actividades-diarias";
 import {
   eliminarBorradorActividad,
@@ -240,5 +241,41 @@ describe("listActividadesDiarias y exportarActividadesDiarias (GPRIMPER-43)", ()
     } finally {
       spyGet.mockRestore();
     }
+  });
+
+  it("sube múltiples evidencias en FormData reportando progreso (GPRIMPER-53)", async () => {
+    const spyPost = vi
+      .spyOn(http, "post")
+      .mockImplementation(async (_url, body, config) => {
+        expect(body).toBeInstanceOf(FormData);
+        const files = (body as FormData).getAll("archivos");
+        expect(files).toHaveLength(2);
+        expect(config?.headers?.["Content-Type"]).toBeUndefined();
+        config?.onUploadProgress?.({ loaded: 5, total: 10 } as any);
+        return { data: [{ id: 1 }, { id: 2 }] };
+      });
+
+    const progresos: number[] = [];
+    const archivo1 = new File(["12345"], "uno.jpg", { type: "image/jpeg" });
+    const archivo2 = new File(["67890"], "dos.png", { type: "image/png" });
+
+    const res = await subirEvidenciasActividad(
+      12,
+      [archivo1, archivo2],
+      (pct) => {
+        progresos.push(pct);
+      },
+    );
+
+    expect(spyPost).toHaveBeenCalledWith(
+      "/actividades-diarias/12/evidencias",
+      expect.any(FormData),
+      expect.objectContaining({
+        headers: { "Content-Type": undefined },
+      }),
+    );
+    expect(progresos).toEqual([50, 100]);
+    expect(res).toHaveLength(2);
+    spyPost.mockRestore();
   });
 });

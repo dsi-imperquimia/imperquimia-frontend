@@ -67,6 +67,7 @@ vi.mock("../api/actividades-diarias", async (importOriginal) => {
     listProyectosDisponiblesActividad: mocks.listarProyectos,
     listActividadesDiarias: mocks.listarActividades,
     exportarActividadesDiarias: mocks.exportarActividades,
+    listEvidenciasActividad: vi.fn().mockResolvedValue([]),
   };
 });
 
@@ -345,5 +346,30 @@ describe("ActividadesDiariasPage", () => {
 
     expect(URL.createObjectURL).toHaveBeenCalledTimes(2);
     expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
+  });
+
+  it("permite abrir el modal de evidencias fotográficas desde cada fila sin navegar a edición (GPRIMPER-53)", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ActividadesDiariasPage />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Evidencias (0)" }));
+
+    expect(mocks.navigate).not.toHaveBeenCalled();
+    expect(await screen.findByText("Evidencias de actividad")).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Tomar foto/i })).toBeTruthy();
+    expect(
+      screen.getByRole("button", { name: /Elegir de la galería/i }),
+    ).toBeTruthy();
   });
 });

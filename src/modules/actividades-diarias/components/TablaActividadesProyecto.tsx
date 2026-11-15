@@ -12,12 +12,14 @@ export function TablaActividadesProyecto({
   isError = false,
   onRetry,
   onEditar,
+  onEvidencias,
 }: {
   actividades: ActividadDiaria[];
   isPending?: boolean;
   isError?: boolean;
   onRetry?: () => void;
   onEditar?: (actividad: ActividadDiaria) => void;
+  onEvidencias?: (actividad: ActividadDiaria) => void;
 }) {
   const { user } = useAuth();
   const rolNombre = user?.role?.name;
@@ -54,6 +56,7 @@ export function TablaActividadesProyecto({
     "Descripción",
     "Observaciones",
     "Registrado por",
+    ...(onEvidencias ? ["Evidencias"] : []),
     ...(onEditar ? ["Acciones"] : []),
   ];
 
@@ -103,6 +106,21 @@ export function TablaActividadesProyecto({
                       ? `${a.usuario.name} ${a.usuario.lastName}`
                       : "Sin definir")}
                 </td>
+                {onEvidencias && (
+                  <td className="px-4 py-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onEvidencias(a);
+                      }}
+                    >
+                      Evidencias ({a.evidencias?.length ?? 0})
+                    </Button>
+                  </td>
+                )}
                 {onEditar && (
                   <td className="px-4 py-4">
                     <div className="flex flex-col items-start gap-1">
