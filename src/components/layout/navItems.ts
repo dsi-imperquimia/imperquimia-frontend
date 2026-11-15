@@ -1,6 +1,8 @@
+import type { User } from "@modules/user/types/user";
 import {
   BriefcaseBusiness,
   FileText,
+  HardHat,
   Layers,
   LayoutDashboard,
   ShieldUser,
@@ -23,10 +25,18 @@ export interface NavItem {
   children?: SubItem[];
   hasArrow?: boolean;
   permission?: string[];
+  /** Solo visible para usuarios vinculados a un empleado (ver `user.empleadoId`). */
+  requiresEmpleado?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
+  {
+    label: "Mis proyectos",
+    icon: HardHat,
+    to: "/mis-proyectos",
+    requiresEmpleado: true,
+  },
   {
     label: "Usuarios",
     icon: Users,
@@ -168,3 +178,12 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
 ];
+
+export function isNavItemVisible(
+  item: Pick<NavItem, "permission" | "requiresEmpleado">,
+  user: Pick<User, "empleadoId"> | null | undefined,
+  hasAnyPermission: (permissions: string[]) => boolean,
+): boolean {
+  if (item.requiresEmpleado && !user?.empleadoId) return false;
+  return hasAnyPermission(item.permission ?? []);
+}

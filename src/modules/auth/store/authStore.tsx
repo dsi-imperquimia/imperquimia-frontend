@@ -62,6 +62,14 @@ export const authActions = {
     authStore.setState(() => next);
     persistAuth(next);
   },
+  // Actualiza el usuario en el store (p. ej. tras refrescar /auth/me en el
+  // beforeLoad de la ruta raíz) y lo persiste, para que un F5 posterior lea
+  // desde localStorage los datos completos (incluyendo empleadoId/empleado)
+  // en vez de los que haya guardado el login original.
+  syncUser: (state: AuthState) => {
+    authStore.setState(() => state);
+    persistAuth(state);
+  },
   logout: () => {
     queryClient.removeQueries({ queryKey: ["auth", "me"] });
     authStore.setState(() => DEFAULT_STATE);

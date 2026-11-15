@@ -1,12 +1,13 @@
 import logo from "@/assets/iq_isologo_1.png";
-import { authActions, userActions } from "@modules/auth/store/authStore";
+import { authActions, useAuth, userActions } from "@modules/auth/store/authStore";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight, LogOut } from "lucide-react";
 import { useState } from "react";
-import { NAV_ITEMS, type NavItem } from "./navItems";
+import { isNavItemVisible, NAV_ITEMS, type NavItem } from "./navItems";
 
 export function AppSidebar() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggleExpand = (label: string) =>
@@ -25,7 +26,7 @@ export function AppSidebar() {
 
       <nav className="flex-1 overflow-y-auto py-2">
         {NAV_ITEMS.map((item) => {
-          if (!userActions.hasAnyPermission(item.permission ?? [])) {
+          if (!isNavItemVisible(item, user, userActions.hasAnyPermission)) {
             return null;
           }
           return item.children ? (
