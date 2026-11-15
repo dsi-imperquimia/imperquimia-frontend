@@ -7,6 +7,7 @@ import { Label } from "@heroui/react/label";
 import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
+import { nuevaClaveOperacion as nuevaClave } from "@lib/uuid";
 import type { Material } from "@modules/materiales/types/material";
 import type { Proyecto } from "@modules/proyectos/types/proyectos";
 import { useEffect, useState, type FormEvent } from "react";
@@ -27,13 +28,6 @@ const MOTIVOS: Record<TipoFormulario, MotivoMovimientoMaterial[]> = {
   ENTRADA: ["COMPRA", "DEVOLUCION_PROYECTO"],
   SALIDA: ["USO_PROYECTO", "VENTA"],
 };
-
-function nuevaClave(): string {
-  if (typeof globalThis.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-  return "00000000-0000-4000-8000-000000000000";
-}
 
 function searchable(value: string) {
   return value

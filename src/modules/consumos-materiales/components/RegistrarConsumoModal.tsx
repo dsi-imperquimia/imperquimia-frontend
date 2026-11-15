@@ -7,6 +7,7 @@ import { Label } from "@heroui/react/label";
 import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
+import { nuevaClaveOperacion as nuevaClave } from "@lib/uuid";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   errorConsumoMaterial,
@@ -15,12 +16,6 @@ import {
 import type { ResumenMaterialProyecto } from "../types/consumo-material";
 import { MaterialComboBoxControl } from "@modules/materiales/components/MaterialComboBoxControl";
 
-function nuevaClave(): string {
-  if (typeof globalThis.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-  return "00000000-0000-4000-8000-000000000000";
-}
 const hoy = () =>
   new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/El_Salvador",

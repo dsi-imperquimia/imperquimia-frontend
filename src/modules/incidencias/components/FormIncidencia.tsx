@@ -7,6 +7,7 @@ import { Card } from "@heroui/react/card";
 import { ListBox } from "@heroui/react/list-box";
 import { listActividadesDiarias } from "@modules/actividades-diarias/api/actividades-diarias";
 import { SelectorProyectoActividad } from "@modules/actividades-diarias/components/SelectorProyectoActividad";
+import { nuevaClaveOperacion } from "@lib/uuid";
 import { fecha as formatearFecha } from "@modules/proyectos/types/proyectos";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -25,13 +26,6 @@ import {
   type Incidencia,
   type PrioridadIncidencia,
 } from "../types/incidencia";
-
-function nuevaClaveOperacion(): string {
-  if (typeof globalThis.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-  return "00000000-0000-4000-8000-000000000000";
-}
 
 /** Reporte de jornada desde el que se registra la incidencia (GPRCIMPER-142). */
 export interface JornadaOrigenIncidencia {

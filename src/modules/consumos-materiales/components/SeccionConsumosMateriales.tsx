@@ -3,6 +3,7 @@ import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
+import { nuevaClaveOperacion as nuevaClave } from "@lib/uuid";
 import { userActions } from "@modules/auth/store/authStore";
 import { DevolverMaterialesProyectoModal } from "@modules/materiales/components/DevolverMaterialesProyectoModal";
 import { EnviarMaterialesProyectoModal } from "@modules/materiales/components/EnviarMaterialesProyectoModal";
@@ -30,13 +31,6 @@ const numero = (value: string | number) =>
   Number(value).toLocaleString("es-SV", { maximumFractionDigits: 2 });
 const fecha = (value: string) =>
   new Intl.DateTimeFormat("es-SV", { timeZone: "UTC" }).format(new Date(value));
-
-function nuevaClave(): string {
-  if (typeof globalThis.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-  return "00000000-0000-4000-8000-000000000000";
-}
 
 function RevertirConsumoDialog({
   consumo,

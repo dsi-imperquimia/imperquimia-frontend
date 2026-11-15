@@ -7,6 +7,7 @@ import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
 import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
+import { nuevaClaveOperacion as nuevaClave } from "@lib/uuid";
 import type { ProyectoDetalle } from "@modules/proyectos/types/proyectos";
 import { useQuery } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
@@ -27,12 +28,6 @@ type FilaEnvio = {
   origen: "PRESUPUESTO" | "MANUAL";
 };
 
-function nuevaClave(): string {
-  if (typeof globalThis.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-  return "00000000-0000-4000-8000-000000000000";
-}
 const searchable = (value: string) =>
   value
     .normalize("NFD")

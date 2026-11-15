@@ -18,6 +18,7 @@ import {
   fechaHoyIso,
   type JornadaHerramientas,
 } from "@modules/jornada-herramientas/types/jornada-herramientas";
+import { nuevaClaveOperacion } from "@lib/uuid";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
 import { isAxiosError } from "axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,13 +29,6 @@ import { useEffect, useState } from "react";
 export const Route = createFileRoute("/_authenticated/jornada-herramientas/")({
   component: JornadaHerramientasPage,
 });
-
-function nuevaClaveOperacion(): string {
-  if (typeof globalThis.crypto?.randomUUID === "function") {
-    return globalThis.crypto.randomUUID();
-  }
-  return "00000000-0000-4000-8000-000000000000";
-}
 
 function JornadaHerramientasPage() {
   const queryClient = useQueryClient();
