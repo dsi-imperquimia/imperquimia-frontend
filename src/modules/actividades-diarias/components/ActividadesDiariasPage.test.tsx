@@ -292,6 +292,7 @@ describe("ActividadesDiariasPage", () => {
         screen.getByText("Pendiente de registrar (generada por el sistema)"),
       ).toBeTruthy(),
     );
+    expect(screen.getByText("Sistema (pendiente)")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Registrar" }));
     expect(mocks.navigate).toHaveBeenLastCalledWith({

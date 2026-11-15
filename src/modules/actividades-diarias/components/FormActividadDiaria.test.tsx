@@ -734,6 +734,14 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
         /Registro diario generado automáticamente por el sistema/i,
       ),
     ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("combobox", { name: /Proyecto/i })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+    expect(
+      screen.getByLabelText(/Fecha de la actividad/i).hasAttribute("disabled"),
+    ).toBe(true);
 
     fireEvent.change(screen.getByLabelText(/Descripción de la actividad/i), {
       target: { value: "Avance registrado por primera vez" },

@@ -48,8 +48,6 @@ export function ActividadesDiariasPage() {
   );
   const esUltimaSemanaActiva =
     fechaInicio === inicioUltimaSemana && fechaFin === hoyIso;
-  const hayFiltrosActivos =
-    selectedProyectoId !== null || Boolean(fechaInicio) || Boolean(fechaFin);
 
   const puedeCrear = hasPermission("ACTIVIDAD_CREATE");
   const puedeEditar = hasAnyPermission([
@@ -70,6 +68,23 @@ export function ActividadesDiariasPage() {
     queryKey: ["actividades-diarias", "proyectos-disponibles"],
     queryFn: listProyectosDisponiblesActividad,
   });
+
+  const proyectos = useMemo(
+    () =>
+      (proyectosQuery.data ?? []).filter((item) => item.estado === "ACTIVO"),
+    [proyectosQuery.data],
+  );
+  const proyectoSeleccionado = useMemo(
+    () =>
+      selectedProyectoId !== null
+        ? (proyectos.find((item) => item.id === selectedProyectoId) ?? null)
+        : null,
+    [proyectos, selectedProyectoId],
+  );
+  const hayFiltrosActivos =
+    (proyectos.length > 1 && selectedProyectoId !== null) ||
+    Boolean(fechaInicio) ||
+    Boolean(fechaFin);
 
   const actividadesQuery = useQuery({
     queryKey: [
@@ -96,19 +111,6 @@ export function ActividadesDiariasPage() {
   const actividadEvidencias =
     actividades.find((item) => item.id === actividadEvidenciasId) ?? null;
 
-  const proyectos = useMemo(
-    () =>
-      (proyectosQuery.data ?? []).filter((item) => item.estado === "ACTIVO"),
-    [proyectosQuery.data],
-  );
-  const proyectoSeleccionado = useMemo(
-    () =>
-      selectedProyectoId !== null
-        ? (proyectos.find((item) => item.id === selectedProyectoId) ?? null)
-        : null,
-    [proyectos, selectedProyectoId],
-  );
-
   const handleSelectProyecto = useCallback((proyectoId: number | null) => {
     setSelectedProyectoId(proyectoId);
   }, []);
@@ -126,7 +128,9 @@ export function ActividadesDiariasPage() {
 
   function limpiarFiltros() {
     setExportError(null);
-    setSelectedProyectoId(null);
+    if (proyectos.length > 1) {
+      setSelectedProyectoId(null);
+    }
     setFechaInicio("");
     setFechaFin("");
   }

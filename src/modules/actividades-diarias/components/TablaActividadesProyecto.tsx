@@ -111,10 +111,12 @@ export function TablaActividadesProyecto({
                   {a.observaciones || "Sin observaciones"}
                 </td>
                 <td className="whitespace-nowrap px-4 py-4">
-                  {a.empleado?.nombreCompleto ??
-                    (a.usuario
-                      ? `${a.usuario.name} ${a.usuario.lastName}`
-                      : "Sin definir")}
+                  {pendienteRegistro
+                    ? "Sistema (pendiente)"
+                    : (a.empleado?.nombreCompleto ??
+                      (a.usuario
+                        ? `${a.usuario.name} ${a.usuario.lastName}`
+                        : "Sin definir"))}
                 </td>
                 {onEvidencias && (
                   <td className="px-4 py-4">
