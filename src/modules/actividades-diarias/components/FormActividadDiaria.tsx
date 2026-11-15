@@ -232,13 +232,13 @@ export function FormActividadDiaria({
       onSuccess?.(respuesta.actividad);
     } catch (error) {
       if (esErrorDeConexion(error)) {
-        const proyectoSeleccionado = proyectos.find(
-          (item) => item.id === proyectoId,
-        );
+        const nombreProyecto =
+          proyectosFormulario.find((item) => item.id === proyectoId)?.nombre ??
+          actividad?.proyecto?.nombre;
         agregarBorrador({
           claveOperacion,
           payload,
-          proyectoNombre: proyectoSeleccionado?.nombre,
+          proyectoNombre: nombreProyecto,
           guardadoEn: new Date().toISOString(),
         });
         limpiarFormulario();

@@ -429,16 +429,21 @@ export function PanelEvidenciasActividad({
     }
   }
 
-  async function handleTomarFoto() {
-    if (soloLectura || subiendo) return;
-    setMensajeError(null);
-    setMensajeExito(null);
+  function validarCupoDisponible(): boolean {
     if (pendientes.length >= MAX_ARCHIVOS_EVIDENCIA) {
       setMensajeError(
         `Puedes preparar hasta ${MAX_ARCHIVOS_EVIDENCIA} imágenes por subida.`,
       );
-      return;
+      return false;
     }
+    return true;
+  }
+
+  async function handleTomarFoto() {
+    if (soloLectura || subiendo) return;
+    setMensajeError(null);
+    setMensajeExito(null);
+    if (!validarCupoDisponible()) return;
 
     const soportaCamara =
       typeof navigator !== "undefined" &&
@@ -452,6 +457,14 @@ export function PanelEvidenciasActividad({
     setModalCamaraAbierto(true);
     onCamaraActivaChange?.(true);
     await iniciarStreamCamara(modoCamara);
+  }
+
+  function handleElegirGaleria() {
+    if (soloLectura || subiendo) return;
+    setMensajeError(null);
+    setMensajeExito(null);
+    if (!validarCupoDisponible()) return;
+    galeriaInputRef.current?.click();
   }
 
   async function handleCambiarCamara() {
@@ -605,220 +618,217 @@ export function PanelEvidenciasActividad({
     />
   );
 
-  if (dentroDeModal && modalCamaraAbierto) {
-    return (
-      <div className="space-y-2">
-        {inputsOcultos}
-        {visorCamara}
-      </div>
-    );
-  }
-
   return (
-    <section
-      aria-label="Evidencia fotográfica"
-      className={
-        dentroDeModal
-          ? "space-y-3"
-          : "space-y-3 rounded-xl border border-gray-200 bg-white p-4"
-      }
-    >
-      <div className="flex flex-wrap items-center justify-between gap-2.5">
-        <div>
-          <h2 className="text-base font-semibold text-gray-900">
-            Evidencia fotográfica
-          </h2>
-          <p className="text-xs text-gray-500">
-            {actividadNombre
-              ? `${actividadNombre} · JPG, PNG o WEBP (máx. 10 MB).`
-              : "JPG, PNG o WEBP (máx. 10 MB por imagen)."}
-          </p>
-        </div>
-
-        {!soloLectura && (
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              isDisabled={subiendo}
-              onClick={() => void handleTomarFoto()}
-            >
-              <Camera className="mr-1.5 size-4" />
-              Tomar foto
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              isDisabled={subiendo}
-              onClick={() => galeriaInputRef.current?.click()}
-            >
-              <ImagePlus className="mr-1.5 size-4" />
-              Elegir de la galería
-            </Button>
-          </div>
-        )}
-      </div>
-
+    <div>
       {inputsOcultos}
-
-      {!dentroDeModal && modalCamaraAbierto && (
-        <Modal
-          isOpen
-          onOpenChange={(open) => {
-            if (!open) cerrarCamara();
-          }}
+      {dentroDeModal && modalCamaraAbierto ? (
+        <div className="space-y-2">{visorCamara}</div>
+      ) : (
+        <section
+          aria-label="Evidencia fotográfica"
+          className={
+            dentroDeModal
+              ? "space-y-3"
+              : "space-y-3 rounded-xl border border-gray-200 bg-white p-4"
+          }
         >
-          <Modal.Backdrop isDismissable isKeyboardDismissDisabled={false}>
-            <Modal.Container>
-              <Modal.Dialog className="w-full sm:max-w-md">
-                <Modal.Header>
-                  <Modal.Heading>Tomar fotografía</Modal.Heading>
-                </Modal.Header>
-                <Modal.Body>{visorCamara}</Modal.Body>
-              </Modal.Dialog>
-            </Modal.Container>
-          </Modal.Backdrop>
-        </Modal>
-      )}
-
-      {pendientes.length > 0 && (
-        <div className="space-y-2.5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs font-semibold text-gray-800">
-              Vista previa antes de subir ({pendientes.length})
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                isDisabled={subiendo}
-                onClick={limpiarPendientes}
-              >
-                Cancelar selección
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                isPending={subiendo}
-                isDisabled={subiendo}
-                onClick={() => void handleConfirmarSubida()}
-              >
-                <Upload className="mr-1.5 size-3.5" />
-                {subiendo
-                  ? "Subiendo…"
-                  : `Confirmar subida (${pendientes.length})`}
-              </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900">
+                Evidencia fotográfica
+              </h2>
+              <p className="text-xs text-gray-500">
+                {actividadNombre
+                  ? `${actividadNombre} · JPG, PNG o WEBP (máx. 10 MB).`
+                  : "JPG, PNG o WEBP (máx. 10 MB por imagen)."}
+              </p>
             </div>
-          </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
-            {pendientes.map((item) => (
-              <div
-                key={item.idLocal}
-                className="flex flex-col rounded-lg border border-gray-200 bg-white p-1.5"
-              >
-                <div className="relative mb-1.5 h-20 overflow-hidden rounded-md bg-gray-100">
-                  <img
-                    src={item.previewUrl}
-                    alt={`Vista previa de ${item.file.name}`}
-                    className="h-full w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    disabled={subiendo}
-                    aria-label={`Quitar ${item.file.name}`}
-                    onClick={() => quitarPendiente(item.idLocal)}
-                    className="absolute top-1 right-1 inline-flex size-5 items-center justify-center rounded-full bg-white/90 text-red-700 shadow-xs hover:bg-red-50 disabled:opacity-50"
-                  >
-                    <X className="size-3.5" />
-                  </button>
-                </div>
-                <p
-                  className="truncate text-[11px] font-medium text-gray-800"
-                  title={item.file.name}
+            {!soloLectura && (
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  isDisabled={subiendo}
+                  onClick={() => void handleTomarFoto()}
                 >
-                  {item.file.name}
-                </p>
-                <span className="text-[11px] text-gray-500">
-                  {formatearTamanoArchivo(item.file.size)}
-                </span>
+                  <Camera className="mr-1.5 size-4" />
+                  Tomar foto
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  isDisabled={subiendo}
+                  onClick={handleElegirGaleria}
+                >
+                  <ImagePlus className="mr-1.5 size-4" />
+                  Elegir de la galería
+                </Button>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      )}
 
-      {subiendo && (
-        <div className="space-y-1 rounded-lg bg-gray-50 p-2.5">
-          <div className="flex items-center justify-between text-xs font-medium text-gray-700">
-            <span>Subiendo evidencias…</span>
-            <span>{progreso}%</span>
+          {!dentroDeModal && modalCamaraAbierto && (
+            <Modal
+              isOpen
+              onOpenChange={(open) => {
+                if (!open) cerrarCamara();
+              }}
+            >
+              <Modal.Backdrop isDismissable isKeyboardDismissDisabled={false}>
+                <Modal.Container>
+                  <Modal.Dialog className="w-full sm:max-w-md">
+                    <Modal.Header>
+                      <Modal.Heading>Tomar fotografía</Modal.Heading>
+                    </Modal.Header>
+                    <Modal.Body>{visorCamara}</Modal.Body>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
+            </Modal>
+          )}
+
+          {pendientes.length > 0 && (
+            <div className="space-y-2.5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-xs font-semibold text-gray-800">
+                  Vista previa antes de subir ({pendientes.length})
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    isDisabled={subiendo}
+                    onClick={limpiarPendientes}
+                  >
+                    Cancelar selección
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    isPending={subiendo}
+                    isDisabled={subiendo}
+                    onClick={() => void handleConfirmarSubida()}
+                  >
+                    <Upload className="mr-1.5 size-3.5" />
+                    {subiendo
+                      ? "Subiendo…"
+                      : `Confirmar subida (${pendientes.length})`}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+                {pendientes.map((item) => (
+                  <div
+                    key={item.idLocal}
+                    className="flex flex-col rounded-lg border border-gray-200 bg-white p-1.5"
+                  >
+                    <div className="relative mb-1.5 h-20 overflow-hidden rounded-md bg-gray-100">
+                      <img
+                        src={item.previewUrl}
+                        alt={`Vista previa de ${item.file.name}`}
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        disabled={subiendo}
+                        aria-label={`Quitar ${item.file.name}`}
+                        onClick={() => quitarPendiente(item.idLocal)}
+                        className="absolute top-1 right-1 inline-flex size-5 items-center justify-center rounded-full bg-white/90 text-red-700 shadow-xs hover:bg-red-50 disabled:opacity-50"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+                    <p
+                      className="truncate text-[11px] font-medium text-gray-800"
+                      title={item.file.name}
+                    >
+                      {item.file.name}
+                    </p>
+                    <span className="text-[11px] text-gray-500">
+                      {formatearTamanoArchivo(item.file.size)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {subiendo && (
+            <div className="space-y-1 rounded-lg bg-gray-50 p-2.5">
+              <div className="flex items-center justify-between text-xs font-medium text-gray-700">
+                <span>Subiendo evidencias…</span>
+                <span>{progreso}%</span>
+              </div>
+              <div
+                role="progressbar"
+                aria-label="Progreso de subida de evidencias"
+                aria-valuenow={progreso}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                className="h-2 w-full overflow-hidden rounded-full bg-gray-200"
+              >
+                <div
+                  className="h-full rounded-full bg-gray-900 transition-all duration-150"
+                  style={{ width: `${progreso}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {mensajeExito && (
+            <p
+              role="status"
+              className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800"
+            >
+              {mensajeExito}
+            </p>
+          )}
+
+          {mensajeError && (
+            <p
+              role="alert"
+              className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700"
+            >
+              {mensajeError}
+            </p>
+          )}
+
+          <div className="space-y-2">
+            <h3 className="text-xs font-medium text-gray-700">
+              Imágenes adjuntas ({evidencias.length})
+            </h3>
+            {evidenciasQuery.isPending && !evidenciasIniciales ? (
+              <p role="status" className="text-xs text-gray-500">
+                Cargando evidencias…
+              </p>
+            ) : evidencias.length === 0 ? (
+              <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center text-xs text-gray-500">
+                Todavía no hay evidencias fotográficas adjuntas en esta
+                actividad.
+              </p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+                {evidencias.map((evidencia) => (
+                  <MiniaturaEvidenciaGuardada
+                    key={evidencia.id}
+                    actividadId={actividadId}
+                    evidencia={evidencia}
+                    soloLectura={soloLectura}
+                    eliminando={eliminandoId === evidencia.id}
+                    onEliminar={(id) => void handleEliminarGuardada(id)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-          <div
-            role="progressbar"
-            aria-label="Progreso de subida de evidencias"
-            aria-valuenow={progreso}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            className="h-2 w-full overflow-hidden rounded-full bg-gray-200"
-          >
-            <div
-              className="h-full rounded-full bg-gray-900 transition-all duration-150"
-              style={{ width: `${progreso}%` }}
-            />
-          </div>
-        </div>
+        </section>
       )}
-
-      {mensajeExito && (
-        <p
-          role="status"
-          className="rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800"
-        >
-          {mensajeExito}
-        </p>
-      )}
-
-      {mensajeError && (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700"
-        >
-          {mensajeError}
-        </p>
-      )}
-
-      <div className="space-y-2">
-        <h3 className="text-xs font-medium text-gray-700">
-          Imágenes adjuntas ({evidencias.length})
-        </h3>
-        {evidenciasQuery.isPending && !evidenciasIniciales ? (
-          <p role="status" className="text-xs text-gray-500">
-            Cargando evidencias…
-          </p>
-        ) : evidencias.length === 0 ? (
-          <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-center text-xs text-gray-500">
-            Todavía no hay evidencias fotográficas adjuntas en esta actividad.
-          </p>
-        ) : (
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
-            {evidencias.map((evidencia) => (
-              <MiniaturaEvidenciaGuardada
-                key={evidencia.id}
-                actividadId={actividadId}
-                evidencia={evidencia}
-                soloLectura={soloLectura}
-                eliminando={eliminandoId === evidencia.id}
-                onEliminar={(id) => void handleEliminarGuardada(id)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
+    </div>
   );
 }
 

@@ -8,7 +8,10 @@ import {
 } from "@testing-library/react";
 import { AxiosError } from "axios";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { PanelEvidenciasActividad } from "./PanelEvidenciasActividad";
+import {
+  ModalEvidenciasActividad,
+  PanelEvidenciasActividad,
+} from "./PanelEvidenciasActividad";
 
 const mocks = vi.hoisted(() => ({
   listarEvidencias: vi.fn(),
@@ -308,6 +311,72 @@ describe("PanelEvidenciasActividad (GPRIMPER-53)", () => {
       } as unknown as MediaStream);
 
       await waitFor(() => expect(stopTrack).toHaveBeenCalledTimes(1));
+    } finally {
+      Object.defineProperty(navigator, "mediaDevices", {
+        configurable: true,
+        value: originalMediaDevices,
+      });
+    }
+  });
+
+  it("mantiene montado el selector alternativo dentro del modal al cambiar de cámara a 'Usar archivo'", async () => {
+    const stopTrack = vi.fn();
+    const fakeStream = {
+      getTracks: () => [{ stop: stopTrack }],
+    } as unknown as MediaStream;
+    const getUserMedia = vi.fn().mockResolvedValue(fakeStream);
+    const originalMediaDevices = navigator.mediaDevices;
+
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia },
+    });
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+
+    try {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+      });
+      render(
+        <QueryClientProvider client={queryClient}>
+          <ModalEvidenciasActividad
+            actividad={{
+              id: 12,
+              claveOperacion: "00000000-0000-4000-8000-000000000012",
+              proyectoId: 10,
+              usuarioId: 7,
+              empleadoId: 7,
+              fecha: "2026-11-15",
+              nombre: "Impermeabilización losa",
+              descripcion: "Avance",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              proyecto: {
+                id: 10,
+                nombre: "Edificio Central",
+                estado: "ACTIVO",
+              },
+            }}
+            onClose={vi.fn()}
+          />
+        </QueryClientProvider>,
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /Tomar foto/i }));
+      expect(await screen.findByText("Tomar fotografía")).toBeTruthy();
+
+      const inputCamaraAntes = screen.getByLabelText("Tomar foto con cámara");
+      fireEvent.click(screen.getByRole("button", { name: /Usar archivo/i }));
+
+      await waitFor(() =>
+        expect(screen.getByText("Evidencias de actividad")).toBeTruthy(),
+      );
+      const inputCamaraDespues = screen.getByLabelText("Tomar foto con cámara");
+      expect(inputCamaraDespues).toBe(inputCamaraAntes);
+
+      const foto = new File(["jpg"], "respaldo.jpg", { type: "image/jpeg" });
+      fireEvent.change(inputCamaraAntes, { target: { files: [foto] } });
+      expect(screen.getByText("Vista previa antes de subir (1)")).toBeTruthy();
     } finally {
       Object.defineProperty(navigator, "mediaDevices", {
         configurable: true,
