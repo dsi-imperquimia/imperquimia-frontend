@@ -1,6 +1,5 @@
 import { http } from "@lib/http";
-import { EstadoHerramienta } from "../types/herramientas";
-import type { Herramienta } from "../types/herramientas";
+import type { EstadoHerramienta, Herramienta } from "../types/herramientas";
 
 interface ListHerramientasParams {
   estado?: EstadoHerramienta;

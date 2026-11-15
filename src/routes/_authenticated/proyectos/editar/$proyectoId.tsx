@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Button } from "@heroui/react/button";
 import { useQuery } from "@tanstack/react-query";
 import { FormProyecto } from "@modules/proyectos/components/FormProyecto";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
@@ -22,11 +23,13 @@ function Editar() {
     return (
       <div role="alert">
         No se pudo cargar el proyecto.{" "}
-        <button onClick={() => refetch()}>Reintentar</button>
+        <Button variant="outline" size="sm" onClick={() => refetch()}>
+          Reintentar
+        </Button>
       </div>
     );
-  if (data.estado === "CANCELADO") {
-    return <p role="alert">No se puede editar un proyecto cancelado.</p>;
+  if (data.estado !== "ACTIVO") {
+    return <p role="alert">Solo se puede editar un proyecto activo.</p>;
   }
   return (
     <div className="space-y-5">

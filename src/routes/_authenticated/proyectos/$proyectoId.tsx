@@ -1,23 +1,32 @@
 import { Button } from "@heroui/react/button";
-import { useQuery } from "@tanstack/react-query";
+import { Table } from "@heroui/react/table";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
-import { dinero, fecha, TIPOS_OBRA_LABEL } from "@modules/proyectos/types/proyectos";
+import {
+  dinero,
+  fecha,
+  TIPOS_OBRA_LABEL,
+} from "@modules/proyectos/types/proyectos";
+
+import { DialogCancelarProyecto } from "@modules/proyectos/components/DialogCancelarProyecto";
+import { AsignarJefeProyecto } from "@modules/proyectos/components/AsignarJefeProyecto";
+import { AsignarEmpleadosProyecto } from "@modules/proyectos/components/AsignarEmpleadosProyecto";
+import { userActions } from "@modules/auth/store/authStore";
+import { SeccionConsumosMateriales } from "@modules/consumos-materiales/components/SeccionConsumosMateriales";
+import { FinalizarProyectoDialog } from "@modules/consumos-materiales/components/FinalizarProyectoDialog";
+import { ArrowLeft, Ban, Pencil } from "lucide-react";
 
 const ESTADO_LABEL: Record<string, string> = {
   GARANTIA: "GARANTÍA",
   EN_PAUSA: "EN PAUSA",
 };
-import { DialogCancelarProyecto } from "@modules/proyectos/components/DialogCancelarProyecto";
-import { AsignarJefeProyecto } from "@modules/proyectos/components/AsignarJefeProyecto";
-import { AsignarEmpleadosProyecto } from "@modules/proyectos/components/AsignarEmpleadosProyecto";
-import { userActions } from "@modules/auth/store/authStore";
-import { Ban } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/proyectos/$proyectoId")({
   component: Detalle,
 });
 function Detalle() {
+  const client = useQueryClient();
   const { proyectoId } = Route.useParams();
   const id = Number(proyectoId);
   const valido = Number.isInteger(id) && id > 0;
@@ -46,8 +55,12 @@ function Detalle() {
     );
   return (
     <div className="space-y-6">
-      <Link to="/proyectos" className="text-sm text-blue-700 hover:underline">
-        ← Volver a proyectos
+      <Link
+        to="/proyectos"
+        className="inline-flex items-center gap-1 text-sm text-blue-700 hover:underline"
+      >
+        <ArrowLeft className="size-4" />
+        Volver a proyectos
       </Link>
       <div>
         <div className="flex items-center gap-3">
@@ -60,22 +73,41 @@ function Detalle() {
           )}
         </div>
         <p className="mt-1 text-gray-500">
-          {ESTADO_LABEL[p.estado] ?? p.estado} · {p.ubicacion || "Sin ubicación"}
+          {ESTADO_LABEL[p.estado] ?? p.estado} ·{" "}
+          {p.ubicacion || "Sin ubicación"}
         </p>
       </div>
       <section className="rounded-xl border border-gray-200 bg-white p-6">
-        <div className="mb-4 flex gap-3">
-          {p.estado !== "CANCELADO" &&
+        <div className="mb-4 flex flex-wrap gap-3">
+          {p.estado === "ACTIVO" &&
             userActions.hasPermission("PROYECTO_UPDATE") && (
-              <Link
-                className="rounded-lg border border-gray-300 px-4 py-2"
-                to="/proyectos/editar/$proyectoId"
-                params={{ proyectoId }}
-              >
-                Editar proyecto
+              <Link to="/proyectos/editar/$proyectoId" params={{ proyectoId }}>
+                <Button variant="outline">
+                  <Pencil className="mr-1 size-4" />
+                  Editar proyecto
+                </Button>
               </Link>
             )}
-          {p.estado !== "CANCELADO" &&
+          {p.estado === "ACTIVO" &&
+            userActions.hasPermission("CONSUMO_MATERIAL_CREATE") &&
+            userActions.hasPermission("PROYECTO_UPDATE") && (
+              <FinalizarProyectoDialog
+                proyecto={p}
+                onSuccess={async () => {
+                  await refetch();
+                  await Promise.all([
+                    client.invalidateQueries({
+                      queryKey: ["consumos-materiales", p.id],
+                    }),
+                    client.invalidateQueries({
+                      queryKey: ["inventario-materiales"],
+                    }),
+                    client.invalidateQueries({ queryKey: ["proyectos"] }),
+                  ]);
+                }}
+              />
+            )}
+          {p.estado === "ACTIVO" &&
             userActions.hasPermission("PROYECTO_DELETE") && (
               <DialogCancelarProyecto proyecto={p} />
             )}
@@ -89,7 +121,10 @@ function Detalle() {
             ["Fecha de inicio", fecha(p.fechaInicio)],
             ["Fecha de fin", fecha(p.fechaFin)],
             ["Tipo de obra", p.tipoObra ? TIPOS_OBRA_LABEL[p.tipoObra] : null],
-            ["Presupuesto", p.presupuesto != null ? dinero(p.presupuesto) : null],
+            [
+              "Presupuesto",
+              p.presupuesto != null ? dinero(p.presupuesto) : null,
+            ],
             [
               "Creado por",
               p.creadoPor
@@ -126,50 +161,50 @@ function Detalle() {
           )}
         </div>
       </section>
-      <AsignarJefeProyecto proyecto={p} editable={false} />
-      <AsignarEmpleadosProyecto proyecto={p} editable={false} />
+      <AsignarJefeProyecto proyecto={p} editable={p.estado !== "CANCELADO"} />
+      <AsignarEmpleadosProyecto
+        proyecto={p}
+        editable={p.estado !== "CANCELADO"}
+      />
       <section className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold">
-          Presupuesto de materiales
-        </h2>
+        <h2 className="mb-4 text-lg font-semibold">Materiales cotizados</h2>
         {p.detalles.length ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr>
-                  {[
-                    "Material",
-                    "Cantidad",
-                    "Unidad",
-                    "Costo unitario",
-                    "Subtotal",
-                    "IVA",
-                    "Total",
-                  ].map((t) => (
-                    <th key={t} className="p-3">
-                      {t}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {p.detalles.map((d) => (
-                  <tr key={d.id} className="border-t border-gray-200">
-                    <td className="p-3">{d.material.nombre}</td>
-                    <td className="p-3">{Number(d.cantidad)}</td>
-                    <td className="p-3">{d.unidad}</td>
-                    <td className="p-3">{dinero(d.costoUnitario)}</td>
-                    <td className="p-3">{dinero(d.subTotal)}</td>
-                    <td className="p-3">{dinero(d.totalIva)}</td>
-                    <td className="p-3">{dinero(d.total)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Table>
+            <Table.ScrollContainer>
+              <Table.Content
+                aria-label="Materiales cotizados del proyecto"
+                className="min-w-[760px]"
+              >
+                <Table.Header>
+                  <Table.Column isRowHeader>Material</Table.Column>
+                  <Table.Column>Cantidad</Table.Column>
+                  <Table.Column>Unidad</Table.Column>
+                  <Table.Column>Costo unitario</Table.Column>
+                  <Table.Column>Subtotal</Table.Column>
+                  <Table.Column>IVA</Table.Column>
+                  <Table.Column>Total</Table.Column>
+                </Table.Header>
+                <Table.Body>
+                  <Table.Collection items={p.detalles}>
+                    {(d) => (
+                      <Table.Row key={d.id}>
+                        <Table.Cell>{d.material.nombre}</Table.Cell>
+                        <Table.Cell>{Number(d.cantidad)}</Table.Cell>
+                        <Table.Cell>{d.unidad}</Table.Cell>
+                        <Table.Cell>{dinero(d.costoUnitario)}</Table.Cell>
+                        <Table.Cell>{dinero(d.subTotal)}</Table.Cell>
+                        <Table.Cell>{dinero(d.totalIva)}</Table.Cell>
+                        <Table.Cell>{dinero(d.total)}</Table.Cell>
+                      </Table.Row>
+                    )}
+                  </Table.Collection>
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
+          </Table>
         ) : (
           <p className="text-gray-500">
-            Este proyecto todavía no tiene materiales presupuestados.
+            Este proyecto todavía no tiene materiales cotizados.
           </p>
         )}
         <dl className="mt-5 flex flex-wrap justify-end gap-6 border-t border-gray-200 pt-4">
@@ -185,6 +220,12 @@ function Detalle() {
           ))}
         </dl>
       </section>
+      {userActions.hasPermission("CONSUMO_MATERIAL_READ") && (
+        <SeccionConsumosMateriales
+          proyecto={p}
+          refetchProyecto={() => refetch()}
+        />
+      )}
       <section className="rounded-xl border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-lg font-semibold">Herramientas asignadas</h2>
         {p.herramientas.length ? (

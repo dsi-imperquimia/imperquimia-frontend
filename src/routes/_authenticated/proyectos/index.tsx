@@ -1,10 +1,16 @@
 import { Button } from "@heroui/react/button";
+import { ListBox } from "@heroui/react/list-box";
+import { Table } from "@heroui/react/table";
+import { InputField } from "@components/fields/InputField";
+import { SelectedField } from "@components/fields/SelectedField";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { userActions } from "@modules/auth/store/authStore";
+import { cn } from "@modules/core/utils/utils";
 import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { dinero, fecha } from "@modules/proyectos/types/proyectos";
+import { Eye, Plus, RefreshCw } from "lucide-react";
 
 const ESTADO_LABEL: Record<string, string> = {
   GARANTIA: "GARANTÍA",
@@ -22,7 +28,7 @@ function Proyectos() {
     isPending,
     isError,
     refetch,
-    isFetching,
+    isRefetching,
   } = useQuery({ queryKey: ["proyectos"], queryFn: listProyectos });
   const items = data.filter(
     (p) =>
@@ -37,57 +43,59 @@ function Proyectos() {
         <div>
           <h1 className="text-2xl font-bold">Proyectos</h1>
           <p className="text-sm text-gray-500">
-            Obras, presupuesto de materiales y herramientas asignadas.
+            Obras, materiales cotizados y herramientas asignadas.
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={() => refetch()}
-          isDisabled={isFetching}
-        >
-          Actualizar
-        </Button>
-      </div>
-      {userActions.hasPermission("PROYECTO_CREATE") && (
-        <Link
-          to="/proyectos/create"
-          className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
-        >
-          Crear proyecto
-        </Link>
-      )}
-      <div className="flex flex-wrap gap-4 rounded-xl border border-gray-200 bg-white p-4">
-        <label className="flex min-w-60 flex-1 flex-col gap-1 text-sm">
-          Buscar proyecto
-          <input
-            className="rounded-lg border border-gray-300 p-2"
-            placeholder="Nombre, cliente o ubicación"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          Estado
-          <select
-            className="rounded-lg border border-gray-300 p-2"
-            value={estado}
-            onChange={(e) => setEstado(e.target.value)}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            isIconOnly
+            aria-label="Actualizar proyectos"
+            onClick={() => refetch()}
+            isDisabled={isPending || isRefetching}
+            isPending={isRefetching}
           >
-            <option value="">Todos</option>
-            {[
-              "ACTIVO",
-              "EN_PAUSA",
-              "FINALIZADO",
-              "PAGADO",
-              "GARANTIA",
-              "CANCELADO",
-            ].map((e) => (
-              <option key={e} value={e}>
-                {ESTADO_LABEL[e] ?? e}
-              </option>
-            ))}
-          </select>
-        </label>
+            <RefreshCw className={cn(isRefetching && "animate-spin")} />
+          </Button>
+          {userActions.hasPermission("PROYECTO_CREATE") && (
+            <Link to="/proyectos/create">
+              <Button>
+                <Plus className="mr-1 size-4" />
+                Crear proyecto
+              </Button>
+            </Link>
+          )}
+        </div>
+      </div>
+      <div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_14rem]">
+        <InputField
+          label="Buscar proyecto"
+          type="search"
+          placeholder="Nombre, cliente o ubicación"
+          value={busqueda}
+          onChange={(event) => setBusqueda(event.target.value)}
+        />
+        <SelectedField
+          label="Estado"
+          selectedKey={estado || "TODOS"}
+          onSelectionChange={(key) =>
+            setEstado(key === "TODOS" ? "" : String(key ?? ""))
+          }
+        >
+          <ListBox.Item id="TODOS">Todos</ListBox.Item>
+          {[
+            "ACTIVO",
+            "EN_PAUSA",
+            "FINALIZADO",
+            "PAGADO",
+            "GARANTIA",
+            "CANCELADO",
+          ].map((item) => (
+            <ListBox.Item key={item} id={item} textValue={item}>
+              {ESTADO_LABEL[item] ?? item}
+            </ListBox.Item>
+          ))}
+        </SelectedField>
       </div>
       {isPending ? (
         <p role="status">Cargando proyectos…</p>
@@ -105,66 +113,63 @@ function Proyectos() {
             : "Todavía no hay proyectos registrados."}
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <caption className="sr-only">Listado de proyectos</caption>
-            <thead className="bg-gray-100 text-gray-600">
-              <tr>
-                {[
-                  "Proyecto",
-                  "Cliente",
-                  "Fechas",
-                  "Estado",
-                  "Presupuesto de materiales",
-                  "Acciones",
-                ].map((t) => (
-                  <th key={t} className="px-4 py-3">
-                    {t}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((p) => (
-                <tr key={p.id} className="border-t border-gray-200">
-                  <td className="px-4 py-4">
-                    <p className="font-semibold">{p.nombre}</p>
-                    <p className="text-gray-500">
-                      {p.ubicacion || "Sin ubicación"}
-                    </p>
-                  </td>
-                  <td className="px-4 py-4">{p.cliente || "Sin definir"}</td>
-                  <td className="whitespace-nowrap px-4 py-4">
-                    {fecha(p.fechaInicio)}
-                    <br />
-                    {fecha(p.fechaFin)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span
-                      className={`inline-flex whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold ${
-                        p.estado === "CANCELADO"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-gray-100"
-                      }`}
-                    >
-                      {ESTADO_LABEL[p.estado] ?? p.estado}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">{dinero(p.total)}</td>
-                  <td className="px-4 py-4">
-                    <Link
-                      className="whitespace-nowrap font-medium text-blue-700 hover:underline"
-                      to="/proyectos/$proyectoId"
-                      params={{ proyectoId: String(p.id) }}
-                    >
-                      Ver proyecto
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <Table>
+          <Table.ScrollContainer>
+            <Table.Content
+              aria-label="Listado de proyectos"
+              className="min-w-full"
+            >
+              <Table.Header>
+                <Table.Column isRowHeader>Proyecto</Table.Column>
+                <Table.Column>Cliente</Table.Column>
+                <Table.Column>Fechas</Table.Column>
+                <Table.Column>Estado</Table.Column>
+                <Table.Column>Total cotizado</Table.Column>
+                <Table.Column>Acciones</Table.Column>
+              </Table.Header>
+              <Table.Body>
+                <Table.Collection items={items}>
+                  {(p) => (
+                    <Table.Row key={p.id}>
+                      <Table.Cell>
+                        <p className="font-semibold">{p.nombre}</p>
+                        <p className="text-gray-500">
+                          {p.ubicacion || "Sin ubicación"}
+                        </p>
+                      </Table.Cell>
+                      <Table.Cell>{p.cliente || "Sin definir"}</Table.Cell>
+                      <Table.Cell>
+                        <span className="whitespace-nowrap">
+                          {fecha(p.fechaInicio)}
+                        </span>
+                        <span className="block whitespace-nowrap text-gray-500">
+                          {fecha(p.fechaFin)}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="inline-flex whitespace-nowrap rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold">
+                          {ESTADO_LABEL[p.estado] ?? p.estado}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell>{dinero(p.total)}</Table.Cell>
+                      <Table.Cell>
+                        <Link
+                          to="/proyectos/$proyectoId"
+                          params={{ proyectoId: String(p.id) }}
+                        >
+                          <Button size="sm">
+                            <Eye className="mr-1 size-4" />
+                            Ver proyecto
+                          </Button>
+                        </Link>
+                      </Table.Cell>
+                    </Table.Row>
+                  )}
+                </Table.Collection>
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
+        </Table>
       )}
     </div>
   );

@@ -115,7 +115,7 @@ export function AsignarJefeProyecto({
               </p>
             </div>
           </div>
-          {puedeEditar && proyecto.estado !== "CANCELADO" && (
+          {puedeEditar && (
             <Button
               type="button"
               variant="outline"
@@ -134,7 +134,7 @@ export function AsignarJefeProyecto({
           Este proyecto todavía no tiene un jefe de proyecto asignado.
         </p>
       )}
-      {puedeEditar && proyecto.estado !== "CANCELADO" && (
+      {puedeEditar && proyecto.estado === "ACTIVO" && (
         <div className="mt-4 flex flex-wrap items-end gap-3">
           <SelectedField
             label="Asignar empleado como jefe"

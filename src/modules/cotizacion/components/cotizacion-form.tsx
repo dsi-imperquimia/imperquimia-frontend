@@ -1,5 +1,6 @@
 import { InputField } from "@components/fields/InputField";
 import { Button } from "@heroui/react/button";
+import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
@@ -14,7 +15,7 @@ import type { CotizacionDetalle } from "../types/cotizacion";
 
 import type { Material } from "@modules/materiales/types/material";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
-import { MaterialPickerModal } from "./material-picker-modal";
+import { MaterialPickerModal } from "@modules/materiales/components/MaterialPickerModal";
 
 interface Props {
   cotizacion?: Partial<CotizacionDetalle>;
@@ -40,7 +41,7 @@ function validateDescripcion(value: string) {
   if (value.trim().length < 10) return "Mínimo 10 caracteres";
   if (value.length > 255) return "Máximo 255 caracteres";
 }
-//1. Agregar una cotización, agregar a cliente una validación para que sean exactamente 10 caracteres.
+// 1. Agregar una cotización, agregar a cliente una validación para que sean exactamente 10 caracteres.
 function validateCliente(value: string) {
   if (!value.trim()) return "El cliente es obligatorio";
   if (value.trim().length !== 10)
@@ -419,208 +420,167 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
                   </div>
 
                   {filas.length > 0 ? (
-                    <div className="w-full rounded-xl border border-gray-200 bg-white">
-                      <table className="w-full table-fixed text-sm max-lg:block">
-                        <thead className="bg-gray-50 text-left text-gray-600 max-lg:hidden">
-                          <tr>
-                            <th scope="col" className="w-[4%] px-2 py-3">
-                              #
-                            </th>
-                            <th scope="col" className="w-[28%] px-2 py-3">
-                              Material
-                            </th>
-                            <th scope="col" className="w-[12%] px-2 py-3">
-                              Cantidad
-                            </th>
-                            <th
-                              scope="col"
-                              className="w-[12%] px-2 py-3 text-right"
-                            >
-                              Precio unitario
-                            </th>
-                            <th
-                              scope="col"
-                              className="w-[12%] px-2 py-3 text-right"
-                            >
-                              Subtotal
-                            </th>
-                            <th
-                              scope="col"
-                              className="w-[9%] px-2 py-3 text-right"
-                            >
-                              IVA
-                            </th>
-                            <th
-                              scope="col"
-                              className="w-[12%] px-2 py-3 text-right"
-                            >
-                              Total
-                            </th>
-                            <th
-                              scope="col"
-                              className="w-[11%] px-2 py-3 text-right"
-                            >
-                              Acción
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="block divide-y divide-gray-200 lg:table-row-group">
-                          {filas.map(
-                            ({ index, material, costoUnitario, importes }) => {
-                              const cantidadName =
-                                `detalles[${index}].cantidad` as const;
-                              return (
-                                <tr
-                                  key={index}
-                                  className="grid grid-cols-2 gap-3 p-3 align-top lg:table-row lg:p-0"
-                                >
-                                  <th
-                                    scope="row"
-                                    className="hidden px-2 py-4 font-medium lg:table-cell"
-                                  >
-                                    {index + 1}
-                                  </th>
-                                  <td className="col-span-2 min-w-0 px-2 py-1 lg:table-cell lg:py-3">
-                                    <span className="mb-1 block text-xs font-semibold text-gray-600 lg:hidden">
-                                      Material #{index + 1}
-                                    </span>
-                                    <div className="space-y-1">
-                                      <p className="break-words font-medium">
-                                        {material?.nombre ??
-                                          "Material no disponible"}
-                                      </p>
-                                      {material?.descripcion && (
-                                        <p className="break-words text-xs text-gray-500">
-                                          {material.descripcion}
-                                        </p>
-                                      )}
-                                      <p className="text-xs text-gray-500">
-                                        Unidad: {material?.unidad ?? "—"}
-                                      </p>
-                                      {detailErrors[
-                                        `detalles[${index}].materialId`
-                                      ] && (
-                                          <p
-                                            className="text-xs text-red-600"
-                                            role="alert"
-                                          >
-                                            {
-                                              detailErrors[
-                                              `detalles[${index}].materialId`
-                                              ]
-                                            }
+                    <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white">
+                      <Table>
+                        <Table.ScrollContainer>
+                          <Table.Content
+                            aria-label="Materiales de la cotización"
+                            className="min-w-[900px]"
+                          >
+                            <Table.Header>
+                              <Table.Column isRowHeader>#</Table.Column>
+                              <Table.Column>Material</Table.Column>
+                              <Table.Column>Cantidad</Table.Column>
+                              <Table.Column>Precio unitario</Table.Column>
+                              <Table.Column>Subtotal</Table.Column>
+                              <Table.Column>IVA</Table.Column>
+                              <Table.Column>Total</Table.Column>
+                              <Table.Column>Acción</Table.Column>
+                            </Table.Header>
+                            <Table.Body>
+                              <Table.Collection items={filas}>
+                                {({
+                                  index,
+                                  material,
+                                  costoUnitario,
+                                  importes,
+                                }) => {
+                                  const cantidadName =
+                                    `detalles[${index}].cantidad` as const;
+                                  return (
+                                    <Table.Row key={index}>
+                                      <Table.Cell>{index + 1}</Table.Cell>
+                                      <Table.Cell>
+                                        <div className="space-y-1">
+                                          <p className="break-words font-medium">
+                                            {material?.nombre ??
+                                              "Material no disponible"}
                                           </p>
-                                        )}
-                                    </div>
-                                  </td>
-                                  <td className="col-span-2 min-w-0 px-2 py-1 lg:table-cell lg:py-3">
-                                    <span className="mb-1 block text-xs text-gray-500 lg:hidden">
-                                      Cantidad
-                                    </span>
-                                    <form.Field
-                                      name={cantidadName}
-                                      validators={{
-                                        onChange: ({ value }) =>
-                                          validateCantidad(value),
-                                      }}
-                                    >
-                                      {(field) => {
-                                        function updateCantidad(value: string) {
-                                          field.handleChange(value);
-                                          setDetailErrors((current) => {
-                                            const next = { ...current };
-                                            delete next[cantidadName];
-                                            return next;
-                                          });
-                                          clearServerError("cantidad");
-                                        }
+                                          {material?.descripcion && (
+                                            <p className="break-words text-xs text-gray-500">
+                                              {material.descripcion}
+                                            </p>
+                                          )}
+                                          <p className="text-xs text-gray-500">
+                                            Unidad: {material?.unidad ?? "—"}
+                                          </p>
+                                          {detailErrors[
+                                            `detalles[${index}].materialId`
+                                          ] && (
+                                            <p
+                                              className="text-xs text-red-600"
+                                              role="alert"
+                                            >
+                                              {
+                                                detailErrors[
+                                                  `detalles[${index}].materialId`
+                                                ]
+                                              }
+                                            </p>
+                                          )}
+                                        </div>
+                                      </Table.Cell>
+                                      <Table.Cell>
+                                        <form.Field
+                                          name={cantidadName}
+                                          validators={{
+                                            onChange: ({ value }) =>
+                                              validateCantidad(value),
+                                          }}
+                                        >
+                                          {(field) => {
+                                            function updateCantidad(
+                                              value: string,
+                                            ) {
+                                              field.handleChange(value);
+                                              setDetailErrors((current) => {
+                                                const next = { ...current };
+                                                delete next[cantidadName];
+                                                return next;
+                                              });
+                                              clearServerError("cantidad");
+                                            }
 
-                                        return (
-                                          <InputField
-                                            aria-label={`Cantidad fila ${index + 1}`}
-                                            type="text"
-                                            inputMode="numeric"
-                                            value={field.state.value}
-                                            onChange={(event) =>
-                                              updateCantidad(event.target.value)
-                                            }
-                                            onKeyDown={(event) => {
-                                              if (
-                                                event.key !== "ArrowUp" &&
-                                                event.key !== "ArrowDown"
-                                              )
-                                                return;
-                                              event.preventDefault();
-                                              const next = stepCantidad(
-                                                field.state.value,
-                                                event.key === "ArrowUp"
-                                                  ? 1
-                                                  : -1,
-                                              );
-                                              if (next !== null)
-                                                updateCantidad(next);
-                                            }}
-                                            onBlur={field.handleBlur}
-                                            errorMessage={
-                                              detailErrors[cantidadName] ??
-                                              field.state.meta.errors.join(", ")
-                                            }
-                                          />
-                                        );
-                                      }}
-                                    </form.Field>
-                                  </td>
-                                  <td className="min-w-0 px-2 py-1 lg:table-cell lg:py-4 lg:text-right">
-                                    <span className="block text-xs text-gray-500 lg:hidden">
-                                      Precio unitario
-                                    </span>
-                                    {money(costoUnitario)}
-                                  </td>
-                                  <td className="min-w-0 px-2 py-1 text-right lg:table-cell lg:py-4">
-                                    <span className="block text-xs text-gray-500 lg:hidden">
-                                      Subtotal
-                                    </span>
-                                    {money(importes.subTotal)}
-                                  </td>
-                                  <td className="min-w-0 px-2 py-1 lg:table-cell lg:py-4 lg:text-right">
-                                    <span className="block text-xs text-gray-500 lg:hidden">
-                                      IVA
-                                    </span>
-                                    {money(importes.iva)}
-                                  </td>
-                                  <td className="min-w-0 px-2 py-1 text-right font-semibold lg:table-cell lg:py-4">
-                                    <span className="block text-xs font-normal text-gray-500 lg:hidden">
-                                      Total
-                                    </span>
-                                    {money(importes.total)}
-                                  </td>
-                                  <td className="col-span-2 px-2 py-1 text-right lg:table-cell lg:py-3">
-                                    <Button
-                                      type="button"
-                                      variant="danger"
-                                      size="sm"
-                                      onClick={() => {
-                                        form.setFieldValue(
-                                          "detalles",
-                                          form.state.values.detalles.filter(
-                                            (_, itemIndex) =>
-                                              itemIndex !== index,
-                                          ),
-                                        );
-                                        setDetailErrors({});
-                                        clearServerError("detalles");
-                                        setSubmitError(undefined);
-                                      }}
-                                    >
-                                      Quitar
-                                    </Button>
-                                  </td>
-                                </tr>
-                              );
-                            },
-                          )}
-                        </tbody>
-                      </table>
+                                            return (
+                                              <InputField
+                                                aria-label={`Cantidad fila ${index + 1}`}
+                                                type="text"
+                                                inputMode="numeric"
+                                                value={field.state.value}
+                                                onChange={(event) =>
+                                                  updateCantidad(
+                                                    event.target.value,
+                                                  )
+                                                }
+                                                onKeyDown={(event) => {
+                                                  if (
+                                                    event.key !== "ArrowUp" &&
+                                                    event.key !== "ArrowDown"
+                                                  )
+                                                    return;
+                                                  event.preventDefault();
+                                                  const next = stepCantidad(
+                                                    field.state.value,
+                                                    event.key === "ArrowUp"
+                                                      ? 1
+                                                      : -1,
+                                                  );
+                                                  if (next !== null)
+                                                    updateCantidad(next);
+                                                }}
+                                                onBlur={field.handleBlur}
+                                                errorMessage={
+                                                  detailErrors[cantidadName] ??
+                                                  field.state.meta.errors.join(
+                                                    ", ",
+                                                  )
+                                                }
+                                              />
+                                            );
+                                          }}
+                                        </form.Field>
+                                      </Table.Cell>
+                                      <Table.Cell>
+                                        {money(costoUnitario)}
+                                      </Table.Cell>
+                                      <Table.Cell>
+                                        {money(importes.subTotal)}
+                                      </Table.Cell>
+                                      <Table.Cell>
+                                        {money(importes.iva)}
+                                      </Table.Cell>
+                                      <Table.Cell className="font-semibold">
+                                        {money(importes.total)}
+                                      </Table.Cell>
+                                      <Table.Cell>
+                                        <Button
+                                          type="button"
+                                          variant="danger"
+                                          size="sm"
+                                          onClick={() => {
+                                            form.setFieldValue(
+                                              "detalles",
+                                              form.state.values.detalles.filter(
+                                                (_, itemIndex) =>
+                                                  itemIndex !== index,
+                                              ),
+                                            );
+                                            setDetailErrors({});
+                                            clearServerError("detalles");
+                                            setSubmitError(undefined);
+                                          }}
+                                        >
+                                          Quitar
+                                        </Button>
+                                      </Table.Cell>
+                                    </Table.Row>
+                                  );
+                                }}
+                              </Table.Collection>
+                            </Table.Body>
+                          </Table.Content>
+                        </Table.ScrollContainer>
+                      </Table>
                     </div>
                   ) : (
                     <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500">
@@ -660,14 +620,14 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
                   {(serverErrors.detalles ||
                     serverErrors.materialId ||
                     serverErrors.cantidad) && (
-                      <p className="text-sm text-red-600" role="alert">
-                        {[
-                          ...(serverErrors.detalles ?? []),
-                          ...(serverErrors.materialId ?? []),
-                          ...(serverErrors.cantidad ?? []),
-                        ].join(" ")}
-                      </p>
-                    )}
+                    <p className="text-sm text-red-600" role="alert">
+                      {[
+                        ...(serverErrors.detalles ?? []),
+                        ...(serverErrors.materialId ?? []),
+                        ...(serverErrors.cantidad ?? []),
+                      ].join(" ")}
+                    </p>
+                  )}
 
                   <div className="flex justify-end">
                     <div className="w-full max-w-md space-y-2 rounded-xl border bg-gray-50 p-4">
@@ -680,7 +640,6 @@ export function FormCotizacion({ cotizacion: cotizacionInit }: Props) {
                         <span>Subtotal * 10</span>
                         <strong>{money(resumen.subTotal * 10)}</strong>
                       </div>
-
 
                       <div className="flex justify-between">
                         <span>IVA general</span>

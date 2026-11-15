@@ -97,10 +97,10 @@ describe("Materiales de proyectos", () => {
       expect(screen.queryByText("Cargando materiales…")).toBeNull(),
     );
     fireEvent.click(screen.getByRole("button", { name: "Agregar material" }));
-    await screen.findByRole("option", { name: "Cemento" });
-    fireEvent.change(screen.getByLabelText("Material 1"), {
-      target: { value: "1" },
-    });
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Agregar Cemento" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
     fireEvent.change(screen.getByLabelText("Cantidad del material 1"), {
       target: { value: "2" },
     });
@@ -114,10 +114,12 @@ describe("Materiales de proyectos", () => {
         undefined,
       ),
     );
-    expect(mocks.navigate).toHaveBeenCalledWith({
-      to: "/proyectos/$proyectoId",
-      params: { proyectoId: "42" },
-    });
+    await waitFor(() =>
+      expect(mocks.navigate).toHaveBeenCalledWith({
+        to: "/proyectos/$proyectoId",
+        params: { proyectoId: "42" },
+      }),
+    );
   });
 
   it("rechaza cantidades no positivas", async () => {
@@ -129,10 +131,10 @@ describe("Materiales de proyectos", () => {
       expect(screen.queryByText("Cargando materiales…")).toBeNull(),
     );
     fireEvent.click(screen.getByRole("button", { name: "Agregar material" }));
-    await screen.findByRole("option", { name: "Cemento" });
-    fireEvent.change(screen.getByLabelText("Material 1"), {
-      target: { value: "1" },
-    });
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Agregar Cemento" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
     fireEvent.change(screen.getByLabelText("Cantidad del material 1"), {
       target: { value: "0" },
     });
@@ -140,7 +142,33 @@ describe("Materiales de proyectos", () => {
     expect(mocks.guardar).not.toHaveBeenCalled();
     expect(
       screen.getByRole("button", {
-        name: /Cantidad del material 1: Ingresa una cantidad mayor que cero/,
+        name: /Cantidad del material 1: Ingresa una cantidad entera mayor que cero/,
+      }),
+    ).toBeTruthy();
+  });
+
+  it("rechaza cantidades decimales", async () => {
+    mount();
+    fireEvent.change(screen.getByLabelText("Correo"), {
+      target: { value: "cliente@example.com" },
+    });
+    await waitFor(() =>
+      expect(screen.queryByText("Cargando materiales…")).toBeNull(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Agregar material" }));
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Agregar Cemento" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
+    fireEvent.change(screen.getByLabelText("Cantidad del material 1"), {
+      target: { value: "1.5" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Guardar proyecto" }));
+
+    expect(mocks.guardar).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole("button", {
+        name: /Cantidad del material 1: Ingresa una cantidad entera mayor que cero/,
       }),
     ).toBeTruthy();
   });
@@ -154,24 +182,26 @@ describe("Materiales de proyectos", () => {
       expect(screen.queryByText("Cargando materiales…")).toBeNull(),
     );
     fireEvent.click(screen.getByRole("button", { name: "Agregar material" }));
-    fireEvent.change(screen.getByLabelText("Material 1"), {
-      target: { value: "1" },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "Agregar material" }));
-    fireEvent.change(screen.getByLabelText("Material 2"), {
-      target: { value: "2" },
-    });
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Agregar Cemento" }),
+    );
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Agregar Arena" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar" }));
     fireEvent.change(screen.getByLabelText("Cantidad del material 2"), {
       target: { value: "0" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Guardar proyecto" }));
     expect(mocks.guardar).not.toHaveBeenCalled();
     const aviso = screen.getByRole("button", {
-      name: /Cantidad del material 2: Ingresa una cantidad mayor que cero/,
+      name: /Cantidad del material 2: Ingresa una cantidad entera mayor que cero/,
     });
     fireEvent.click(aviso);
-    expect(document.activeElement).toBe(
-      screen.getByLabelText("Cantidad del material 2"),
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        screen.getByLabelText("Cantidad del material 2"),
+      ),
     );
   });
 

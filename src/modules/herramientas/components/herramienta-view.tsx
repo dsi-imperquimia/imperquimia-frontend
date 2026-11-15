@@ -1,6 +1,7 @@
 import { Card } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { Link, useRouter } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Wrench,
@@ -10,10 +11,16 @@ import {
   Tag,
   Layers,
   Clock,
+  AlertTriangle,
 } from "lucide-react";
-import type { Herramienta, EstadoHerramienta } from "../types/herramientas";
+import { EstadoHerramienta } from "../types/herramientas";
+import type { Herramienta } from "../types/herramientas";
 import type { MovimientoHerramienta } from "@modules/movimientosHerramientas/types/movimientos";
 import DialogMovimientoHerramienta from "@modules/movimientosHerramientas/components/DialogMovimientoHerramienta";
+import { userActions } from "@modules/auth/store/authStore";
+import { listReportesDefecto } from "../api/reportesDefecto";
+import { ReportarDefectoModal } from "./ReportarDefectoModal";
+import { getUbicacionHerramientaLabel } from "../utils/ubicacionHerramienta";
 
 // El backend retorna movimientos embebidos en findUnique
 interface HerramientaConMovimientos extends Herramienta {
@@ -42,11 +49,23 @@ const ESTADO_STYLES: Record<EstadoHerramienta, string> = {
   EN_PROYECTO: "bg-blue-50 text-blue-700 border-blue-200",
   MANTENIMIENTO: "bg-amber-50 text-amber-700 border-amber-200",
   DANADA: "bg-rose-50 text-rose-700 border-rose-200",
+  REQUIERE_REVISION: "bg-orange-50 text-orange-800 border-orange-200",
   DESECHO: "bg-gray-100 text-gray-600 border-gray-300",
 };
 
 export function HerramientaView({ herramienta }: Props) {
   const router = useRouter();
+  const puedeConsultarReportes = userActions.hasPermission(
+    "HERRAMIENTA_DEFECTO_READ",
+  );
+  const puedeReportar = userActions.hasPermission("HERRAMIENTA_DEFECTO_CREATE");
+  const puedeEditar = userActions.hasPermission("HERRAMIENTA_UPDATE");
+  const reportes = useQuery({
+    queryKey: ["herramientas", herramienta.id, "reportes-defecto"],
+    queryFn: () => listReportesDefecto(herramienta.id),
+    enabled: puedeConsultarReportes,
+    retry: false,
+  });
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -60,21 +79,34 @@ export function HerramientaView({ herramienta }: Props) {
         </Link>
 
         <div className="flex items-center gap-2">
-          {herramienta.estado !== "DESECHO" && (
+          {puedeReportar &&
+            herramienta.estado !== EstadoHerramienta.DESECHO &&
+            herramienta.estado !== EstadoHerramienta.REQUIERE_REVISION && (
+              <ReportarDefectoModal
+                herramienta={herramienta}
+                onSuccess={async () => {
+                  await router.invalidate();
+                  await reportes.refetch();
+                }}
+              />
+            )}
+          {puedeEditar && herramienta.estado !== "DESECHO" && (
             <DialogMovimientoHerramienta
               herramienta={herramienta}
               onMovementSuccess={() => router.invalidate()}
             />
           )}
 
-          <Link
-            to="/herramientas/$herramientaId/edit"
-            params={{ herramientaId: herramienta.id.toString() }}
-          >
-            <Button size="sm" variant="outline">
-              Editar
-            </Button>
-          </Link>
+          {puedeEditar && (
+            <Link
+              to="/herramientas/$herramientaId/edit"
+              params={{ herramientaId: herramienta.id.toString() }}
+            >
+              <Button size="sm" variant="outline">
+                Editar
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -132,17 +164,76 @@ export function HerramientaView({ herramienta }: Props) {
               <p className="text-xs text-gray-500 flex items-center gap-1 mb-1">
                 <MapPin className="size-3" /> Ubicación actual
               </p>
-              {herramienta.proyecto ? (
+              {herramienta.ubicacionActual === "PROYECTO" ? (
                 <p className="font-semibold text-blue-700">
-                  {herramienta.proyecto.nombre}
+                  {getUbicacionHerramientaLabel(herramienta)}
                 </p>
               ) : (
-                <p className="text-gray-600">Bodega General</p>
+                <p className="text-gray-600">
+                  {getUbicacionHerramientaLabel(herramienta)}
+                </p>
               )}
             </div>
           </div>
         </Card.Content>
       </Card>
+
+      {puedeConsultarReportes && (
+        <Card className="w-full" variant="transparent">
+          <Card.Header className="flex flex-row items-center gap-2 text-lg font-medium">
+            <AlertTriangle className="inline size-5 text-orange-700" />
+            Observaciones de estado
+          </Card.Header>
+          <Card.Content>
+            {reportes.isPending ? (
+              <p className="text-sm text-gray-500">Cargando reportes…</p>
+            ) : reportes.isError ? (
+              <div className="flex items-center gap-3 text-sm text-red-700">
+                No se pudieron cargar los reportes.
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => reportes.refetch()}
+                >
+                  Reintentar
+                </Button>
+              </div>
+            ) : reportes.data.length ? (
+              <ol className="space-y-3">
+                {reportes.data.map((reporte) => (
+                  <li
+                    key={reporte.id}
+                    className="rounded-xl border border-orange-100 bg-orange-50/60 p-4"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="rounded-full border border-orange-200 bg-white px-2.5 py-1 text-xs font-semibold text-orange-800">
+                        Requiere revisión
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {formatDate(reporte.createdAt)}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm text-gray-800">
+                      {reporte.observacion}
+                    </p>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Reportado por {reporte.reportadoPor.name}{" "}
+                      {reporte.reportadoPor.lastName}
+                      {reporte.proyecto
+                        ? ` · ${reporte.proyecto.nombre}`
+                        : " · Sin proyecto asignado"}
+                    </p>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="text-sm text-gray-500">
+                No hay observaciones de defecto registradas.
+              </p>
+            )}
+          </Card.Content>
+        </Card>
+      )}
 
       {/* Historial de movimientos */}
       <Card className="w-full" variant="transparent">
