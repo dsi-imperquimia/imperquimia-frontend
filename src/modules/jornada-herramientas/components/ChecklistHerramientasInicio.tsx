@@ -9,31 +9,12 @@ import {
   errorJornadaHerramientas,
   verificarItemInicio,
 } from "../api/jornada-herramientas";
-import {
-  ETIQUETA_ESTADO_VERIFICACION,
-  type ErrorConfirmarVerificacion,
-  type JornadaHerramientaItem,
-  type JornadaHerramientas,
+import type {
+  ErrorConfirmarVerificacion,
+  JornadaHerramientaItem,
+  JornadaHerramientas,
 } from "../types/jornada-herramientas";
-
-function InsigniaEstadoVerificacion({
-  estado,
-}: {
-  estado: JornadaHerramientaItem["estadoInicio"];
-}) {
-  const clases: Record<string, string> = {
-    PENDIENTE: "bg-gray-100 text-gray-700",
-    VERIFICADA: "bg-green-100 text-green-800",
-    AUSENTE: "bg-red-100 text-red-700",
-  };
-  return (
-    <span
-      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${clases[estado]}`}
-    >
-      {ETIQUETA_ESTADO_VERIFICACION[estado]}
-    </span>
-  );
-}
+import { InsigniaEstadoVerificacion } from "./InsigniaEstadoVerificacion";
 
 function FilaItemInicio({
   jornadaId,

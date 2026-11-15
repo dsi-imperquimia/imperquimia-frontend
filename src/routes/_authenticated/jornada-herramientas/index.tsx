@@ -2,7 +2,10 @@ import { DatePickerField } from "@components/fields/DatePickerField";
 import { SelectedField } from "@components/fields/SelectedField";
 import { Button } from "@heroui/react/button";
 import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
 import { ListBox } from "@heroui/react/list-box";
+import { Tabs } from "@heroui/react/tabs";
+import { SelectorProyectoActividad } from "@modules/actividades-diarias/components/SelectorProyectoActividad";
 import {
   abrirJornadaHerramientas,
   errorJornadaHerramientas,
@@ -19,7 +22,8 @@ import { getProyecto } from "@modules/proyectos/api/getProyecto";
 import { isAxiosError } from "axios";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { Lock } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/jornada-herramientas/")({
   component: JornadaHerramientasPage,
@@ -34,12 +38,13 @@ function nuevaClaveOperacion(): string {
 
 function JornadaHerramientasPage() {
   const queryClient = useQueryClient();
-  const [proyectoId, setProyectoId] = useState("");
+  const [proyectoId, setProyectoId] = useState<number | null>(null);
   const [empleadoId, setEmpleadoId] = useState("");
   const [fecha, setFecha] = useState(fechaHoyIso());
   const [jornada, setJornada] = useState<JornadaHerramientas | null>(null);
   const [abriendo, setAbriendo] = useState(false);
   const [errorAbrir, setErrorAbrir] = useState<string | null>(null);
+  const [tab, setTab] = useState<"inicio" | "retorno">("inicio");
 
   const proyectosQuery = useQuery({
     queryKey: ["jornada-herramientas", "proyectos-disponibles"],
@@ -48,19 +53,25 @@ function JornadaHerramientasPage() {
 
   const proyectoQuery = useQuery({
     queryKey: ["proyectos", "detalle", proyectoId],
-    queryFn: () => getProyecto(Number(proyectoId)),
-    enabled: !!proyectoId,
+    queryFn: () => getProyecto(proyectoId!),
+    enabled: proyectoId !== null,
   });
 
   const tecnicos = (proyectoQuery.data?.empleados ?? []).filter(
     (asignacion) => !asignacion.fechaRetiro,
   );
 
+  // Paso 2: si el proyecto tiene un solo técnico asignado, lo preselecciona.
+  useEffect(() => {
+    if (tecnicos.length === 1 && !empleadoId) {
+      setEmpleadoId(String(tecnicos[0].empleadoId));
+    }
+  }, [tecnicos, empleadoId]);
+
   const jornadaQuery = useQuery({
     queryKey: ["jornada-herramientas", "detalle", proyectoId, empleadoId, fecha],
-    queryFn: () =>
-      getJornadaHerramientas(Number(proyectoId), Number(empleadoId), fecha),
-    enabled: !!proyectoId && !!empleadoId && !!fecha,
+    queryFn: () => getJornadaHerramientas(proyectoId!, Number(empleadoId), fecha),
+    enabled: proyectoId !== null && !!empleadoId && !!fecha,
     retry: false,
   });
 
@@ -70,13 +81,20 @@ function JornadaHerramientasPage() {
     isAxiosError(jornadaQuery.error) &&
     jornadaQuery.error.response?.status === 404;
 
+  // Al cargar o actualizar una jornada, muestra la pestaña que corresponde
+  // al paso en el que realmente está (si ya confirmó el inicio, salta a retorno).
+  useEffect(() => {
+    if (!jornadaActual) return;
+    setTab(jornadaActual.verificacionInicioAt ? "retorno" : "inicio");
+  }, [jornadaActual?.id, jornadaActual?.verificacionInicioAt]);
+
   async function abrir() {
     setAbriendo(true);
     setErrorAbrir(null);
     try {
       const { jornada: creada } = await abrirJornadaHerramientas({
         claveOperacion: nuevaClaveOperacion(),
-        proyectoId: Number(proyectoId),
+        proyectoId: proyectoId!,
         empleadoId: Number(empleadoId),
         fecha,
       });
@@ -100,28 +118,25 @@ function JornadaHerramientasPage() {
       </div>
 
       <Card>
+        <Card.Header>
+          <Card.Title>Paso 1 · Elige proyecto, técnico y fecha</Card.Title>
+        </Card.Header>
         <Card.Content className="grid gap-4 sm:grid-cols-3">
-          <SelectedField
-            label="Proyecto"
-            placeholder="Selecciona un proyecto"
-            selectedKey={proyectoId || null}
-            onSelectionChange={(key) => {
-              setProyectoId(String(key ?? ""));
+          <SelectorProyectoActividad
+            proyectos={proyectosQuery.data ?? []}
+            selectedProyectoId={proyectoId}
+            onSelectProyecto={(id) => {
+              setProyectoId(id);
               setEmpleadoId("");
               setJornada(null);
             }}
-          >
-            {(proyectosQuery.data ?? []).map((p) => (
-              <ListBox.Item key={p.id} id={String(p.id)} textValue={p.nombre}>
-                {p.nombre}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-            ))}
-          </SelectedField>
+          />
 
           <SelectedField
             label="Técnico"
-            placeholder="Selecciona un técnico"
+            placeholder={
+              proyectoId ? "Selecciona un técnico" : "Elige primero un proyecto"
+            }
             selectedKey={empleadoId || null}
             isDisabled={!proyectoId}
             onSelectionChange={(key) => {
@@ -153,7 +168,7 @@ function JornadaHerramientasPage() {
         </Card.Content>
       </Card>
 
-      {!!proyectoId && !!empleadoId && !!fecha && (
+      {proyectoId !== null && !!empleadoId && !!fecha && (
         <>
           {jornadaQuery.isLoading && (
             <p role="status" className="text-sm text-gray-500">
@@ -163,11 +178,16 @@ function JornadaHerramientasPage() {
 
           {noHayChecklist && !jornadaActual && (
             <Card>
-              <Card.Content className="gap-3">
-                <p className="text-sm text-gray-600">
+              <Card.Header>
+                <Card.Title>Paso 2 · Importa el checklist de herramientas</Card.Title>
+                <Card.Description>
                   Todavía no se ha abierto el checklist de herramientas para
-                  este técnico en esta fecha.
-                </p>
+                  este técnico en esta fecha. Al importarlo se copian todas
+                  las herramientas que bodega tiene despachadas a este
+                  proyecto.
+                </Card.Description>
+              </Card.Header>
+              <Card.Content className="gap-3">
                 <div>
                   <Button
                     type="button"
@@ -194,16 +214,58 @@ function JornadaHerramientasPage() {
           )}
 
           {jornadaActual && (
-            <>
-              <ChecklistHerramientasInicio
-                jornada={jornadaActual}
-                onCambio={setJornada}
-              />
-              <ChecklistHerramientasRetorno
-                jornada={jornadaActual}
-                onCambio={setJornada}
-              />
-            </>
+            <Tabs
+              selectedKey={tab}
+              onSelectionChange={(key) => setTab(key as "inicio" | "retorno")}
+            >
+              <Tabs.ListContainer>
+                <Tabs.List aria-label="Fases de la jornada">
+                  <Tabs.Tab id="inicio">
+                    Paso 3 · Verificación de inicio
+                    {jornadaActual.verificacionInicioAt ? (
+                      <Chip size="sm" color="success">
+                        Confirmada
+                      </Chip>
+                    ) : (
+                      <Chip size="sm" color="warning">
+                        Pendiente
+                      </Chip>
+                    )}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                  <Tabs.Tab id="retorno">
+                    Paso 4 · Conciliación de retorno
+                    {!jornadaActual.verificacionInicioAt ? (
+                      <Chip size="sm" color="default">
+                        <Lock className="size-3" />
+                        Bloqueado
+                      </Chip>
+                    ) : jornadaActual.verificacionRetornoAt ? (
+                      <Chip size="sm" color="success">
+                        Confirmado
+                      </Chip>
+                    ) : (
+                      <Chip size="sm" color="warning">
+                        Pendiente
+                      </Chip>
+                    )}
+                    <Tabs.Indicator />
+                  </Tabs.Tab>
+                </Tabs.List>
+              </Tabs.ListContainer>
+              <Tabs.Panel id="inicio" className="pt-4">
+                <ChecklistHerramientasInicio
+                  jornada={jornadaActual}
+                  onCambio={setJornada}
+                />
+              </Tabs.Panel>
+              <Tabs.Panel id="retorno" className="pt-4">
+                <ChecklistHerramientasRetorno
+                  jornada={jornadaActual}
+                  onCambio={setJornada}
+                />
+              </Tabs.Panel>
+            </Tabs>
           )}
         </>
       )}
