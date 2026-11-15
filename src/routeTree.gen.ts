@@ -30,6 +30,8 @@ import { Route as AuthenticatedHerramientasTiposRouteImport } from './routes/_au
 import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
 import { Route as AuthenticatedMaterialesInventarioRouteImport } from './routes/_authenticated/materiales/inventario'
+import { Route as AuthenticatedMisProyectosIndexRouteImport } from './routes/_authenticated/mis-proyectos/index'
+import { Route as AuthenticatedMisProyectosProyectoIdRouteImport } from './routes/_authenticated/mis-proyectos/$proyectoId'
 import { Route as AuthenticatedProyectosIndexRouteImport } from './routes/_authenticated/proyectos/index'
 import { Route as AuthenticatedProyectosProyectoIdRouteImport } from './routes/_authenticated/proyectos/$proyectoId'
 import { Route as AuthenticatedProyectosCreateRouteImport } from './routes/_authenticated/proyectos/create'
@@ -165,6 +167,18 @@ const AuthenticatedMaterialesInventarioRoute =
     path: '/materiales/inventario',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedMisProyectosIndexRoute =
+  AuthenticatedMisProyectosIndexRouteImport.update({
+    id: '/mis-proyectos/',
+    path: '/mis-proyectos/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMisProyectosProyectoIdRoute =
+  AuthenticatedMisProyectosProyectoIdRouteImport.update({
+    id: '/mis-proyectos/$proyectoId',
+    path: '/mis-proyectos/$proyectoId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedProyectosIndexRoute =
   AuthenticatedProyectosIndexRouteImport.update({
     id: '/proyectos/',
@@ -265,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
+  '/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -274,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas/': typeof AuthenticatedHerramientasIndexRoute
   '/materiales/': typeof AuthenticatedMaterialesIndexRoute
+  '/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos/': typeof AuthenticatedProyectosIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
@@ -301,6 +317,7 @@ export interface FileRoutesByTo {
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
+  '/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -310,6 +327,7 @@ export interface FileRoutesByTo {
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas': typeof AuthenticatedHerramientasIndexRoute
   '/materiales': typeof AuthenticatedMaterialesIndexRoute
+  '/mis-proyectos': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos': typeof AuthenticatedProyectosIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
@@ -339,6 +357,7 @@ export interface FileRoutesById {
   '/_authenticated/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
   '/_authenticated/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/_authenticated/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
+  '/_authenticated/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
   '/_authenticated/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/_authenticated/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
@@ -348,6 +367,7 @@ export interface FileRoutesById {
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/_authenticated/herramientas/': typeof AuthenticatedHerramientasIndexRoute
   '/_authenticated/materiales/': typeof AuthenticatedMaterialesIndexRoute
+  '/_authenticated/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/_authenticated/proyectos/': typeof AuthenticatedProyectosIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
@@ -377,6 +397,7 @@ export interface FileRouteTypes {
     | '/herramientas/tipos'
     | '/materiales/gestion'
     | '/materiales/inventario'
+    | '/mis-proyectos/$proyectoId'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
@@ -386,6 +407,7 @@ export interface FileRouteTypes {
     | '/empleados/'
     | '/herramientas/'
     | '/materiales/'
+    | '/mis-proyectos/'
     | '/proyectos/'
     | '/users/'
     | '/cotizaciones/$cotizacionId/edit'
@@ -413,6 +435,7 @@ export interface FileRouteTypes {
     | '/herramientas/tipos'
     | '/materiales/gestion'
     | '/materiales/inventario'
+    | '/mis-proyectos/$proyectoId'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
@@ -422,6 +445,7 @@ export interface FileRouteTypes {
     | '/empleados'
     | '/herramientas'
     | '/materiales'
+    | '/mis-proyectos'
     | '/proyectos'
     | '/users'
     | '/cotizaciones/$cotizacionId/edit'
@@ -450,6 +474,7 @@ export interface FileRouteTypes {
     | '/_authenticated/herramientas/tipos'
     | '/_authenticated/materiales/gestion'
     | '/_authenticated/materiales/inventario'
+    | '/_authenticated/mis-proyectos/$proyectoId'
     | '/_authenticated/proyectos/$proyectoId'
     | '/_authenticated/proyectos/create'
     | '/_authenticated/users/$userId'
@@ -459,6 +484,7 @@ export interface FileRouteTypes {
     | '/_authenticated/empleados/'
     | '/_authenticated/herramientas/'
     | '/_authenticated/materiales/'
+    | '/_authenticated/mis-proyectos/'
     | '/_authenticated/proyectos/'
     | '/_authenticated/users/'
     | '/_authenticated/cotizaciones/$cotizacionId/edit'
@@ -625,6 +651,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMaterialesInventarioRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/mis-proyectos/': {
+      id: '/_authenticated/mis-proyectos/'
+      path: '/mis-proyectos'
+      fullPath: '/mis-proyectos/'
+      preLoaderRoute: typeof AuthenticatedMisProyectosIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mis-proyectos/$proyectoId': {
+      id: '/_authenticated/mis-proyectos/$proyectoId'
+      path: '/mis-proyectos/$proyectoId'
+      fullPath: '/mis-proyectos/$proyectoId'
+      preLoaderRoute: typeof AuthenticatedMisProyectosProyectoIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/proyectos/': {
       id: '/_authenticated/proyectos/'
       path: '/proyectos'
@@ -741,6 +781,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedHerramientasTiposRoute: typeof AuthenticatedHerramientasTiposRoute
   AuthenticatedMaterialesGestionRoute: typeof AuthenticatedMaterialesGestionRoute
   AuthenticatedMaterialesInventarioRoute: typeof AuthenticatedMaterialesInventarioRoute
+  AuthenticatedMisProyectosProyectoIdRoute: typeof AuthenticatedMisProyectosProyectoIdRoute
   AuthenticatedProyectosProyectoIdRoute: typeof AuthenticatedProyectosProyectoIdRoute
   AuthenticatedProyectosCreateRoute: typeof AuthenticatedProyectosCreateRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
@@ -750,6 +791,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
   AuthenticatedHerramientasIndexRoute: typeof AuthenticatedHerramientasIndexRoute
   AuthenticatedMaterialesIndexRoute: typeof AuthenticatedMaterialesIndexRoute
+  AuthenticatedMisProyectosIndexRoute: typeof AuthenticatedMisProyectosIndexRoute
   AuthenticatedProyectosIndexRoute: typeof AuthenticatedProyectosIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedCotizacionesCotizacionIdEditRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRoute
@@ -781,6 +823,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMaterialesGestionRoute: AuthenticatedMaterialesGestionRoute,
   AuthenticatedMaterialesInventarioRoute:
     AuthenticatedMaterialesInventarioRoute,
+  AuthenticatedMisProyectosProyectoIdRoute:
+    AuthenticatedMisProyectosProyectoIdRoute,
   AuthenticatedProyectosProyectoIdRoute: AuthenticatedProyectosProyectoIdRoute,
   AuthenticatedProyectosCreateRoute: AuthenticatedProyectosCreateRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
@@ -790,6 +834,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
   AuthenticatedHerramientasIndexRoute: AuthenticatedHerramientasIndexRoute,
   AuthenticatedMaterialesIndexRoute: AuthenticatedMaterialesIndexRoute,
+  AuthenticatedMisProyectosIndexRoute: AuthenticatedMisProyectosIndexRoute,
   AuthenticatedProyectosIndexRoute: AuthenticatedProyectosIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedCotizacionesCotizacionIdEditRoute:
