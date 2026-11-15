@@ -1,10 +1,83 @@
 import { Button } from "@heroui/react/button";
+import { Tooltip } from "@heroui/react/tooltip";
 import { useAuth } from "@modules/auth/store/authStore";
 import { fecha } from "@modules/proyectos/types/proyectos";
+import { CircleHelp } from "lucide-react";
 import {
   puedeEditarActividad,
   type ActividadDiaria,
 } from "../types/actividad-diaria";
+
+interface ColumnaTabla {
+  id: string;
+  titulo: string;
+  ayuda: string;
+}
+
+const COLUMNAS_BASE: readonly ColumnaTabla[] = [
+  {
+    id: "fecha",
+    titulo: "Fecha",
+    ayuda:
+      "Día calendario al que corresponde este registro de la bitácora del proyecto.",
+  },
+  {
+    id: "actividad",
+    titulo: "Actividad",
+    ayuda:
+      "Título o resumen breve del avance diario; inicia con un nombre automático mientras está pendiente.",
+  },
+  {
+    id: "proyecto",
+    titulo: "Proyecto",
+    ayuda:
+      "Proyecto activo al que pertenece esta entrada de la bitácora diaria.",
+  },
+  {
+    id: "descripcion",
+    titulo: "Descripción",
+    ayuda:
+      "Detalle técnico del trabajo ejecutado. Aparece como pendiente hasta que se complete el avance del día.",
+  },
+  {
+    id: "observaciones",
+    titulo: "Observaciones",
+    ayuda:
+      "Notas adicionales, incidencias o comentarios opcionales sobre la jornada.",
+  },
+  {
+    id: "registradoPor",
+    titulo: "Registrado por",
+    ayuda:
+      "Responsable que guardó el avance. Indica «Sistema (pendiente)» porque el sistema genera la entrada del día automáticamente hasta que alguien la completa.",
+  },
+];
+
+function EncabezadoColumna({ titulo, ayuda }: Omit<ColumnaTabla, "id">) {
+  return (
+    <th className="px-4 py-3">
+      <div className="inline-flex items-center gap-1.5 whitespace-nowrap">
+        <span>{titulo}</span>
+        <Tooltip delay={150} closeDelay={100}>
+          <Tooltip.Trigger
+            aria-label={`Ayuda sobre columna ${titulo}`}
+            className="inline-flex size-4 cursor-help items-center justify-center rounded-full text-gray-400 transition-colors hover:text-gray-700 focus-visible:text-gray-700 focus-visible:outline-2 focus-visible:outline-gray-400"
+          >
+            <CircleHelp className="size-3.5" aria-hidden="true" />
+          </Tooltip.Trigger>
+          <Tooltip.Content
+            placement="top"
+            showArrow
+            className="max-w-xs text-xs leading-relaxed"
+          >
+            <Tooltip.Arrow />
+            <p>{ayuda}</p>
+          </Tooltip.Content>
+        </Tooltip>
+      </div>
+    </th>
+  );
+}
 
 export function TablaActividadesProyecto({
   actividades,
@@ -49,15 +122,28 @@ export function TablaActividadesProyecto({
     );
   }
 
-  const columnas = [
-    "Fecha",
-    "Actividad",
-    "Proyecto",
-    "Descripción",
-    "Observaciones",
-    "Registrado por",
-    ...(onEvidencias ? ["Evidencias"] : []),
-    ...(onEditar ? ["Acciones"] : []),
+  const columnas: ColumnaTabla[] = [
+    ...COLUMNAS_BASE,
+    ...(onEvidencias
+      ? [
+          {
+            id: "evidencias",
+            titulo: "Evidencias",
+            ayuda:
+              "Cantidad de fotografías adjuntas para respaldar el trabajo; haz clic para ver, capturar o subir imágenes.",
+          },
+        ]
+      : []),
+    ...(onEditar
+      ? [
+          {
+            id: "acciones",
+            titulo: "Acciones",
+            ayuda:
+              "Permite completar una entrada pendiente («Registrar») o corregir un registro guardado («Editar») antes de 48 h (o siempre para administración).",
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -66,10 +152,12 @@ export function TablaActividadesProyecto({
         <caption className="sr-only">Listado de actividades diarias</caption>
         <thead className="bg-gray-100 text-gray-600">
           <tr>
-            {columnas.map((t) => (
-              <th key={t} className="px-4 py-3">
-                {t}
-              </th>
+            {columnas.map((col) => (
+              <EncabezadoColumna
+                key={col.id}
+                titulo={col.titulo}
+                ayuda={col.ayuda}
+              />
             ))}
           </tr>
         </thead>

@@ -802,4 +802,57 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
         .hasAttribute("disabled"),
     ).toBe(true);
   });
+
+  it("muestra helpers en los encabezados de columna explicando 'Sistema (pendiente)' en Registrado por", async () => {
+    render(
+      <TablaActividadesProyecto
+        actividades={[
+          {
+            id: 201,
+            claveOperacion: "00000000-0000-4000-8000-000000000201",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-15",
+            nombre: "Bitácora del día 2026-11-15",
+            descripcion: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]}
+        onEvidencias={vi.fn()}
+        onEditar={vi.fn()}
+      />,
+    );
+
+    const columnasEsperadas = [
+      "Fecha",
+      "Actividad",
+      "Proyecto",
+      "Descripción",
+      "Observaciones",
+      "Registrado por",
+      "Evidencias",
+      "Acciones",
+    ];
+    for (const nombreColumna of columnasEsperadas) {
+      expect(
+        screen.getByRole("button", {
+          name: `Ayuda sobre columna ${nombreColumna}`,
+        }),
+      ).toBeTruthy();
+    }
+
+    const triggerRegistradoPor = screen.getByRole("button", {
+      name: "Ayuda sobre columna Registrado por",
+    });
+    act(() => {
+      fireEvent.keyDown(document.body, { key: "Tab" });
+      triggerRegistradoPor.focus();
+    });
+
+    expect(
+      await screen.findByText(/Sistema \(pendiente\).*automáticamente/i),
+    ).toBeTruthy();
+  });
 });
