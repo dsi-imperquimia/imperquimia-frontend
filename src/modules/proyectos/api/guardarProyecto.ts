@@ -84,6 +84,16 @@ export async function retirarEmpleadoProyecto(id: number, empleadoId: number) {
   return data;
 }
 
+export async function reasignarEmpleadoProyecto(
+  origenId: number,
+  empleadoId: number,
+  destinoId: number,
+) {
+  await http.patch(`/proyectos/${origenId}/empleados/${empleadoId}/reasignar`, {
+    destinoId,
+  });
+}
+
 export function errorEmpleadoProyecto(error: unknown) {
   const mensaje: unknown = isAxiosError(error)
     ? error.response?.data?.message

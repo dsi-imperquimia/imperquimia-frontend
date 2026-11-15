@@ -1,8 +1,9 @@
 import { Button } from "@heroui/react/button";
+import { useAuth } from "@modules/auth/store/authStore";
+import { PanelIncidenciasJornada } from "@modules/incidencias/components/PanelIncidenciasJornada";
 import { getActividadDiaria } from "@modules/actividades-diarias/api/actividades-diarias";
 import { FormActividadDiaria } from "@modules/actividades-diarias/components/FormActividadDiaria";
 import { PanelEvidenciasActividad } from "@modules/actividades-diarias/components/PanelEvidenciasActividad";
-import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -14,7 +15,7 @@ export const Route = createFileRoute(
 
 function EditarActividadDiariaPage() {
   const { actividadId } = Route.useParams();
-  const { hasAnyPermission } = useAuth();
+  const { hasAnyPermission, hasPermission } = useAuth();
   const puedeGestionar = hasAnyPermission([
     "ACTIVIDAD_UPDATE",
     "ACTIVIDAD_CREATE",
@@ -62,6 +63,19 @@ function EditarActividadDiariaPage() {
         evidenciasIniciales={data.evidencias}
         soloLectura={!puedeGestionar || data.proyecto?.estado !== "ACTIVO"}
       />
+      {hasPermission("INCIDENCIA_READ") && (
+        <PanelIncidenciasJornada
+          actividadId={data.id}
+          proyectoId={data.proyectoId}
+          proyectoNombre={data.proyecto?.nombre}
+          fechaJornada={data.fecha}
+          puedeEditar={hasPermission("INCIDENCIA_UPDATE")}
+          puedeCrear={
+            hasPermission("INCIDENCIA_CREATE") &&
+            data.proyecto?.estado !== "CANCELADO"
+          }
+        />
+      )}
     </div>
   );
 }

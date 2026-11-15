@@ -1,4 +1,5 @@
 import { Button } from "@heroui/react/button";
+import { Chip } from "@heroui/react/chip";
 import { Tooltip } from "@heroui/react/tooltip";
 import { useAuth } from "@modules/auth/store/authStore";
 import { fecha } from "@modules/proyectos/types/proyectos";
@@ -50,6 +51,12 @@ const COLUMNAS_BASE: readonly ColumnaTabla[] = [
     titulo: "Registrado por",
     ayuda:
       "Responsable que guardó el avance. Indica «Sistema (pendiente)» porque el sistema genera la entrada del día automáticamente hasta que alguien la completa.",
+  },
+  {
+    id: "incidencias",
+    titulo: "Incidencias",
+    ayuda:
+      "Cantidad de incidencias en obra vinculadas a esta jornada diaria.",
   },
 ];
 
@@ -205,6 +212,22 @@ export function TablaActividadesProyecto({
                       (a.usuario
                         ? `${a.usuario.name} ${a.usuario.lastName}`
                         : "Sin definir"))}
+                </td>
+                <td className="px-4 py-4 text-gray-700">
+                  {(a.incidencias?.length ?? 0) > 0 ? (
+                    <Chip
+                      size="sm"
+                      color="warning"
+                      title={a.incidencias?.map((i) => i.titulo).join(", ")}
+                    >
+                      {a.incidencias?.length}{" "}
+                      {a.incidencias?.length === 1
+                        ? "incidencia"
+                        : "incidencias"}
+                    </Chip>
+                  ) : (
+                    "Ninguna"
+                  )}
                 </td>
                 {onEvidencias && (
                   <td className="px-4 py-4">
