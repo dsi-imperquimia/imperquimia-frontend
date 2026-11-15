@@ -2,11 +2,17 @@ import { Button } from "@heroui/react/button";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getProyecto } from "@modules/proyectos/api/getProyecto";
-import { dinero, fecha } from "@modules/proyectos/types/proyectos";
+import { dinero, fecha, TIPOS_OBRA_LABEL } from "@modules/proyectos/types/proyectos";
+
+const ESTADO_LABEL: Record<string, string> = {
+  GARANTIA: "GARANTÍA",
+  EN_PAUSA: "EN PAUSA",
+};
 import { DialogCancelarProyecto } from "@modules/proyectos/components/DialogCancelarProyecto";
 import { AsignarJefeProyecto } from "@modules/proyectos/components/AsignarJefeProyecto";
 import { AsignarEmpleadosProyecto } from "@modules/proyectos/components/AsignarEmpleadosProyecto";
 import { userActions } from "@modules/auth/store/authStore";
+import { Ban } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/proyectos/$proyectoId")({
   component: Detalle,
@@ -44,10 +50,17 @@ function Detalle() {
         ← Volver a proyectos
       </Link>
       <div>
-        <h1 className="text-2xl font-bold">{p.nombre}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-bold">{p.nombre}</h1>
+          {p.estado === "CANCELADO" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+              <Ban className="size-3.5" />
+              Cancelado
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-gray-500">
-          {p.estado === "GARANTIA" ? "GARANTÍA" : p.estado} ·{" "}
-          {p.ubicacion || "Sin ubicación"}
+          {ESTADO_LABEL[p.estado] ?? p.estado} · {p.ubicacion || "Sin ubicación"}
         </p>
       </div>
       <section className="rounded-xl border border-gray-200 bg-white p-6">
@@ -75,6 +88,8 @@ function Detalle() {
             ["Correo", p.email],
             ["Fecha de inicio", fecha(p.fechaInicio)],
             ["Fecha de fin", fecha(p.fechaFin)],
+            ["Tipo de obra", p.tipoObra ? TIPOS_OBRA_LABEL[p.tipoObra] : null],
+            ["Presupuesto", p.presupuesto != null ? dinero(p.presupuesto) : null],
             [
               "Creado por",
               p.creadoPor
@@ -91,6 +106,12 @@ function Detalle() {
         <p className="mt-4 whitespace-pre-wrap">
           {p.descripcion || "Sin descripción"}
         </p>
+        {p.estado === "CANCELADO" && p.motivoCancelacion && (
+          <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
+            <span className="font-semibold">Motivo de cancelación: </span>
+            {p.motivoCancelacion}
+          </p>
+        )}
         <div className="mt-4">
           {p.cotizacionId ? (
             <Link

@@ -1,4 +1,4 @@
-import { NAV_ITEMS } from "@components/layout/navItems";
+import { isNavItemVisible, NAV_ITEMS } from "@components/layout/navItems";
 import { useAuth, userActions } from "@modules/auth/store/authStore";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
@@ -9,7 +9,7 @@ function App() {
 
   const Items = NAV_ITEMS.filter(
     (item) => item.to !== undefined && item.to !== "/",
-  ).filter((item) => userActions.hasAnyPermission(item.permission ?? []));
+  ).filter((item) => isNavItemVisible(item, user, userActions.hasAnyPermission));
 
   return (
     <main className="page-wrap">

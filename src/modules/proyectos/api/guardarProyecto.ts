@@ -1,5 +1,9 @@
 import { http } from "@lib/http";
-import type { Proyecto } from "../types/proyectos";
+import type {
+  EstadoEditableProyecto,
+  Proyecto,
+  TipoObra,
+} from "../types/proyectos";
 import { isAxiosError } from "axios";
 
 export interface DatosProyecto {
@@ -13,6 +17,12 @@ export interface DatosProyecto {
   fechaFin: string;
   detalles: { materialId: number; cantidad: number }[];
   jefeProyectoId?: number;
+  // Solo aplican al editar un proyecto existente (GPRCIMPER-27).
+  estado?: EstadoEditableProyecto;
+  tipoObra?: TipoObra | "";
+  presupuesto?: string | number;
+  // Obligatorio cuando estado se envía como CANCELADO (GPRCIMPER-28).
+  motivo?: string;
 }
 
 export interface ErroresProyecto {
@@ -26,8 +36,8 @@ export async function guardarProyecto(datos: DatosProyecto, id?: number) {
     : await http.post<Proyecto>("/proyectos", datos);
   return data;
 }
-export async function cancelarProyecto(id: number) {
-  await http.patch(`/proyectos/${id}/cancelar`);
+export async function cancelarProyecto(id: number, motivo: string) {
+  await http.patch(`/proyectos/${id}/cancelar`, { motivo });
 }
 
 export function errorCancelarProyecto(error: unknown) {
@@ -103,6 +113,10 @@ export function errorProyecto(error: unknown) {
       fechaFin:
         "Ingresa una fecha de fin válida en formato AAAA-MM-DD y que no sea anterior al inicio.",
       detalles: "Revisa los materiales y sus cantidades.",
+      estado: "Selecciona un estado válido.",
+      tipoObra: "Selecciona un tipo de obra válido.",
+      presupuesto: "Ingresa un presupuesto válido, mayor o igual a 0.",
+      motivo: "Ingresa el motivo de la cancelación.",
     };
 
     for (const [campo, valor] of Object.entries(errores)) {
