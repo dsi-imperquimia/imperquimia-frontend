@@ -222,4 +222,57 @@ describe("PanelEvidenciasActividad (GPRIMPER-53)", () => {
     );
     expect(screen.getByText("Vista previa antes de subir (1)")).toBeTruthy();
   });
+
+  it("abre un modal compacto para la cámara al tomar foto y agrega la captura a la vista previa", async () => {
+    const stopTrack = vi.fn();
+    const fakeStream = {
+      getTracks: () => [{ stop: stopTrack }],
+    } as unknown as MediaStream;
+    const getUserMedia = vi.fn().mockResolvedValue(fakeStream);
+    const originalMediaDevices = navigator.mediaDevices;
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    const originalToBlob = HTMLCanvasElement.prototype.toBlob;
+
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia },
+    });
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    HTMLCanvasElement.prototype.getContext = vi.fn(
+      () => ({ drawImage: vi.fn() }) as unknown as CanvasRenderingContext2D,
+    ) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.toBlob = function (cb: BlobCallback) {
+      cb(new Blob(["jpg"], { type: "image/jpeg" }));
+    };
+
+    try {
+      renderPanel();
+
+      fireEvent.click(screen.getByRole("button", { name: /Tomar foto/i }));
+
+      expect(await screen.findByText("Tomar fotografía")).toBeTruthy();
+      expect(getUserMedia).toHaveBeenCalledTimes(1);
+
+      const btnCapturar = await screen.findByRole("button", {
+        name: /Capturar foto/i,
+      });
+      await waitFor(() =>
+        expect((btnCapturar as HTMLButtonElement).disabled).toBe(false),
+      );
+      fireEvent.click(btnCapturar);
+
+      await waitFor(() =>
+        expect(screen.queryByText("Tomar fotografía")).toBeNull(),
+      );
+      expect(stopTrack).toHaveBeenCalled();
+      expect(screen.getByText("Vista previa antes de subir (1)")).toBeTruthy();
+    } finally {
+      Object.defineProperty(navigator, "mediaDevices", {
+        configurable: true,
+        value: originalMediaDevices,
+      });
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+      HTMLCanvasElement.prototype.toBlob = originalToBlob;
+    }
+  });
 });
