@@ -46,6 +46,7 @@ export interface RegistrarActividadDiaria {
 }
 
 export interface ActualizarActividadDiaria {
+  proyectoId?: number;
   fecha?: string;
   nombre: string;
   descripcion: string;

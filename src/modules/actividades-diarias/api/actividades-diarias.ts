@@ -78,6 +78,7 @@ export function errorActividadDiaria(error: unknown): ErroresActividadDiaria {
       "claveOperacion",
       "proyectoId",
       "fecha",
+      "nombre",
       "descripcion",
       "observaciones",
     ];

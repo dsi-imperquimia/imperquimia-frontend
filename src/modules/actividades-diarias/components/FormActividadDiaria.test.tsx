@@ -519,6 +519,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
       expect(mocks.actualizar).toHaveBeenCalledWith(
         101,
         expect.objectContaining({
+          proyectoId: 10,
           nombre: "Sellado de juntas",
           descripcion: "Sellado de juntas corregido",
         }),
@@ -533,6 +534,95 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     fireEvent.click(screen.getByRole("button", { name: "Aceptar" }));
     await waitFor(() =>
       expect(screen.queryByText(MENSAJES_ACTIVIDAD.editadoExito)).toBeNull(),
+    );
+  });
+
+  it("permite seleccionar y cambiar el proyecto al editar un registro", async () => {
+    const hace2Horas = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    mocks.listarProyectos.mockResolvedValue([
+      {
+        id: 10,
+        nombre: "Proyecto Edificio Central",
+        ubicacion: "San Salvador",
+        estado: "ACTIVO",
+      },
+      {
+        id: 20,
+        nombre: "Bodega Industrial Soyapango",
+        ubicacion: "Soyapango",
+        estado: "ACTIVO",
+      },
+    ]);
+    mocks.actualizar.mockResolvedValue({
+      id: 101,
+      proyectoId: 20,
+      nombre: "Sellado con errata",
+      descripcion: "Sellado de juntas con error",
+    });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FormActividadDiaria
+          actividad={{
+            id: 101,
+            claveOperacion: "00000000-0000-4000-8000-000000000101",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-14",
+            nombre: "Sellado con errata",
+            descripcion: "Sellado de juntas con error",
+            createdAt: hace2Horas,
+            updatedAt: hace2Horas,
+            proyecto: {
+              id: 10,
+              nombre: "Proyecto Edificio Central",
+              estado: "ACTIVO",
+            },
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.queryByText("Cargando proyectos asignados…")).toBeNull(),
+    );
+
+    const inputProyecto = screen.getByRole("combobox", {
+      name: /Proyecto/i,
+    }) as HTMLInputElement;
+    expect(inputProyecto.value).toBe("Proyecto Edificio Central");
+
+    act(() => {
+      inputProyecto.focus();
+    });
+    fireEvent.change(inputProyecto, { target: { value: "bodega" } });
+
+    const opcionDestino = await screen.findByRole("option", {
+      name: /Bodega Industrial Soyapango/i,
+    });
+    fireEvent.click(opcionDestino);
+
+    fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+    expect(
+      await screen.findByText("Confirmar edición de registro"),
+    ).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar cambios" }));
+
+    await waitFor(() =>
+      expect(mocks.actualizar).toHaveBeenCalledWith(
+        101,
+        expect.objectContaining({
+          proyectoId: 20,
+          nombre: "Sellado con errata",
+          descripcion: "Sellado de juntas con error",
+        }),
+      ),
     );
   });
 
@@ -566,6 +656,11 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     expect(
       screen.getByText(/El plazo de 48 horas para editar este registro/i),
     ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("combobox", { name: /Proyecto/i })
+        .hasAttribute("disabled"),
+    ).toBe(true);
     expect(
       screen
         .getByRole("button", { name: "Guardar cambios" })

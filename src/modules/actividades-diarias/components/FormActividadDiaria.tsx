@@ -105,7 +105,7 @@ export function FormActividadDiaria({
   } = useQuery({
     queryKey: ["actividades-diarias", "proyectos-disponibles"],
     queryFn: listProyectosDisponiblesActividad,
-    enabled: !esEdicion && proyectosProp === undefined,
+    enabled: proyectosProp === undefined,
   });
 
   const proyectos = useMemo(
@@ -115,6 +115,18 @@ export function FormActividadDiaria({
       ),
     [proyectosProp, proyectosQuery],
   );
+
+  const proyectosFormulario = useMemo(() => {
+    if (
+      esEdicion &&
+      actividad?.proyecto &&
+      actividad.proyecto.estado === "ACTIVO" &&
+      !proyectos.some((item) => item.id === actividad.proyecto!.id)
+    ) {
+      return [actividad.proyecto, ...proyectos];
+    }
+    return proyectos;
+  }, [actividad, esEdicion, proyectos]);
 
   useEffect(() => {
     if (!esEdicion && selectedProyectoIdProp !== undefined) {
@@ -138,10 +150,7 @@ export function FormActividadDiaria({
 
   function validarFormulario(): boolean {
     const camposValidacion: ErroresActividadDiaria["campos"] = {};
-    if (
-      !esEdicion &&
-      (!proyectoId || !Number.isInteger(proyectoId) || proyectoId < 1)
-    ) {
+    if (!proyectoId || !Number.isInteger(proyectoId) || proyectoId < 1) {
       camposValidacion.proyectoId = "Selecciona un proyecto válido.";
     }
     if (!fecha.trim()) {
@@ -211,11 +220,12 @@ export function FormActividadDiaria({
   }
 
   async function confirmarEdicion() {
-    if (!actividad || isPending) return;
+    if (!actividad || !proyectoId || isPending) return;
     setIsPending(true);
     setErrores({ campos: {} });
     try {
       const actualizada = await actualizarActividadDiaria(actividad.id, {
+        proyectoId,
         fecha: fecha.trim(),
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
@@ -284,66 +294,61 @@ export function FormActividadDiaria({
         noValidate
         className="max-w-3xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
       >
-        {esEdicion ? (
-          <>
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm">
-              <span className="text-gray-600">
-                Proyecto:{" "}
-                <strong className="font-semibold text-gray-900">
-                  {actividad?.proyecto?.nombre ??
-                    `Proyecto #${actividad?.proyectoId}`}
-                </strong>
+        {esEdicion && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm">
+            <span className="text-gray-600">
+              {actividad?.proyecto && actividad.proyecto.estado !== "ACTIVO"
+                ? `Proyecto original: ${actividad.proyecto.nombre} (${actividad.proyecto.estado}). Selecciona un proyecto activo.`
+                : "Puedes corregir los datos o reasignar el proyecto de la actividad."}
+            </span>
+            {habilitadoParaEditar && (
+              <span className="rounded-full bg-gray-200 px-3 py-0.5 text-xs font-medium text-gray-800">
+                Edición habilitada
               </span>
-              {habilitadoParaEditar && (
-                <span className="rounded-full bg-gray-200 px-3 py-0.5 text-xs font-medium text-gray-800">
-                  Edición habilitada
-                </span>
-              )}
-            </div>
-            {!habilitadoParaEditar && (
-              <p
-                role="alert"
-                className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
-              >
-                El plazo de 48 horas para editar este registro ha vencido. Solo
-                administración puede editarlo.
-              </p>
             )}
-            {campoFecha}
-          </>
-        ) : (
-          <>
-            {isLoadingProyectos && (
-              <p role="status">Cargando proyectos asignados…</p>
-            )}
-
-            {isErrorProyectos && (
-              <p role="alert" className="text-sm text-red-700">
-                No se pudieron cargar los proyectos disponibles en este momento.
-              </p>
-            )}
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <SelectorProyectoActividad
-                proyectos={proyectos}
-                selectedProyectoId={proyectoId}
-                onSelectProyecto={(id) => {
-                  setProyectoId(id);
-                  onProyectoChange?.(id);
-                  setErrores((prev) => ({
-                    ...prev,
-                    campos: { ...prev.campos, proyectoId: undefined },
-                  }));
-                }}
-                errorMessage={errores.campos.proyectoId}
-                isDisabled={isPending}
-                isRequired
-              />
-
-              {campoFecha}
-            </div>
-          </>
+          </div>
         )}
+
+        {esEdicion && !habilitadoParaEditar && (
+          <p
+            role="alert"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
+            El plazo de 48 horas para editar este registro ha vencido. Solo
+            administración puede editarlo.
+          </p>
+        )}
+
+        {isLoadingProyectos && habilitadoParaEditar && (
+          <p role="status">Cargando proyectos asignados…</p>
+        )}
+
+        {isErrorProyectos && habilitadoParaEditar && (
+          <p role="alert" className="text-sm text-red-700">
+            No se pudieron cargar los proyectos disponibles en este momento.
+          </p>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectorProyectoActividad
+            proyectos={proyectosFormulario}
+            selectedProyectoId={proyectoId}
+            onSelectProyecto={(id) => {
+              setProyectoId(id);
+              onProyectoChange?.(id);
+              setErrores((prev) => ({
+                ...prev,
+                campos: { ...prev.campos, proyectoId: undefined },
+              }));
+            }}
+            errorMessage={errores.campos.proyectoId}
+            isDisabled={isPending || !habilitadoParaEditar}
+            autoSelectSingle={!esEdicion}
+            isRequired
+          />
+
+          {campoFecha}
+        </div>
 
         <InputField
           label="Nombre de la actividad"
