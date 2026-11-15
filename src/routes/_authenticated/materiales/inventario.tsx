@@ -35,6 +35,11 @@ function formatCantidad(value: string | number, unidad: string) {
   return `${new Intl.NumberFormat("es-SV", { maximumFractionDigits: 2 }).format(Number(value))} ${unidad}`;
 }
 
+function labelMovimiento(motivo: string) {
+  const etiquetas: Partial<Record<string, string>> = MOTIVO_LABEL;
+  return etiquetas[motivo] ?? motivo.replaceAll("_", " ");
+}
+
 function formatFecha(value: string) {
   return new Intl.DateTimeFormat("es-SV", {
     dateStyle: "medium",
@@ -338,13 +343,15 @@ function InventarioMateriales() {
                         <Table.Cell>
                           <div className="flex items-center gap-2">
                             <ArrowRightLeft className="size-4 text-gray-400" />
-                            <div>
-                              <div className="text-sm font-medium">
-                                {MOTIVO_LABEL[item.motivo]}
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium text-gray-900">
+                                {labelMovimiento(item.motivo)}
                               </div>
                               {item.observacion && (
-                                <div className="max-w-56 truncate text-xs text-gray-500">
-                                  {item.observacion}
+                                <div className="max-w-56 break-words text-sm text-gray-600">
+                                  {item.motivo === "REVERSO_CONSUMO"
+                                    ? `Motivo: ${item.observacion}`
+                                    : item.observacion}
                                 </div>
                               )}
                             </div>

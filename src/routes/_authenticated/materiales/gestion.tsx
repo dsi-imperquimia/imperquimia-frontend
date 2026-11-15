@@ -1,6 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { InputField } from "@components/fields/InputField";
 import { Button } from "@heroui/react/button";
+import { Checkbox } from "@heroui/react/checkbox";
+import { Label } from "@heroui/react/label";
 import { toast } from "@heroui/react/toast";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
 import { storeMaterial } from "@modules/materiales/api/store-material";
@@ -25,7 +26,9 @@ type MaterialesGestionSearch = {
 };
 
 export const Route = createFileRoute("/_authenticated/materiales/gestion")({
-  validateSearch: (search: Record<string, unknown>): MaterialesGestionSearch => {
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): MaterialesGestionSearch => {
     return {
       id: search.id ? Number(search.id) : undefined,
     };
@@ -57,16 +60,20 @@ function RouteComponent() {
   const editingMaterial = id ? materiales.find((m) => m.id === id) : null;
 
   if (isPending) {
-    return <div className="p-4 text-center text-gray-500">Cargando datos...</div>;
+    return (
+      <div className="p-4 text-center text-gray-500">Cargando datos...</div>
+    );
   }
 
   if (id && !editingMaterial) {
     return (
       <div className="space-y-4">
         <Button variant="ghost" onClick={() => navigate({ to: "/materiales" })}>
-          <ArrowLeft className="mr-2 size-4" /> Volver
+          <ArrowLeft className="mr-2 size-4" /> Volver a materiales
         </Button>
-        <div className="p-4 text-center text-gray-500">Material no encontrado.</div>
+        <div className="p-4 text-center text-gray-500">
+          Material no encontrado.
+        </div>
       </div>
     );
   }
@@ -74,7 +81,12 @@ function RouteComponent() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" isIconOnly onClick={() => navigate({ to: "/materiales" })}>
+        <Button
+          variant="ghost"
+          isIconOnly
+          aria-label="Volver a materiales"
+          onClick={() => navigate({ to: "/materiales" })}
+        >
           <ArrowLeft className="size-4" />
         </Button>
         <div>
@@ -305,16 +317,18 @@ function MaterialForm({ material: materialInit, onSuccess }: FormProps) {
 
       <form.Field name="estado">
         {(field) => (
-          <label className="inline-flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={Boolean(field.state.value)}
-              onChange={(e) => field.handleChange(e.target.checked)}
-              onBlur={field.handleBlur}
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-            />
-            <span>Material activo</span>
-          </label>
+          <Checkbox
+            isSelected={Boolean(field.state.value)}
+            onChange={(selected) => field.handleChange(selected)}
+            onBlur={field.handleBlur}
+          >
+            <Checkbox.Content>
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+              <Label>Material activo</Label>
+            </Checkbox.Content>
+          </Checkbox>
         )}
       </form.Field>
 
@@ -325,8 +339,11 @@ function MaterialForm({ material: materialInit, onSuccess }: FormProps) {
           errorMap: state.errorMap,
         })}
         children={({ canSubmit, isSubmitting, errorMap }) => {
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          const error = errorMap.onSubmit || errorMap.onServer;
+          const errores = errorMap as unknown as {
+            onSubmit?: string;
+            onServer?: string;
+          };
+          const error = errores.onSubmit ?? errores.onServer;
           return (
             <>
               {error && (

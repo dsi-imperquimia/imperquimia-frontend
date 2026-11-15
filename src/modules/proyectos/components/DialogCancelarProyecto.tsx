@@ -1,11 +1,16 @@
 import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
+import { TextAreaField } from "@components/fields/TextAreaField";
 import { toast } from "@heroui/react/toast";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { cancelarProyecto, errorCancelarProyecto } from "../api/guardarProyecto";
+import {
+  cancelarProyecto,
+  errorCancelarProyecto,
+} from "../api/guardarProyecto";
 import type { Proyecto } from "../types/proyectos";
+import { Ban } from "lucide-react";
 
 export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
   const [pending, setPending] = useState(false);
@@ -15,7 +20,10 @@ export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
   const client = useQueryClient();
   return (
     <AlertDialog>
-      <Button variant="danger">Cancelar proyecto</Button>
+      <Button variant="danger">
+        <Ban className="mr-1 size-4" />
+        Cancelar proyecto
+      </Button>
       <AlertDialog.Backdrop>
         <AlertDialog.Container>
           <AlertDialog.Dialog>
@@ -26,19 +34,17 @@ export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
               <p>
                 ¿Cancelar «{proyecto.nombre}»? Permanecerá en el listado para
                 consulta, con una etiqueta de "Cancelado". Los empleados
-                asignados serán notificados. Esta acción no se puede
-                deshacer.
+                asignados serán notificados. Esta acción no se puede deshacer.
               </p>
-              <label className="mt-3 flex flex-col gap-1 text-sm">
-                Motivo de la cancelación *
-                <textarea
-                  className="min-h-20 rounded-lg border border-gray-300 p-2"
-                  value={motivo}
-                  disabled={pending}
-                  onChange={(e) => setMotivo(e.target.value)}
-                  placeholder="Explica por qué se cancela este proyecto"
-                />
-              </label>
+              <TextAreaField
+                label="Motivo de la cancelación"
+                isRequired
+                rows={3}
+                value={motivo}
+                disabled={pending}
+                onChange={(e) => setMotivo(e.target.value)}
+                placeholder="Explica por qué se cancela este proyecto"
+              />
               {error && (
                 <p role="alert" className="mt-3 text-red-700">
                   {error}

@@ -86,6 +86,13 @@ export const authActions = {
     authStore.setState(() => DEFAULT_STATE);
     persistAuth(DEFAULT_STATE);
   },
+  refreshUser: (user: User) => {
+    const current = authStore.state;
+    if (!current.isAuthenticated) return;
+    const next: AuthState = { ...current, user };
+    authStore.setState(() => next);
+    persistAuth(next);
+  },
 };
 
 export const userActions = {

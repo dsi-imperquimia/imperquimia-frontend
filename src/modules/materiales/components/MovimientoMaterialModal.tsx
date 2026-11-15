@@ -19,6 +19,7 @@ import {
   type ExistenciaMaterial,
   type MotivoMovimientoMaterial,
 } from "../types/inventario-material";
+import { MaterialComboBoxControl } from "./MaterialComboBoxControl";
 
 type TipoFormulario = "ENTRADA" | "SALIDA";
 
@@ -272,10 +273,7 @@ export function MovimientoMaterialModal({
                   isRequired
                 >
                   <Label>Material</Label>
-                  <ComboBox.InputGroup>
-                    <ComboBox.Value placeholder="Busca por nombre, código, descripción o unidad" />
-                    <ComboBox.Trigger />
-                  </ComboBox.InputGroup>
+                  <MaterialComboBoxControl placeholder="Busca por nombre, código, descripción o unidad" />
                   <ComboBox.Popover>
                     <ListBox items={materialesVisibles}>
                       {(material) => (

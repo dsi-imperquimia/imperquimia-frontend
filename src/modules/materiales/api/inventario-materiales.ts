@@ -1,9 +1,11 @@
 import { http } from "@lib/http";
 import { isAxiosError } from "axios";
 import type {
+  RegistrarDevolucionMaterialesProyecto,
   ExistenciaMaterial,
   MovimientoMaterial,
   RegistrarMovimientoMaterial,
+  RegistrarSalidaMaterialesProyecto,
 } from "../types/inventario-material";
 
 export async function listExistenciasMateriales() {
@@ -39,6 +41,26 @@ export async function registrarMovimientoMaterial(
     movimiento: MovimientoMaterial;
     repetido: boolean;
   }>(`/inventario-materiales/${path}`, payload);
+  return data;
+}
+
+export async function registrarSalidaMaterialesProyecto(
+  payload: RegistrarSalidaMaterialesProyecto,
+) {
+  const { data } = await http.post<{
+    movimientos: MovimientoMaterial[];
+    repetido: boolean;
+  }>("/inventario-materiales/salidas/proyecto", payload);
+  return data;
+}
+
+export async function registrarDevolucionMaterialesProyecto(
+  payload: RegistrarDevolucionMaterialesProyecto,
+) {
+  const { data } = await http.post<{
+    movimientos: MovimientoMaterial[];
+    repetido: boolean;
+  }>("/inventario-materiales/entradas/proyecto", payload);
   return data;
 }
 
