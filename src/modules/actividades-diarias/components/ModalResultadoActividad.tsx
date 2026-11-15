@@ -41,17 +41,17 @@ export function ModalResultadoActividad({
   onClose: () => void;
 }) {
   // GPRCIMPER-50 CA2: el indicador de "guardado" se mantiene al menos 3 s.
-  const requiereEspera = estado === "exito";
-  const [puedeCerrar, setPuedeCerrar] = useState(!requiereEspera);
+  const [exitoDesbloqueado, setExitoDesbloqueado] = useState(false);
+  const puedeCerrar = estado !== "exito" || exitoDesbloqueado;
 
   useEffect(() => {
     if (estado !== "exito") {
-      setPuedeCerrar(true);
+      setExitoDesbloqueado(false);
       return;
     }
-    setPuedeCerrar(false);
+    setExitoDesbloqueado(false);
     const timer = globalThis.setTimeout(() => {
-      setPuedeCerrar(true);
+      setExitoDesbloqueado(true);
       onClose();
     }, DURACION_MINIMA_MODAL_MS);
     return () => globalThis.clearTimeout(timer);

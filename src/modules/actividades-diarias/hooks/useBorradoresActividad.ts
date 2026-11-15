@@ -46,6 +46,9 @@ export function useBorradoresActividad({
   );
 
   const sincronizar = useCallback(async () => {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return;
+    }
     if (listarBorradoresActividad(userId).length === 0) {
       setBorradores([]);
       return;

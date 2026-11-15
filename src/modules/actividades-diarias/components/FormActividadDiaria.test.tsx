@@ -616,9 +616,13 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     });
     fireEvent.change(inputProyecto, { target: { value: "bodega" } });
 
+    expect(inputProyecto.value).toBe("bodega");
     const opcionDestino = await screen.findByRole("option", {
       name: /Bodega Industrial Soyapango/i,
     });
+    expect(
+      screen.queryByRole("option", { name: /Proyecto Edificio Central/i }),
+    ).toBeNull();
     fireEvent.click(opcionDestino);
 
     fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
@@ -688,5 +692,167 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     expect(screen.getByText(MENSAJES_ACTIVIDAD.editadoExito)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Aceptar" }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("usa el flujo de guardar registro con botón Enviar cuando el registro fue generado por el sistema y está pendiente de completar (GPRCIMPER-50)", async () => {
+    mocks.registrar.mockResolvedValue({
+      actividad: {
+        id: 77,
+        proyectoId: 10,
+        nombre: "Bitácora del día 2026-11-14",
+        descripcion: "Avance registrado por primera vez",
+      },
+      repetido: false,
+    });
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FormActividadDiaria
+          actividad={{
+            id: 77,
+            claveOperacion: "00000000-0000-4000-8000-000000000077",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-14",
+            nombre: "Bitácora del día 2026-11-14",
+            descripcion: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            proyecto: {
+              id: 10,
+              nombre: "Proyecto Edificio Central",
+              estado: "ACTIVO",
+            },
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByText(
+        /Registro diario generado automáticamente por el sistema/i,
+      ),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("combobox", { name: /Proyecto/i })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+    expect(
+      screen.getByLabelText(/Fecha de la actividad/i).hasAttribute("disabled"),
+    ).toBe(true);
+
+    fireEvent.change(screen.getByLabelText(/Descripción de la actividad/i), {
+      target: { value: "Avance registrado por primera vez" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Enviar" }));
+
+    await waitFor(() =>
+      expect(mocks.registrar).toHaveBeenCalledWith(
+        expect.objectContaining({
+          proyectoId: 10,
+          nombre: "Bitácora del día 2026-11-14",
+          descripcion: "Avance registrado por primera vez",
+        }),
+      ),
+    );
+    expect(mocks.actualizar).not.toHaveBeenCalled();
+    expect(await screen.findByText(MENSAJES_ACTIVIDAD.exito)).toBeTruthy();
+  });
+
+  it("bloquea el formulario cuando soloLectura está activo", () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FormActividadDiaria
+          soloLectura
+          actividad={{
+            id: 105,
+            claveOperacion: "00000000-0000-4000-8000-000000000105",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-14",
+            nombre: "Registro solo lectura",
+            descripcion: "Contenido existente",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByText(
+        "No cuentas con permiso para registrar ni editar actividades diarias.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("button", { name: "Guardar cambios" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
+  });
+
+  it("muestra helpers en los encabezados de columna explicando 'Sistema (pendiente)' en Registrado por", async () => {
+    render(
+      <TablaActividadesProyecto
+        actividades={[
+          {
+            id: 201,
+            claveOperacion: "00000000-0000-4000-8000-000000000201",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-15",
+            nombre: "Bitácora del día 2026-11-15",
+            descripcion: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]}
+        onEvidencias={vi.fn()}
+        onEditar={vi.fn()}
+      />,
+    );
+
+    const columnasEsperadas = [
+      "Fecha",
+      "Actividad",
+      "Proyecto",
+      "Descripción",
+      "Observaciones",
+      "Registrado por",
+      "Evidencias",
+      "Acciones",
+    ];
+    for (const nombreColumna of columnasEsperadas) {
+      expect(
+        screen.getByRole("button", {
+          name: `Ayuda sobre columna ${nombreColumna}`,
+        }),
+      ).toBeTruthy();
+    }
+
+    const triggerRegistradoPor = screen.getByRole("button", {
+      name: "Ayuda sobre columna Registrado por",
+    });
+    act(() => {
+      fireEvent.keyDown(document.body, { key: "Tab" });
+      triggerRegistradoPor.focus();
+    });
+
+    expect(
+      await screen.findByText(/Sistema \(pendiente\).*automáticamente/i),
+    ).toBeTruthy();
   });
 });

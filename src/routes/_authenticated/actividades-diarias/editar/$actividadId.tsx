@@ -15,9 +15,13 @@ export const Route = createFileRoute(
 
 function EditarActividadDiariaPage() {
   const { actividadId } = Route.useParams();
+  const { hasAnyPermission, hasPermission } = useAuth();
+  const puedeGestionar = hasAnyPermission([
+    "ACTIVIDAD_UPDATE",
+    "ACTIVIDAD_CREATE",
+  ]);
   const id = Number(actividadId);
   const valido = Number.isInteger(id) && id > 0;
-  const { hasPermission } = useAuth();
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ["actividades-diarias", "detalle", id],
@@ -39,17 +43,25 @@ function EditarActividadDiariaPage() {
     );
   }
 
+  const esPendienteDelSistema = !data.descripcion?.trim();
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">
-        Editar registro de actividad diaria
+        {esPendienteDelSistema
+          ? "Guardar registro de actividad diaria"
+          : "Editar registro de actividad diaria"}
       </h1>
-      <FormActividadDiaria key={data.id} actividad={data} />
+      <FormActividadDiaria
+        key={data.id}
+        actividad={data}
+        soloLectura={!puedeGestionar}
+      />
       <PanelEvidenciasActividad
         actividadId={data.id}
         actividadNombre={data.nombre}
         evidenciasIniciales={data.evidencias}
-        soloLectura={data.proyecto?.estado !== "ACTIVO"}
+        soloLectura={!puedeGestionar || data.proyecto?.estado !== "ACTIVO"}
       />
       {hasPermission("INCIDENCIA_READ") && (
         <PanelIncidenciasJornada

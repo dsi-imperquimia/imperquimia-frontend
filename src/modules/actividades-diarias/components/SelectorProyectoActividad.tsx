@@ -26,6 +26,7 @@ export function SelectorProyectoActividad({
   isRequired = false,
   isDisabled = false,
   autoSelectSingle = true,
+  resetSignal = 0,
 }: {
   proyectos: ProyectoDisponibleActividad[];
   selectedProyectoId: number | null;
@@ -37,9 +38,12 @@ export function SelectorProyectoActividad({
   isRequired?: boolean;
   isDisabled?: boolean;
   autoSelectSingle?: boolean;
+  resetSignal?: number;
 }) {
   const [busqueda, setBusqueda] = useState("");
   const autoSeleccionadoRef = useRef(false);
+  const editandoDesdeInputRef = useRef(false);
+  const prevResetSignalRef = useRef(resetSignal);
 
   // CA1: Solo proyectos activos asignados
   const proyectosActivos = useMemo(
@@ -55,10 +59,19 @@ export function SelectorProyectoActividad({
     [proyectosActivos, selectedProyectoId],
   );
 
-  // Sincroniza el texto visible cuando selectedProyectoId viene preestablecido o cambia desde fuera
+  // Sincroniza el texto visible cuando selectedProyectoId viene preestablecido, cambia o se reinician los filtros desde fuera
   useEffect(() => {
+    const resetSolicitado = resetSignal !== prevResetSignalRef.current;
+    prevResetSignalRef.current = resetSignal;
+
+    if (!resetSolicitado && editandoDesdeInputRef.current) {
+      editandoDesdeInputRef.current = false;
+      return;
+    }
+
+    editandoDesdeInputRef.current = false;
     setBusqueda(proyectoSeleccionado?.nombre ?? "");
-  }, [proyectoSeleccionado]);
+  }, [proyectoSeleccionado, resetSignal]);
 
   // CA2: Si solamente existe un proyecto activo, aparece seleccionado por defecto una vez
   useEffect(() => {
@@ -109,10 +122,12 @@ export function SelectorProyectoActividad({
       onInputChange={(value) => {
         setBusqueda(value);
         if (proyectoSeleccionado && value !== proyectoSeleccionado.nombre) {
+          editandoDesdeInputRef.current = true;
           onSelectProyecto(null);
         }
       }}
       onSelectionChange={(key) => {
+        editandoDesdeInputRef.current = false;
         const valor = String(key ?? "");
         const idNumero = valor ? Number(valor) : null;
         const elegido =

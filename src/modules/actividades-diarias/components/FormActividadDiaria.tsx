@@ -9,6 +9,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type FormEvent,
 } from "react";
@@ -51,19 +52,25 @@ export function FormActividadDiaria({
   selectedProyectoId: selectedProyectoIdProp,
   onProyectoChange,
   proyectos: proyectosProp,
+  soloLectura = false,
   onSuccess,
 }: {
   actividad?: ActividadDiaria;
   selectedProyectoId?: number | null;
   onProyectoChange?: (proyectoId: number | null) => void;
   proyectos?: ProyectoDisponibleActividad[];
+  soloLectura?: boolean;
   onSuccess?: (actualizada: ActividadDiaria) => void;
 } = {}) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const esEdicion = Boolean(actividad);
-  const habilitadoParaEditar =
-    !actividad || puedeEditarActividad(actividad.createdAt, user?.role?.name);
+  const esRegistroDelSistemaPendiente = Boolean(
+    actividad && !actividad.descripcion?.trim(),
+  );
+  const esEdicion = Boolean(actividad && actividad.descripcion?.trim());
+  const habilitadoPorPlazo =
+    !esEdicion || puedeEditarActividad(actividad!.createdAt, user?.role?.name);
+  const habilitadoParaEditar = !soloLectura && habilitadoPorPlazo;
 
   const [proyectoId, setProyectoId] = useState<number | null>(() =>
     actividad ? actividad.proyectoId : (selectedProyectoIdProp ?? null),
@@ -84,6 +91,20 @@ export function FormActividadDiaria({
   const [errores, setErrores] = useState<ErroresActividadDiaria>({
     campos: {},
   });
+  const prevDescripcionRef = useRef(actividad?.descripcion?.trim() ?? "");
+
+  useEffect(() => {
+    const actual = actividad?.descripcion?.trim() ?? "";
+    const previa = prevDescripcionRef.current;
+    prevDescripcionRef.current = actual;
+    if (!previa && actual && actividad && !descripcion.trim()) {
+      setProyectoId(actividad.proyectoId);
+      setFecha(actividad.fecha.slice(0, 10));
+      setNombre(actividad.nombre);
+      setDescripcion(actividad.descripcion);
+      setObservaciones(actividad.observaciones ?? "");
+    }
+  }, [actividad, descripcion]);
 
   const {
     borradores,
@@ -118,7 +139,6 @@ export function FormActividadDiaria({
 
   const proyectosFormulario = useMemo(() => {
     if (
-      esEdicion &&
       actividad?.proyecto &&
       actividad.proyecto.estado === "ACTIVO" &&
       !proyectos.some((item) => item.id === actividad.proyecto!.id)
@@ -126,7 +146,7 @@ export function FormActividadDiaria({
       return [actividad.proyecto, ...proyectos];
     }
     return proyectos;
-  }, [actividad, esEdicion, proyectos]);
+  }, [actividad, proyectos]);
 
   useEffect(() => {
     if (!esEdicion && selectedProyectoIdProp !== undefined) {
@@ -136,17 +156,26 @@ export function FormActividadDiaria({
 
   const limpiarFormulario = useCallback(() => {
     const defecto =
-      proyectos.length === 1
+      actividad?.proyectoId ??
+      (proyectos.length === 1
         ? proyectos[0].id
-        : (selectedProyectoIdProp ?? null);
+        : (selectedProyectoIdProp ?? null));
     setProyectoId(defecto);
-    setFecha(fechaHoyIso());
-    setNombre("");
+    setFecha(actividad ? actividad.fecha.slice(0, 10) : fechaHoyIso());
+    setNombre(actividad?.nombre ?? "");
     setDescripcion("");
     setObservaciones("");
     setClaveOperacion(nuevaClaveOperacion());
     setErrores({ campos: {} });
-  }, [proyectos, selectedProyectoIdProp]);
+  }, [actividad, proyectos, selectedProyectoIdProp]);
+
+  const fechaHoy = fechaHoyIso();
+  const maxFechaPermitida =
+    esRegistroDelSistemaPendiente &&
+    actividad?.fecha &&
+    actividad.fecha.slice(0, 10) > fechaHoy
+      ? actividad.fecha.slice(0, 10)
+      : fechaHoy;
 
   function validarFormulario(): boolean {
     const camposValidacion: ErroresActividadDiaria["campos"] = {};
@@ -156,7 +185,7 @@ export function FormActividadDiaria({
     if (!fecha.trim()) {
       camposValidacion.fecha =
         "Ingresa una fecha válida en formato AAAA-MM-DD.";
-    } else if (fecha.trim() > fechaHoyIso()) {
+    } else if (fecha.trim() > maxFechaPermitida) {
       camposValidacion.fecha = "La fecha no puede ser futura.";
     }
     if (!nombre.trim()) {
@@ -191,22 +220,25 @@ export function FormActividadDiaria({
     setErrores({ campos: {} });
 
     try {
-      await registrarActividadDiaria(payload);
+      const respuesta = await registrarActividadDiaria(payload);
       eliminarBorrador(claveOperacion);
+      if (!esRegistroDelSistemaPendiente) {
+        limpiarFormulario();
+      }
+      mostrarModal("exito");
       await queryClient.invalidateQueries({
         queryKey: ["actividades-diarias"],
       });
-      limpiarFormulario();
-      mostrarModal("exito");
+      onSuccess?.(respuesta.actividad);
     } catch (error) {
       if (esErrorDeConexion(error)) {
-        const proyectoSeleccionado = proyectos.find(
-          (item) => item.id === proyectoId,
-        );
+        const nombreProyecto =
+          proyectosFormulario.find((item) => item.id === proyectoId)?.nombre ??
+          actividad?.proyecto?.nombre;
         agregarBorrador({
           claveOperacion,
           payload,
-          proyectoNombre: proyectoSeleccionado?.nombre,
+          proyectoNombre: nombreProyecto,
           guardadoEn: new Date().toISOString(),
         });
         limpiarFormulario();
@@ -262,9 +294,11 @@ export function FormActividadDiaria({
     <InputField
       label="Fecha de la actividad"
       type="date"
-      max={fechaHoyIso()}
+      max={maxFechaPermitida}
       value={fecha}
-      disabled={isPending || !habilitadoParaEditar}
+      disabled={
+        isPending || !habilitadoParaEditar || esRegistroDelSistemaPendiente
+      }
       onChange={(event) => {
         setFecha(event.target.value);
         setErrores((prev) => ({
@@ -294,6 +328,16 @@ export function FormActividadDiaria({
         noValidate
         className="max-w-3xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
       >
+        {esRegistroDelSistemaPendiente && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <span>
+              Registro diario generado automáticamente por el sistema para este
+              proyecto y fecha. Completa los datos y presiona{" "}
+              <strong>Enviar</strong> para guardar el registro.
+            </span>
+          </div>
+        )}
+
         {esEdicion && (
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm">
             <span className="text-gray-600">
@@ -309,7 +353,16 @@ export function FormActividadDiaria({
           </div>
         )}
 
-        {esEdicion && !habilitadoParaEditar && (
+        {soloLectura && (
+          <p
+            role="alert"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
+            No cuentas con permiso para registrar ni editar actividades diarias.
+          </p>
+        )}
+
+        {!soloLectura && esEdicion && !habilitadoPorPlazo && (
           <p
             role="alert"
             className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
@@ -342,7 +395,11 @@ export function FormActividadDiaria({
               }));
             }}
             errorMessage={errores.campos.proyectoId}
-            isDisabled={isPending || !habilitadoParaEditar}
+            isDisabled={
+              isPending ||
+              !habilitadoParaEditar ||
+              esRegistroDelSistemaPendiente
+            }
             autoSelectSingle={!esEdicion}
             isRequired
           />
@@ -371,6 +428,7 @@ export function FormActividadDiaria({
           label="Descripción de la actividad"
           placeholder="Describe el trabajo realizado durante la jornada"
           rows={4}
+          maxLength={2000}
           value={descripcion}
           disabled={isPending || !habilitadoParaEditar}
           onChange={(event) => {
@@ -388,6 +446,7 @@ export function FormActividadDiaria({
           label="Observaciones"
           placeholder="Incidentes, notas adicionales o comentarios opcionales"
           rows={3}
+          maxLength={1000}
           value={observaciones}
           disabled={isPending || !habilitadoParaEditar}
           onChange={(event) => {

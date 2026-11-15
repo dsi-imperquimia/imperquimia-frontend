@@ -29,7 +29,6 @@ const PAGE_LABELS: Record<string, string> = {
   "/cargo-empleado/create": "Crear cargo",
   "/cotizaciones/create": "Crear cotización",
   "/proyectos/create": "Crear proyecto",
-  "/actividades-diarias/create": "Crear actividad diaria",
   "/materiales/gestion": "Gestionar materiales",
 };
 
@@ -39,7 +38,7 @@ function findCrumbs(pathname: string): Crumb[] | null {
   if (pathname.startsWith("/actividades-diarias/editar/")) {
     const parentCrumbs = findCrumbs("/actividades-diarias");
     if (parentCrumbs) {
-      return [...parentCrumbs, { label: "Editar actividad diaria" }];
+      return [...parentCrumbs, { label: "Registro de bitácora" }];
     }
   }
 

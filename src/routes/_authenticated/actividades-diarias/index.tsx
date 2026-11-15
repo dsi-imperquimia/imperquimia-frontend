@@ -18,7 +18,7 @@ import {
 } from "@modules/actividades-diarias/types/actividad-diaria";
 import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/actividades-diarias/")({
@@ -32,6 +32,7 @@ export function ActividadesDiariasPage() {
   const [selectedProyectoId, setSelectedProyectoId] = useState<number | null>(
     null,
   );
+  const [resetProyectoSignal, setResetProyectoSignal] = useState(0);
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
   const [exportandoFormato, setExportandoFormato] =
@@ -48,8 +49,6 @@ export function ActividadesDiariasPage() {
   );
   const esUltimaSemanaActiva =
     fechaInicio === inicioUltimaSemana && fechaFin === hoyIso;
-  const hayFiltrosActivos =
-    selectedProyectoId !== null || Boolean(fechaInicio) || Boolean(fechaFin);
 
   const puedeCrear = hasPermission("ACTIVIDAD_CREATE");
   const puedeEditar = hasAnyPermission([
@@ -70,6 +69,23 @@ export function ActividadesDiariasPage() {
     queryKey: ["actividades-diarias", "proyectos-disponibles"],
     queryFn: listProyectosDisponiblesActividad,
   });
+
+  const proyectos = useMemo(
+    () =>
+      (proyectosQuery.data ?? []).filter((item) => item.estado === "ACTIVO"),
+    [proyectosQuery.data],
+  );
+  const proyectoSeleccionado = useMemo(
+    () =>
+      selectedProyectoId !== null
+        ? (proyectos.find((item) => item.id === selectedProyectoId) ?? null)
+        : null,
+    [proyectos, selectedProyectoId],
+  );
+  const hayFiltrosActivos =
+    (proyectos.length > 1 && selectedProyectoId !== null) ||
+    Boolean(fechaInicio) ||
+    Boolean(fechaFin);
 
   const actividadesQuery = useQuery({
     queryKey: [
@@ -96,12 +112,6 @@ export function ActividadesDiariasPage() {
   const actividadEvidencias =
     actividades.find((item) => item.id === actividadEvidenciasId) ?? null;
 
-  const proyectos = useMemo(
-    () =>
-      (proyectosQuery.data ?? []).filter((item) => item.estado === "ACTIVO"),
-    [proyectosQuery.data],
-  );
-
   const handleSelectProyecto = useCallback((proyectoId: number | null) => {
     setSelectedProyectoId(proyectoId);
   }, []);
@@ -119,7 +129,10 @@ export function ActividadesDiariasPage() {
 
   function limpiarFiltros() {
     setExportError(null);
-    setSelectedProyectoId(null);
+    if (proyectos.length > 1) {
+      setSelectedProyectoId(null);
+    }
+    setResetProyectoSignal((prev) => prev + 1);
     setFechaInicio("");
     setFechaFin("");
   }
@@ -170,10 +183,14 @@ export function ActividadesDiariasPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Actividades diarias</h1>
+          <h1 className="text-2xl font-bold">
+            Bitácora de actividades diarias
+          </h1>
           <p className="text-sm text-gray-500">
-            Consulta las jornadas registradas, fíltralas por proyecto o rango de
-            fechas y expórtalas a PDF o Excel.
+            El sistema genera el registro diario por proyecto activo. Selecciona
+            tu proyecto para guardar el avance del día, editar registros dentro
+            de las 48 h, filtrar por fechas, exportar a PDF/Excel y adjuntar
+            evidencia fotográfica.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -206,15 +223,6 @@ export function ActividadesDiariasPage() {
       </div>
 
       {puedeCrear && (
-        <Link
-          to="/actividades-diarias/create"
-          className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
-        >
-          Crear actividad diaria
-        </Link>
-      )}
-
-      {puedeCrear && (
         <BorradoresActividad
           borradores={borradores}
           claveEnProceso={claveEnProceso}
@@ -232,7 +240,8 @@ export function ActividadesDiariasPage() {
               proyectos={proyectos}
               selectedProyectoId={selectedProyectoId}
               onSelectProyecto={handleSelectProyecto}
-              autoSelectSingle={false}
+              autoSelectSingle={true}
+              resetSignal={resetProyectoSignal}
               label="Filtrar por proyecto"
               placeholder="Todos los proyectos (escribe para buscar)"
               description=""
@@ -312,6 +321,38 @@ export function ActividadesDiariasPage() {
           </p>
         )}
 
+      {proyectoSeleccionado && (
+        <div
+          aria-label="Proyecto seleccionado en bitácora"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm"
+        >
+          <div className="flex flex-wrap items-center gap-2 text-gray-700">
+            <span className="font-semibold text-gray-900">
+              {proyectoSeleccionado.nombre}
+            </span>
+            {proyectoSeleccionado.ubicacion && (
+              <span>· {proyectoSeleccionado.ubicacion}</span>
+            )}
+            <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+              {proyectoSeleccionado.estado}
+            </span>
+            <span className="text-gray-500">
+              · {actividades.length} registro(s)
+            </span>
+          </div>
+          {proyectos.length > 1 && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setSelectedProyectoId(null)}
+            >
+              Ver todos los proyectos
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* GPRCIMPER-34: Lista única de actividades diarias */}
       {!rangoInvalido && (
         <TablaActividadesProyecto
@@ -321,7 +362,7 @@ export function ActividadesDiariasPage() {
           onRetry={() => void actividadesQuery.refetch()}
           onEvidencias={(actividad) => setActividadEvidenciasId(actividad.id)}
           onEditar={
-            puedeEditar
+            puedeEditar || puedeCrear
               ? (actividad) =>
                   void navigate({
                     to: "/actividades-diarias/editar/$actividadId",
