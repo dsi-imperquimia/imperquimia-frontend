@@ -1,6 +1,12 @@
+import { http } from "@lib/http";
 import { AxiosError } from "axios";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { errorActividadDiaria, esErrorDeConexion } from "./actividades-diarias";
+import {
+  errorActividadDiaria,
+  esErrorDeConexion,
+  exportarActividadesDiarias,
+  listActividadesDiarias,
+} from "./actividades-diarias";
 import {
   eliminarBorradorActividad,
   guardarBorradorActividad,
@@ -8,7 +14,10 @@ import {
   obtenerClaveStorageBorradores,
   reenviarBorradoresActividad,
 } from "./borradores-actividad";
-import type { BorradorActividad } from "../types/actividad-diaria";
+import {
+  restarDiasIso,
+  type BorradorActividad,
+} from "../types/actividad-diaria";
 
 const uuid1 = "00000000-0000-4000-8000-000000000101";
 const uuid2 = "00000000-0000-4000-8000-000000000102";
@@ -156,5 +165,80 @@ describe("borradores de actividad en localStorage", () => {
     expect(falloValidacion.pendientes[0]?.ultimoError).toBe(
       "Solo se pueden registrar en activos.",
     );
+  });
+});
+
+describe("listActividadesDiarias y exportarActividadesDiarias (GPRIMPER-43)", () => {
+  it("calcula fechas relativas restando días locales sin perder cambios de mes", () => {
+    expect(restarDiasIso(7, "2026-11-14")).toBe("2026-11-07");
+    expect(restarDiasIso(7, "2026-03-03")).toBe("2026-02-24");
+  });
+
+  it("serializa proyectoId, fechaInicio y fechaFin al consultar actividades", async () => {
+    const spyGet = vi.spyOn(http, "get").mockResolvedValueOnce({ data: [] });
+
+    await listActividadesDiarias({
+      proyectoId: 10,
+      fechaInicio: "2026-11-07",
+      fechaFin: "2026-11-14",
+    });
+
+    expect(spyGet).toHaveBeenCalledWith(
+      "/actividades-diarias?proyectoId=10&fechaInicio=2026-11-07&fechaFin=2026-11-14",
+    );
+    spyGet.mockRestore();
+  });
+
+  it("descarga PDF o Excel respetando filtros y extrae nombre de archivo", async () => {
+    const pdfBlob = new Blob(["%PDF-1.7"], { type: "application/pdf" });
+    const spyGet = vi.spyOn(http, "get").mockResolvedValueOnce({
+      data: pdfBlob,
+      headers: {
+        "content-disposition":
+          'attachment; filename="actividades-diarias-2026-11-07_a_2026-11-14.pdf"',
+      },
+    });
+
+    const resultado = await exportarActividadesDiarias("pdf", {
+      fechaInicio: "2026-11-07",
+      fechaFin: "2026-11-14",
+    });
+
+    expect(spyGet).toHaveBeenCalledWith(
+      "/actividades-diarias/exportar?fechaInicio=2026-11-07&fechaFin=2026-11-14&formato=pdf",
+      { responseType: "blob" },
+    );
+    expect(resultado.blob).toBe(pdfBlob);
+    expect(resultado.filename).toBe(
+      "actividades-diarias-2026-11-07_a_2026-11-14.pdf",
+    );
+    spyGet.mockRestore();
+  });
+
+  it("decodifica errores JSON devueltos como Blob cuando falla la exportación", async () => {
+    const errorBlob = new Blob(
+      [JSON.stringify({ message: "La fecha de inicio es inválida." })],
+      { type: "application/json" },
+    );
+    const spyGet = vi.spyOn(http, "get").mockRejectedValueOnce(
+      new AxiosError("Bad Request", "ERR_BAD_REQUEST", undefined, undefined, {
+        status: 400,
+        statusText: "Bad Request",
+        headers: {},
+        config: {} as any,
+        data: errorBlob,
+      }),
+    );
+
+    try {
+      await exportarActividadesDiarias("excel");
+      expect.unreachable();
+    } catch (error) {
+      expect(errorActividadDiaria(error).general).toBe(
+        "La fecha de inicio es inválida.",
+      );
+    } finally {
+      spyGet.mockRestore();
+    }
   });
 });

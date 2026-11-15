@@ -76,13 +76,36 @@ export const DURACION_MINIMA_MODAL_MS = 3000;
 export const PLAZO_EDICION_HORAS = 48;
 export const PLAZO_EDICION_MS = PLAZO_EDICION_HORAS * 60 * 60 * 1000;
 
+export interface FiltroActividadesDiarias {
+  proyectoId?: number | null;
+  fechaInicio?: string;
+  fechaFin?: string;
+}
+
+export type FormatoExportacionActividad = "pdf" | "excel";
+
+function formatearFechaLocalIso(fecha: Date): string {
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${anio}-${mes}-${dia}`;
+}
+
 /** Fecha local de hoy en formato AAAA-MM-DD (para inputs type="date"). */
 export function fechaHoyIso(): string {
-  const ahora = new Date();
-  const anio = ahora.getFullYear();
-  const mes = String(ahora.getMonth() + 1).padStart(2, "0");
-  const dia = String(ahora.getDate()).padStart(2, "0");
-  return `${anio}-${mes}-${dia}`;
+  return formatearFechaLocalIso(new Date());
+}
+
+/** Resta `dias` días calendario locales a `fechaBaseIso` (o a hoy) en formato AAAA-MM-DD. */
+export function restarDiasIso(dias: number, fechaBaseIso?: string): string {
+  const fecha = fechaBaseIso
+    ? (() => {
+        const [anio, mes, dia] = fechaBaseIso.split("-").map(Number);
+        return new Date(anio, mes - 1, dia);
+      })()
+    : new Date();
+  fecha.setDate(fecha.getDate() - dias);
+  return formatearFechaLocalIso(fecha);
 }
 
 /** Normaliza texto para búsquedas sin tildes ni mayúsculas. */

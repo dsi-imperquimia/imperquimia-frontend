@@ -17,12 +17,94 @@ export async function listProyectosDisponiblesActividad() {
   return data;
 }
 
-export async function listActividadesDiarias(proyectoId?: number | null) {
-  const query = proyectoId ? `?proyectoId=${proyectoId}` : "";
+export interface FiltroActividadesQuery {
+  proyectoId?: number | null;
+  fechaInicio?: string;
+  fechaFin?: string;
+}
+
+function construirParamsActividades(
+  filtros?: FiltroActividadesQuery | number | null,
+): URLSearchParams {
+  const normalizado: FiltroActividadesQuery =
+    typeof filtros === "number" || filtros === null
+      ? { proyectoId: filtros }
+      : (filtros ?? {});
+  const params = new URLSearchParams();
+  if (normalizado.proyectoId) {
+    params.set("proyectoId", String(normalizado.proyectoId));
+  }
+  if (normalizado.fechaInicio?.trim()) {
+    params.set("fechaInicio", normalizado.fechaInicio.trim());
+  }
+  if (normalizado.fechaFin?.trim()) {
+    params.set("fechaFin", normalizado.fechaFin.trim());
+  }
+  return params;
+}
+
+export async function listActividadesDiarias(
+  filtros?: FiltroActividadesQuery | number | null,
+) {
+  const query = construirParamsActividades(filtros).toString();
   const { data } = await http.get<ActividadDiaria[]>(
-    `/actividades-diarias${query}`,
+    `/actividades-diarias${query ? `?${query}` : ""}`,
   );
   return data;
+}
+
+function extraerNombreArchivoDisposition(
+  disposition: unknown,
+  fallback: string,
+): string {
+  if (typeof disposition !== "string") return fallback;
+  const match = /filename="?([^";]+)"?/i.exec(disposition);
+  return match?.[1]?.trim() || fallback;
+}
+
+export async function exportarActividadesDiarias(
+  formato: "pdf" | "excel",
+  filtros?: FiltroActividadesQuery,
+): Promise<{ blob: Blob; filename: string }> {
+  const params = construirParamsActividades(filtros);
+  params.set("formato", formato);
+
+  try {
+    const response = await http.get<Blob>(
+      `/actividades-diarias/exportar?${params.toString()}`,
+      { responseType: "blob" },
+    );
+    const ext = formato === "excel" ? "xlsx" : "pdf";
+    const sufijo =
+      filtros?.fechaInicio && filtros?.fechaFin
+        ? `${filtros.fechaInicio}_a_${filtros.fechaFin}`
+        : filtros?.fechaInicio
+          ? `desde_${filtros.fechaInicio}`
+          : filtros?.fechaFin
+            ? `hasta_${filtros.fechaFin}`
+            : new Date().toISOString().slice(0, 10);
+    const fallback = `actividades-diarias-${sufijo}.${ext}`;
+    const disposition = (
+      response.headers as Record<string, unknown> | undefined
+    )?.["content-disposition"];
+    return {
+      blob: response.data,
+      filename: extraerNombreArchivoDisposition(disposition, fallback),
+    };
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "response" in error) {
+      const resp = (error as { response?: { data?: unknown } }).response;
+      if (resp?.data instanceof Blob) {
+        try {
+          const rawText = await resp.data.text();
+          resp.data = JSON.parse(rawText) as unknown;
+        } catch {
+          // conservar Blob si la respuesta no es JSON
+        }
+      }
+    }
+    throw error;
+  }
 }
 
 export async function getActividadDiaria(id: number) {

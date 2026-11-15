@@ -8,10 +8,12 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ActividadesDiariasPage } from "../../../routes/_authenticated/actividades-diarias/index";
+import { fechaHoyIso, restarDiasIso } from "../types/actividad-diaria";
 
 const mocks = vi.hoisted(() => ({
   listarProyectos: vi.fn(),
   listarActividades: vi.fn(),
+  exportarActividades: vi.fn(),
   navigate: vi.fn(),
   permisos: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ"],
 }));
@@ -64,11 +66,21 @@ vi.mock("../api/actividades-diarias", async (importOriginal) => {
     ...actual,
     listProyectosDisponiblesActividad: mocks.listarProyectos,
     listActividadesDiarias: mocks.listarActividades,
+    exportarActividadesDiarias: mocks.exportarActividades,
   };
 });
 
 beforeEach(() => {
   vi.clearAllMocks();
+  Object.defineProperty(URL, "createObjectURL", {
+    configurable: true,
+    value: vi.fn(() => "blob:mock-reporte"),
+  });
+  Object.defineProperty(URL, "revokeObjectURL", {
+    configurable: true,
+    value: vi.fn(),
+  });
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
   if (typeof window.CSS === "undefined") {
     Object.defineProperty(window, "CSS", {
       configurable: true,
@@ -121,9 +133,14 @@ beforeEach(() => {
       },
     },
   ]);
+  mocks.exportarActividades.mockResolvedValue({
+    blob: new Blob(["ok"]),
+    filename: "actividades-diarias.pdf",
+  });
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   cleanup();
 });
 
@@ -197,5 +214,136 @@ describe("ActividadesDiariasPage", () => {
       to: "/actividades-diarias/editar/$actividadId",
       params: { actividadId: "1" },
     });
+  });
+
+  it("filtra dinámicamente por rango de fechas, soporta el preset 'Última semana' y valida rangos invertidos (GPRIMPER-43)", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ActividadesDiariasPage />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+    );
+
+    const inputInicio = screen.getByLabelText(
+      "Fecha inicio",
+    ) as HTMLInputElement;
+    const inputFin = screen.getByLabelText("Fecha fin") as HTMLInputElement;
+
+    fireEvent.change(inputInicio, { target: { value: "2026-11-01" } });
+    fireEvent.change(inputFin, { target: { value: "2026-11-10" } });
+
+    await waitFor(() =>
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith({
+        proyectoId: null,
+        fechaInicio: "2026-11-01",
+        fechaFin: "2026-11-10",
+      }),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Última semana" }));
+    const hoyIso = fechaHoyIso();
+    const inicioSemana = restarDiasIso(7, hoyIso);
+
+    expect(inputInicio.value).toBe(inicioSemana);
+    expect(inputFin.value).toBe(hoyIso);
+    await waitFor(() =>
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith({
+        proyectoId: null,
+        fechaInicio: inicioSemana,
+        fechaFin: hoyIso,
+      }),
+    );
+
+    fireEvent.change(inputInicio, { target: { value: "2026-11-14" } });
+    fireEvent.change(inputFin, { target: { value: "2026-11-01" } });
+
+    expect(
+      screen.getByText(
+        "La fecha de inicio no puede ser mayor que la fecha fin.",
+      ),
+    ).toBeTruthy();
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Exportar PDF",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(
+      (
+        screen.getByRole("button", {
+          name: "Exportar Excel",
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+  });
+
+  it("permite exportar las actividades filtradas a PDF y Excel (GPRIMPER-43)", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ActividadesDiariasPage />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+    );
+
+    fireEvent.change(screen.getByLabelText("Fecha inicio"), {
+      target: { value: "2026-11-07" },
+    });
+    fireEvent.change(screen.getByLabelText("Fecha fin"), {
+      target: { value: "2026-11-14" },
+    });
+
+    await waitFor(() =>
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith({
+        proyectoId: null,
+        fechaInicio: "2026-11-07",
+        fechaFin: "2026-11-14",
+      }),
+    );
+
+    await waitFor(() =>
+      expect(
+        (
+          screen.getByRole("button", {
+            name: "Exportar PDF",
+          }) as HTMLButtonElement
+        ).disabled,
+      ).toBe(false),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar PDF" }));
+    await waitFor(() =>
+      expect(mocks.exportarActividades).toHaveBeenCalledWith("pdf", {
+        proyectoId: null,
+        fechaInicio: "2026-11-07",
+        fechaFin: "2026-11-14",
+      }),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Exportar Excel" }));
+    await waitFor(() =>
+      expect(mocks.exportarActividades).toHaveBeenCalledWith("excel", {
+        proyectoId: null,
+        fechaInicio: "2026-11-07",
+        fechaFin: "2026-11-14",
+      }),
+    );
+
+    expect(URL.createObjectURL).toHaveBeenCalledTimes(2);
+    expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
   });
 });
