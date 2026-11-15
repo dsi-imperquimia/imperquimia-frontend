@@ -36,10 +36,14 @@ function EditarActividadDiariaPage() {
     );
   }
 
+  const esPendienteDelSistema = !data.descripcion?.trim();
+
   return (
     <div className="space-y-5">
       <h1 className="text-2xl font-bold">
-        Editar registro de actividad diaria
+        {esPendienteDelSistema
+          ? "Guardar registro de actividad diaria"
+          : "Editar registro de actividad diaria"}
       </h1>
       <FormActividadDiaria key={data.id} actividad={data} />
       <PanelEvidenciasActividad

@@ -75,7 +75,9 @@ export function TablaActividadesProyecto({
         </thead>
         <tbody>
           {actividades.map((a) => {
-            const habilitado = puedeEditarActividad(a.createdAt, rolNombre);
+            const pendienteRegistro = !a.descripcion?.trim();
+            const habilitado =
+              pendienteRegistro || puedeEditarActividad(a.createdAt, rolNombre);
             const filaEditable = Boolean(onEditar && habilitado);
             return (
               <tr
@@ -96,7 +98,15 @@ export function TablaActividadesProyecto({
                 <td className="px-4 py-4 text-gray-700">
                   {a.proyecto?.nombre ?? `Proyecto #${a.proyectoId}`}
                 </td>
-                <td className="px-4 py-4">{a.descripcion}</td>
+                <td className="px-4 py-4">
+                  {pendienteRegistro ? (
+                    <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                      Pendiente de registrar (generada por el sistema)
+                    </span>
+                  ) : (
+                    a.descripcion
+                  )}
+                </td>
                 <td className="px-4 py-4 text-gray-500">
                   {a.observaciones || "Sin observaciones"}
                 </td>
@@ -134,7 +144,7 @@ export function TablaActividadesProyecto({
                           onEditar(a);
                         }}
                       >
-                        Editar
+                        {pendienteRegistro ? "Registrar" : "Editar"}
                       </Button>
                       {!habilitado && (
                         <span className="text-xs text-gray-500">

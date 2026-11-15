@@ -61,9 +61,12 @@ export function FormActividadDiaria({
 } = {}) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const esEdicion = Boolean(actividad);
+  const esRegistroDelSistemaPendiente = Boolean(
+    actividad && !actividad.descripcion?.trim(),
+  );
+  const esEdicion = Boolean(actividad && actividad.descripcion?.trim());
   const habilitadoParaEditar =
-    !actividad || puedeEditarActividad(actividad.createdAt, user?.role?.name);
+    !esEdicion || puedeEditarActividad(actividad!.createdAt, user?.role?.name);
 
   const [proyectoId, setProyectoId] = useState<number | null>(() =>
     actividad ? actividad.proyectoId : (selectedProyectoIdProp ?? null),
@@ -118,7 +121,6 @@ export function FormActividadDiaria({
 
   const proyectosFormulario = useMemo(() => {
     if (
-      esEdicion &&
       actividad?.proyecto &&
       actividad.proyecto.estado === "ACTIVO" &&
       !proyectos.some((item) => item.id === actividad.proyecto!.id)
@@ -126,7 +128,7 @@ export function FormActividadDiaria({
       return [actividad.proyecto, ...proyectos];
     }
     return proyectos;
-  }, [actividad, esEdicion, proyectos]);
+  }, [actividad, proyectos]);
 
   useEffect(() => {
     if (!esEdicion && selectedProyectoIdProp !== undefined) {
@@ -191,13 +193,16 @@ export function FormActividadDiaria({
     setErrores({ campos: {} });
 
     try {
-      await registrarActividadDiaria(payload);
+      const respuesta = await registrarActividadDiaria(payload);
       eliminarBorrador(claveOperacion);
       await queryClient.invalidateQueries({
         queryKey: ["actividades-diarias"],
       });
-      limpiarFormulario();
+      if (!esRegistroDelSistemaPendiente) {
+        limpiarFormulario();
+      }
       mostrarModal("exito");
+      onSuccess?.(respuesta.actividad);
     } catch (error) {
       if (esErrorDeConexion(error)) {
         const proyectoSeleccionado = proyectos.find(
@@ -294,6 +299,16 @@ export function FormActividadDiaria({
         noValidate
         className="max-w-3xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
       >
+        {esRegistroDelSistemaPendiente && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <span>
+              Registro diario generado automáticamente por el sistema. Completa
+              los datos y presiona <strong>Enviar</strong> para guardar el
+              registro.
+            </span>
+          </div>
+        )}
+
         {esEdicion && (
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-gray-50 px-4 py-3 text-sm">
             <span className="text-gray-600">

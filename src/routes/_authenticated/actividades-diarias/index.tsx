@@ -18,7 +18,7 @@ import {
 } from "@modules/actividades-diarias/types/actividad-diaria";
 import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/_authenticated/actividades-diarias/")({
@@ -181,8 +181,9 @@ export function ActividadesDiariasPage() {
             Bitácora de actividades diarias
           </h1>
           <p className="text-sm text-gray-500">
-            Selecciona tu proyecto activo para revisar el historial de
-            actividades, filtrar por fechas, exportar a PDF o Excel y adjuntar
+            El sistema genera el registro diario por proyecto activo. Selecciona
+            tu proyecto para guardar el avance del día, editar registros dentro
+            de las 48 h, filtrar por fechas, exportar a PDF/Excel y adjuntar
             evidencia fotográfica.
           </p>
         </div>
@@ -214,20 +215,6 @@ export function ActividadesDiariasPage() {
           </Button>
         </div>
       </div>
-
-      {puedeCrear && (
-        <Link
-          to="/actividades-diarias/create"
-          search={
-            selectedProyectoId !== null
-              ? { proyectoId: selectedProyectoId }
-              : undefined
-          }
-          className="inline-block rounded-lg bg-gray-900 px-4 py-2 text-sm text-white"
-        >
-          Crear actividad diaria
-        </Link>
-      )}
 
       {puedeCrear && (
         <BorradoresActividad
@@ -368,7 +355,7 @@ export function ActividadesDiariasPage() {
           onRetry={() => void actividadesQuery.refetch()}
           onEvidencias={(actividad) => setActividadEvidenciasId(actividad.id)}
           onEditar={
-            puedeEditar
+            puedeEditar || puedeCrear
               ? (actividad) =>
                   void navigate({
                     to: "/actividades-diarias/editar/$actividadId",

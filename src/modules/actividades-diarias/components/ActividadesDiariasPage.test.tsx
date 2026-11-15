@@ -146,7 +146,7 @@ afterEach(() => {
 });
 
 describe("ActividadesDiariasPage", () => {
-  it("autoselecciona el único proyecto activo como bitácora y preselecciona ese proyecto al crear (GPRCIMPER-29)", async () => {
+  it("autoselecciona el único proyecto activo en la bitácora sin mostrar botón manual de crear actividad (GPRCIMPER-29)", async () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -174,14 +174,9 @@ describe("ActividadesDiariasPage", () => {
     expect(
       screen.queryByRole("button", { name: "Ver todos los proyectos" }),
     ).toBeNull();
-
-    const linkCrear = screen.getByRole("link", {
-      name: "Crear actividad diaria",
-    });
-    expect(linkCrear.getAttribute("href")).toBe("/actividades-diarias/create");
-    expect(linkCrear.getAttribute("data-search")).toBe(
-      JSON.stringify({ proyectoId: 10 }),
-    );
+    expect(
+      screen.queryByRole("link", { name: "Crear actividad diaria" }),
+    ).toBeNull();
   });
 
   it("permite buscar y seleccionar entre múltiples proyectos activos y volver a ver todos (GPRCIMPER-29)", async () => {
@@ -220,11 +215,6 @@ describe("ActividadesDiariasPage", () => {
     expect(filtroProyecto.value).toBe("");
     expect(mocks.listarActividades).toHaveBeenLastCalledWith(null);
 
-    const linkInicial = screen.getByRole("link", {
-      name: "Crear actividad diaria",
-    });
-    expect(linkInicial.getAttribute("data-search")).toBe("");
-
     fireEvent.click(
       screen.getByRole("button", { name: /Mostrar opciones de Filtrar/i }),
     );
@@ -237,10 +227,8 @@ describe("ActividadesDiariasPage", () => {
       expect(mocks.listarActividades).toHaveBeenLastCalledWith(22),
     );
     expect(
-      screen
-        .getByRole("link", { name: "Crear actividad diaria" })
-        .getAttribute("data-search"),
-    ).toBe(JSON.stringify({ proyectoId: 22 }));
+      screen.getByLabelText("Proyecto seleccionado en bitácora").textContent,
+    ).toContain("Bodega Industrial Norte");
 
     fireEvent.click(
       screen.getByRole("button", { name: "Ver todos los proyectos" }),
@@ -251,7 +239,44 @@ describe("ActividadesDiariasPage", () => {
     expect(filtroProyecto.value).toBe("");
   });
 
-  it("muestra el botón Editar en cada fila y permite abrir la edición desde el botón o al hacer clic en la fila", async () => {
+  it("muestra 'Registrar' en actividades pendientes generadas por el sistema y 'Editar' en registros ya guardados", async () => {
+    mocks.listarActividades.mockResolvedValue([
+      {
+        id: 77,
+        claveOperacion: "00000000-0000-4000-8000-000000000077",
+        proyectoId: 10,
+        usuarioId: 7,
+        empleadoId: 7,
+        fecha: "2026-11-14",
+        nombre: "Bitácora del día 2026-11-14",
+        descripcion: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        proyecto: {
+          id: 10,
+          nombre: "Proyecto Edificio Central",
+          estado: "ACTIVO",
+        },
+      },
+      {
+        id: 1,
+        claveOperacion: "00000000-0000-4000-8000-000000000001",
+        proyectoId: 10,
+        usuarioId: 7,
+        empleadoId: 7,
+        fecha: "2026-11-13",
+        nombre: "Impermeabilización de cubierta",
+        descripcion: "Aplicación en losa norte",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        proyecto: {
+          id: 10,
+          nombre: "Proyecto Edificio Central",
+          estado: "ACTIVO",
+        },
+      },
+    ]);
+
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
@@ -263,19 +288,19 @@ describe("ActividadesDiariasPage", () => {
     );
 
     await waitFor(() =>
-      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+      expect(
+        screen.getByText("Pendiente de registrar (generada por el sistema)"),
+      ).toBeTruthy(),
     );
+
+    fireEvent.click(screen.getByRole("button", { name: "Registrar" }));
+    expect(mocks.navigate).toHaveBeenLastCalledWith({
+      to: "/actividades-diarias/editar/$actividadId",
+      params: { actividadId: "77" },
+    });
 
     const botonEditar = screen.getByRole("button", { name: "Editar" });
     fireEvent.click(botonEditar);
-    expect(mocks.navigate).toHaveBeenCalledTimes(1);
-    expect(mocks.navigate).toHaveBeenLastCalledWith({
-      to: "/actividades-diarias/editar/$actividadId",
-      params: { actividadId: "1" },
-    });
-
-    fireEvent.click(screen.getByText("Impermeabilización de cubierta"));
-    expect(mocks.navigate).toHaveBeenCalledTimes(2);
     expect(mocks.navigate).toHaveBeenLastCalledWith({
       to: "/actividades-diarias/editar/$actividadId",
       params: { actividadId: "1" },
