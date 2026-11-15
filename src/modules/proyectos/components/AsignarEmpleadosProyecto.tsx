@@ -8,8 +8,10 @@ import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
 import { userActions } from "@modules/auth/store/authStore";
 import { listEmpleados } from "@modules/empleados/api/list-empleados";
+import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  ArrowRightLeft,
   Search,
   UserMinus,
   UserPlus,
@@ -21,9 +23,114 @@ import { useState } from "react";
 import {
   asignarEmpleadoProyecto,
   errorEmpleadoProyecto,
+  reasignarEmpleadoProyecto,
   retirarEmpleadoProyecto,
 } from "../api/guardarProyecto";
 import type { ProyectoDetalle } from "../types/proyectos";
+
+function ReasignarEmpleadoModal({
+  proyecto,
+  empleadoId,
+  nombreEmpleado,
+  pendiente,
+  onReasignado,
+}: {
+  proyecto: ProyectoDetalle;
+  empleadoId: number;
+  nombreEmpleado: string;
+  pendiente: boolean;
+  onReasignado: () => void;
+}) {
+  const [destinoId, setDestinoId] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const client = useQueryClient();
+
+  const { data: proyectos = [] } = useQuery({
+    queryKey: ["proyectos"],
+    queryFn: listProyectos,
+  });
+  const destinosDisponibles = proyectos.filter(
+    (p) => p.id !== proyecto.id && p.estado !== "CANCELADO",
+  );
+
+  async function confirmar() {
+    if (!destinoId) return;
+    setEnviando(true);
+    try {
+      await reasignarEmpleadoProyecto(proyecto.id, empleadoId, Number(destinoId));
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ["proyectos"] }),
+        client.invalidateQueries({ queryKey: ["empleados", "asignaciones"] }),
+        // Por si quien reasigna también ve "Mis proyectos" (p. ej. es jefe
+        // de alguno de los dos proyectos involucrados).
+        client.invalidateQueries({ queryKey: ["mis-asignaciones"] }),
+      ]);
+      onReasignado();
+      toast.success(`${nombreEmpleado} fue reasignado de proyecto`);
+      setDestinoId("");
+    } catch (error) {
+      toast.danger(errorEmpleadoProyecto(error));
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <Modal>
+      <Button type="button" variant="outline" isDisabled={pendiente}>
+        <ArrowRightLeft className="size-4" />
+        Reasignar
+      </Button>
+      <Modal.Backdrop>
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.CloseTrigger />
+            <Modal.Header className="flex flex-row items-center gap-3">
+              <Modal.Icon className="bg-gray-100 text-gray-500">
+                <ArrowRightLeft className="size-5" />
+              </Modal.Icon>
+              <Modal.Heading>Reasignar técnico</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body>
+              <p className="mb-4 text-sm text-gray-600">
+                Mueve a <strong>{nombreEmpleado}</strong> de{" "}
+                <strong>{proyecto.nombre}</strong> a otro proyecto activo. El
+                jefe de este proyecto será notificado por correo y por
+                sistema.
+              </p>
+              <SelectedField
+                label="Proyecto destino"
+                placeholder="Selecciona un proyecto"
+                value={destinoId}
+                onChange={(value) => setDestinoId(String(value))}
+              >
+                {destinosDisponibles.map((p) => (
+                  <ListBox.Item key={p.id} id={String(p.id)} textValue={p.nombre}>
+                    {p.nombre}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </SelectedField>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button slot="close" variant="secondary">
+                Cancelar
+              </Button>
+              <Button
+                type="button"
+                isDisabled={!destinoId || enviando}
+                isPending={enviando}
+                onClick={confirmar}
+              >
+                Confirmar reasignación
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
+  );
+}
 
 export function AsignarEmpleadosProyecto({
   proyecto,
@@ -313,16 +420,25 @@ export function AsignarEmpleadosProyecto({
                 </div>
               </div>
               {puedeAsignar && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  isDisabled={pendiente !== null}
-                  isPending={pendiente === a.empleadoId}
-                  onClick={() => handleRetirar(a.empleadoId)}
-                >
-                  <UserMinus className="size-4" />
-                  Retirar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <ReasignarEmpleadoModal
+                    proyecto={proyecto}
+                    empleadoId={a.empleadoId}
+                    nombreEmpleado={a.empleado.nombreCompleto}
+                    pendiente={pendiente !== null}
+                    onReasignado={refrescar}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    isDisabled={pendiente !== null}
+                    isPending={pendiente === a.empleadoId}
+                    onClick={() => handleRetirar(a.empleadoId)}
+                  >
+                    <UserMinus className="size-4" />
+                    Retirar
+                  </Button>
+                </div>
               )}
             </li>
           ))}
