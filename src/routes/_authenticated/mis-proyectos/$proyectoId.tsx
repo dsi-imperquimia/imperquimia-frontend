@@ -1,5 +1,6 @@
 import { Button } from "@heroui/react/button";
 import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -63,7 +64,14 @@ function MiProyectoDetalle() {
         ← Volver a mis proyectos
       </Link>
       <div>
-        <h1 className="text-2xl font-bold">{p.nombre}</h1>
+        <h1 className="flex items-center gap-3 text-2xl font-bold">
+          {p.nombre}
+          {p.esJefe && (
+            <Chip color="accent" size="sm">
+              Jefe de proyecto
+            </Chip>
+          )}
+        </h1>
         <p className="mt-1 text-gray-500">
           {ESTADO_LABEL[p.estado] ?? p.estado} · {fecha(p.fechaInicio)} –{" "}
           {fecha(p.fechaFin)}
