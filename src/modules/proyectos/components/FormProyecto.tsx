@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@heroui/react/button";
+import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
 import { HardHat } from "lucide-react";
 import { InputField } from "@components/fields/InputField";
@@ -21,6 +22,7 @@ import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
 import { AsignarEmpleadosProyecto } from "./AsignarEmpleadosProyecto";
 import { listProyectos } from "../api/listProyectos";
+import { MaterialPickerModal } from "@modules/materiales/components/MaterialPickerModal";
 
 function esFechaValida(fecha: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
@@ -103,6 +105,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     {},
   );
   const [guardando, setGuardando] = useState(false);
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const erroresDetalle = Object.entries(erroresCampo).filter(([clave]) =>
     /^detalles\.\d+\.(materialId|cantidad)$/.test(clave),
   );
@@ -110,9 +113,12 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     const campo = formRef.current?.querySelector<HTMLElement>(
       `[data-campo="${clave}"] select, [data-campo="${clave}"] input`,
     );
-    campo?.focus();
-    if (campo && typeof campo.scrollIntoView === "function")
-      campo.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (!campo) return;
+    window.setTimeout(() => {
+      campo.focus();
+      if (typeof campo.scrollIntoView === "function")
+        campo.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 0);
   };
   const limpiarErrorDetalle = (index: number, campo: CampoDetalle) => {
     setErroresCampo((actuales) => {
@@ -282,12 +288,12 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
             materialesVistos.add(materialId);
           }
           if (
-            !Number.isFinite(cantidad) ||
-            cantidad <= 0 ||
-            !/^\d+(?:\.\d{1,2})?$/.test(detalle.cantidad)
+            !Number.isSafeInteger(cantidad) ||
+            cantidad < 1 ||
+            !/^\d+$/.test(detalle.cantidad)
           ) {
             nuevosErrores[claveDetalle(index, "cantidad")] =
-              "Ingresa una cantidad mayor que cero, con hasta dos decimales.";
+              "Ingresa una cantidad entera mayor que cero.";
           }
         });
         if (
@@ -370,8 +376,8 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
       <h2 className="text-lg font-semibold">Detalles del proyecto</h2>
       {!proyecto && (
         <p className="text-sm text-gray-500">
-          Creación directa, sin cotización. Puedes agregar materiales al
-          presupuesto.
+          Creación directa, sin cotización. Puedes agregar los materiales
+          cotizados.
         </p>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -524,7 +530,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
       )}
       <section className="space-y-4 border-t border-gray-200 pt-5">
         <div>
-          <h2 className="text-lg font-semibold">Presupuesto de materiales</h2>
+          <h2 className="text-lg font-semibold">Materiales cotizados</h2>
           <p className="text-sm text-gray-500">
             Los importes son una vista previa. Al guardar se calculan con los
             precios del servidor.
@@ -534,155 +540,195 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
         {materialesQuery.isError && (
           <div role="alert" className="text-sm text-red-700">
             No se pudo cargar el catálogo de materiales.{" "}
-            <button
+            <Button
               type="button"
-              className="underline"
+              variant="ghost"
+              size="sm"
+              className="h-auto p-0 underline"
               onClick={() => materialesQuery.refetch()}
             >
               Reintentar
-            </button>
+            </Button>
           </div>
         )}
-        {detalles.map((detalle, index) => {
-          const id = Number(detalle.materialId);
-          const anterior = proyecto?.detalles.find(
-            (item) => item.material.id === id,
-          );
-          const material = materiales.find((item) => item.id === id);
-          const costo = Number(
-            anterior?.costoUnitario ?? material?.costoUnitario ?? 0,
-          );
-          const unidad = anterior?.unidad ?? material?.unidad ?? "";
-          const cantidad = Number(detalle.cantidad);
-          const subtotal =
-            Number.isFinite(cantidad) && cantidad > 0
-              ? Math.round(cantidad * costo * 100) / 100
-              : 0;
-          const iva = Math.round(subtotal * 0.13 * 100) / 100;
-          const opciones = materialesElegibles.filter(
-            (item) =>
-              item.id === id ||
-              !detalles.some(
-                (otro, i) => i !== index && Number(otro.materialId) === item.id,
-              ),
-          );
-          return (
-            <div
-              key={index}
-              className="space-y-3 rounded-lg border border-gray-200 p-4"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="font-medium">Material {index + 1}</h3>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  isDisabled={guardando}
-                  onClick={() => {
-                    setDetalles(detalles.filter((_, i) => i !== index));
-                    limpiarErroresDetalle();
-                  }}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            isDisabled={
+              guardando ||
+              materialesQuery.isPending ||
+              materialesQuery.isError ||
+              detalles.length >= materialesElegibles.length
+            }
+            onClick={() => setIsMaterialModalOpen(true)}
+          >
+            Agregar material
+          </Button>
+        </div>
+        {detalles.length ? (
+          <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content
+                  aria-label="Materiales cotizados"
+                  className="min-w-[900px]"
                 >
-                  Quitar
-                </Button>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label
-                  className="flex flex-col gap-1 text-sm"
-                  data-campo={claveDetalle(index, "materialId")}
-                >
-                  Material
-                  <select
-                    aria-label={`Material ${index + 1}`}
-                    aria-invalid={Boolean(
-                      erroresCampo[claveDetalle(index, "materialId")],
-                    )}
-                    aria-describedby={
-                      erroresCampo[claveDetalle(index, "materialId")]
-                        ? `error-material-${index}`
-                        : undefined
-                    }
-                    className="rounded-lg border border-gray-300 bg-white p-2"
-                    value={detalle.materialId}
-                    disabled={guardando}
-                    onChange={(e) => {
-                      setDetalles(
-                        detalles.map((item, i) =>
-                          i === index
-                            ? { ...item, materialId: e.target.value }
-                            : item,
-                        ),
-                      );
-                      limpiarErrorDetalle(index, "materialId");
-                    }}
-                  >
-                    <option value="">Selecciona un material</option>
-                    {anterior && !opciones.some((item) => item.id === id) && (
-                      <option value={id}>{anterior.material.nombre}</option>
-                    )}
-                    {opciones.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.nombre}
-                      </option>
-                    ))}
-                  </select>
-                  {erroresCampo[claveDetalle(index, "materialId")] && (
-                    <span
-                      id={`error-material-${index}`}
-                      role="alert"
-                      className="text-sm text-red-700"
+                  <Table.Header>
+                    <Table.Column isRowHeader>#</Table.Column>
+                    <Table.Column>Material</Table.Column>
+                    <Table.Column>Cantidad</Table.Column>
+                    <Table.Column>Precio unitario</Table.Column>
+                    <Table.Column>Subtotal</Table.Column>
+                    <Table.Column>IVA</Table.Column>
+                    <Table.Column>Total</Table.Column>
+                    <Table.Column>Acción</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    <Table.Collection
+                      items={detalles.map((detalle, index) => ({
+                        detalle,
+                        index,
+                      }))}
                     >
-                      {erroresCampo[claveDetalle(index, "materialId")]}
-                    </span>
-                  )}
-                </label>
-                <div data-campo={claveDetalle(index, "cantidad")}>
-                  <InputField
-                    label="Cantidad"
-                    aria-label={`Cantidad del material ${index + 1}`}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={detalle.cantidad}
-                    disabled={guardando}
-                    errorMessage={erroresCampo[claveDetalle(index, "cantidad")]}
-                    onChange={(e) => {
-                      setDetalles(
-                        detalles.map((item, i) =>
-                          i === index
-                            ? { ...item, cantidad: e.target.value }
-                            : item,
-                        ),
-                      );
-                      limpiarErrorDetalle(index, "cantidad");
-                    }}
-                  />
-                </div>
-              </div>
-              {id > 0 && (
-                <p className="text-sm text-gray-600">
-                  {unidad || "Sin unidad"} · {dinero(costo)} por unidad ·
-                  Subtotal {dinero(subtotal)} · IVA {dinero(iva)} · Total{" "}
-                  {dinero(subtotal + iva)}
-                </p>
-              )}
-            </div>
-          );
-        })}
-        <Button
-          type="button"
-          variant="secondary"
-          isDisabled={
-            guardando ||
-            materialesQuery.isPending ||
-            materialesQuery.isError ||
-            detalles.length >= materialesElegibles.length
+                      {({ detalle, index }) => {
+                        const id = Number(detalle.materialId);
+                        const anterior = proyecto?.detalles.find(
+                          (item) => item.material.id === id,
+                        );
+                        const material = materiales.find(
+                          (item) => item.id === id,
+                        );
+                        const costo = Number(
+                          anterior?.costoUnitario ??
+                            material?.costoUnitario ??
+                            0,
+                        );
+                        const unidad =
+                          anterior?.unidad ?? material?.unidad ?? "";
+                        const cantidad = Number(detalle.cantidad);
+                        const subtotal =
+                          Number.isFinite(cantidad) && cantidad > 0
+                            ? Math.round(cantidad * costo * 100) / 100
+                            : 0;
+                        const iva = Math.round(subtotal * 0.13 * 100) / 100;
+                        return (
+                          <Table.Row key={`${detalle.materialId}-${index}`}>
+                            <Table.Cell className="text-gray-500">
+                              {index + 1}
+                            </Table.Cell>
+                            <Table.Cell
+                              data-campo={claveDetalle(index, "materialId")}
+                            >
+                              <span className="font-medium">
+                                {material?.nombre ??
+                                  anterior?.material.nombre ??
+                                  "Material"}
+                              </span>
+                              <span className="block text-xs text-gray-500">
+                                {material?.codigo || `#${id}`} ·{" "}
+                                {unidad || "Sin unidad"}
+                              </span>
+                              {erroresCampo[
+                                claveDetalle(index, "materialId")
+                              ] && (
+                                <span
+                                  className="block text-xs text-red-700"
+                                  role="alert"
+                                >
+                                  {
+                                    erroresCampo[
+                                      claveDetalle(index, "materialId")
+                                    ]
+                                  }
+                                </span>
+                              )}
+                            </Table.Cell>
+                            <Table.Cell
+                              data-campo={claveDetalle(index, "cantidad")}
+                            >
+                              <InputField
+                                aria-label={`Cantidad del material ${index + 1}`}
+                                type="text"
+                                inputMode="numeric"
+                                value={detalle.cantidad}
+                                disabled={guardando}
+                                errorMessage={
+                                  erroresCampo[claveDetalle(index, "cantidad")]
+                                }
+                                onChange={(e) => {
+                                  setDetalles(
+                                    detalles.map((item, i) =>
+                                      i === index
+                                        ? { ...item, cantidad: e.target.value }
+                                        : item,
+                                    ),
+                                  );
+                                  limpiarErrorDetalle(index, "cantidad");
+                                }}
+                              />
+                            </Table.Cell>
+                            <Table.Cell>{dinero(costo)}</Table.Cell>
+                            <Table.Cell>{dinero(subtotal)}</Table.Cell>
+                            <Table.Cell>{dinero(iva)}</Table.Cell>
+                            <Table.Cell className="font-semibold">
+                              {dinero(subtotal + iva)}
+                            </Table.Cell>
+                            <Table.Cell>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="danger"
+                                isDisabled={guardando}
+                                onClick={() => {
+                                  setDetalles(
+                                    detalles.filter((_, i) => i !== index),
+                                  );
+                                  limpiarErroresDetalle();
+                                }}
+                              >
+                                Quitar
+                              </Button>
+                            </Table.Cell>
+                          </Table.Row>
+                        );
+                      }}
+                    </Table.Collection>
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
+          </div>
+        ) : (
+          <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500">
+            Aún no hay materiales. Usa “Agregar material” para definir lo
+            cotizado.
+          </p>
+        )}
+        <MaterialPickerModal
+          isOpen={isMaterialModalOpen}
+          onOpenChange={setIsMaterialModalOpen}
+          materiales={materialesElegibles}
+          isLoading={materialesQuery.isPending}
+          hasError={materialesQuery.isError}
+          onRetry={() => void materialesQuery.refetch()}
+          selectedIds={
+            new Set(detalles.map((detalle) => Number(detalle.materialId)))
           }
-          onClick={() =>
-            setDetalles([...detalles, { materialId: "", cantidad: "1" }])
-          }
-        >
-          Agregar material
-        </Button>
+          onAdd={(materialId) => {
+            setDetalles((actuales) =>
+              actuales.some(
+                (detalle) => Number(detalle.materialId) === materialId,
+              )
+                ? actuales
+                : [
+                    ...actuales,
+                    { materialId: String(materialId), cantidad: "1" },
+                  ],
+            );
+            limpiarErroresDetalle();
+          }}
+        />
         {erroresCampo.detalles && (
           <p role="alert" className="text-sm text-red-700">
             {erroresCampo.detalles}
@@ -697,34 +743,36 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
             <ul className="mt-1 list-disc pl-5">
               {erroresDetalle.map(([clave, mensaje]) => (
                 <li key={clave}>
-                  <button
+                  <Button
                     type="button"
-                    className="text-left underline"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-left underline"
                     onClick={() => enfocarDetalle(clave)}
                   >
                     {etiquetaDetalle(clave)}: {mensaje}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           </div>
         )}
-        <dl className="flex flex-wrap justify-end gap-6 border-t border-gray-200 pt-4">
-          <div>
-            <dt className="text-sm text-gray-500">Subtotal</dt>
-            <dd className="font-semibold">{dinero(resumen.subTotal)}</dd>
+        <div className="flex justify-end">
+          <div className="w-full max-w-md space-y-2 rounded-xl border bg-gray-50 p-4">
+            <div className="flex justify-between">
+              <span>Subtotal general</span>
+              <strong>{dinero(resumen.subTotal)}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>IVA general</span>
+              <strong>{dinero(resumen.totalIva)}</strong>
+            </div>
+            <div className="flex justify-between border-t pt-2 text-lg">
+              <span>Total general</span>
+              <strong>{dinero(resumen.subTotal + resumen.totalIva)}</strong>
+            </div>
           </div>
-          <div>
-            <dt className="text-sm text-gray-500">IVA</dt>
-            <dd className="font-semibold">{dinero(resumen.totalIva)}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-gray-500">Total</dt>
-            <dd className="font-semibold">
-              {dinero(resumen.subTotal + resumen.totalIva)}
-            </dd>
-          </div>
-        </dl>
+        </div>
       </section>
       {proyecto ? (
         <>

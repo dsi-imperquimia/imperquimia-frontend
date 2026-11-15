@@ -12,6 +12,7 @@ import { listHerramientas } from "@modules/herramientas/api/list-herramientas";
 import { DialogCreateHerramienta } from "@modules/herramientas/components/DialogRegistrarHerramienta";
 import type { Herramienta } from "@modules/herramientas/types/herramientas";
 import { EstadoHerramienta } from "@modules/herramientas/types/herramientas";
+import { getUbicacionHerramientaLabel } from "@modules/herramientas/utils/ubicacionHerramienta";
 import DialogMovimientoHerramienta from "@modules/movimientosHerramientas/components/DialogMovimientoHerramienta";
 import { listProyectos } from "@modules/proyectos/api/listProyectos";
 
@@ -26,6 +27,7 @@ const getEstadoLabel = (estado: EstadoHerramienta | "ACTIVOS") => {
     [EstadoHerramienta.EN_PROYECTO]: "EN PROYECTO",
     [EstadoHerramienta.MANTENIMIENTO]: "MANTENIMIENTO",
     [EstadoHerramienta.DANADA]: "DAÑADA",
+    [EstadoHerramienta.REQUIERE_REVISION]: "REQUIERE REVISIÓN",
     [EstadoHerramienta.DESECHO]: "DESECHO",
   };
   return labels[estado];
@@ -96,12 +98,18 @@ function RouteComponent() {
       [EstadoHerramienta.MANTENIMIENTO]:
         "bg-amber-50 text-amber-700 border-amber-200",
       [EstadoHerramienta.DANADA]: "bg-rose-50 text-rose-700 border-rose-200",
+      [EstadoHerramienta.REQUIERE_REVISION]:
+        "bg-orange-50 text-orange-800 border-orange-200",
       [EstadoHerramienta.DESECHO]: "bg-gray-100 text-gray-600 border-gray-300",
     };
 
     // Mapeo para forzar la visualización de la Ñ correcta en la celda de la tabla
     const textoVisual =
-      estado === EstadoHerramienta.DANADA ? "DAÑADA" : estado.replace("_", " ");
+      estado === EstadoHerramienta.DANADA
+        ? "DAÑADA"
+        : estado === EstadoHerramienta.REQUIERE_REVISION
+          ? "REQUIERE REVISIÓN"
+          : estado.replace("_", " ");
 
     return (
       <span
@@ -262,12 +270,14 @@ function RouteComponent() {
                       {getEstadoBadge(herramienta.estado)}
                     </Table.Cell>
                     <Table.Cell>
-                      {herramienta.proyecto ? (
+                      {herramienta.ubicacionActual === "PROYECTO" ? (
                         <span className="text-blue-700 font-semibold">
-                          {herramienta.proyecto.nombre}
+                          {getUbicacionHerramientaLabel(herramienta)}
                         </span>
                       ) : (
-                        <span className="text-gray-500">Bodega General</span>
+                        <span className="text-gray-500">
+                          {getUbicacionHerramientaLabel(herramienta)}
+                        </span>
                       )}
                     </Table.Cell>
                     <Table.Cell>
@@ -296,16 +306,17 @@ function RouteComponent() {
                           </Link>
                         )}
 
-                        {herramienta.estado !== EstadoHerramienta.DESECHO ? (
+                        {userActions.hasPermission("HERRAMIENTA_UPDATE") &&
+                        herramienta.estado !== EstadoHerramienta.DESECHO ? (
                           <DialogMovimientoHerramienta
                             herramienta={herramienta}
                             onMovementSuccess={handleMovementSuccess}
                           />
-                        ) : (
+                        ) : herramienta.estado === EstadoHerramienta.DESECHO ? (
                           <span className="text-xs text-gray-400 italic px-3">
                             De baja
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </Table.Cell>
                   </Table.Row>
