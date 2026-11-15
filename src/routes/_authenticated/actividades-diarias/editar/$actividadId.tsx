@@ -1,4 +1,6 @@
 import { Button } from "@heroui/react/button";
+import { useAuth } from "@modules/auth/store/authStore";
+import { PanelIncidenciasJornada } from "@modules/incidencias/components/PanelIncidenciasJornada";
 import { getActividadDiaria } from "@modules/actividades-diarias/api/actividades-diarias";
 import { FormActividadDiaria } from "@modules/actividades-diarias/components/FormActividadDiaria";
 import { PanelEvidenciasActividad } from "@modules/actividades-diarias/components/PanelEvidenciasActividad";
@@ -15,6 +17,7 @@ function EditarActividadDiariaPage() {
   const { actividadId } = Route.useParams();
   const id = Number(actividadId);
   const valido = Number.isInteger(id) && id > 0;
+  const { hasPermission } = useAuth();
 
   const { data, isPending, isError, refetch } = useQuery({
     queryKey: ["actividades-diarias", "detalle", id],
@@ -48,6 +51,19 @@ function EditarActividadDiariaPage() {
         evidenciasIniciales={data.evidencias}
         soloLectura={data.proyecto?.estado !== "ACTIVO"}
       />
+      {hasPermission("INCIDENCIA_READ") && (
+        <PanelIncidenciasJornada
+          actividadId={data.id}
+          proyectoId={data.proyectoId}
+          proyectoNombre={data.proyecto?.nombre}
+          fechaJornada={data.fecha}
+          puedeEditar={hasPermission("INCIDENCIA_UPDATE")}
+          puedeCrear={
+            hasPermission("INCIDENCIA_CREATE") &&
+            data.proyecto?.estado !== "CANCELADO"
+          }
+        />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { User } from "@modules/user/types/user";
 import {
   BriefcaseBusiness,
+  TriangleAlert,
   ClipboardList,
   FileText,
   HardHat,
@@ -150,6 +151,23 @@ export const NAV_ITEMS: NavItem[] = [
       },
     ],
     permission: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ", "ACTIVIDAD_UPDATE"],
+  },
+  {
+    label: "Incidencias",
+    icon: TriangleAlert,
+    to: "/incidencias",
+    children: [
+      {
+        label: "Lista de incidencias",
+        to: "/incidencias",
+        permission: [
+          "INCIDENCIA_READ",
+          "INCIDENCIA_CREATE",
+          "INCIDENCIA_UPDATE",
+        ],
+      },
+    ],
+    permission: ["INCIDENCIA_READ", "INCIDENCIA_CREATE", "INCIDENCIA_UPDATE"],
   },
   {
     label: "Herramientas",
