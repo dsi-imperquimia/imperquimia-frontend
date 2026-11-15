@@ -1,6 +1,7 @@
 import type { User } from "@modules/user/types/user";
 import {
   BriefcaseBusiness,
+  ClipboardList,
   FileText,
   HardHat,
   Layers,
@@ -136,6 +137,19 @@ export const NAV_ITEMS: NavItem[] = [
     to: "/proyectos",
     children: [{ label: "Lista de proyectos", to: "/proyectos" }],
     permission: ["PROYECTO_READ"],
+  },
+  {
+    label: "Actividades diarias",
+    icon: ClipboardList,
+    to: "/actividades-diarias",
+    children: [
+      {
+        label: "Lista de actividades",
+        to: "/actividades-diarias",
+        permission: ["ACTIVIDAD_READ", "ACTIVIDAD_CREATE", "ACTIVIDAD_UPDATE"],
+      },
+    ],
+    permission: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ", "ACTIVIDAD_UPDATE"],
   },
   {
     label: "Herramientas",
