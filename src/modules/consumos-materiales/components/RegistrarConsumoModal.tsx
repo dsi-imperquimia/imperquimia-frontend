@@ -15,7 +15,12 @@ import {
 import type { ResumenMaterialProyecto } from "../types/consumo-material";
 import { MaterialComboBoxControl } from "@modules/materiales/components/MaterialComboBoxControl";
 
-const nuevaClave = () => globalThis.crypto.randomUUID();
+function nuevaClave(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return "00000000-0000-4000-8000-000000000000";
+}
 const hoy = () =>
   new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/El_Salvador",

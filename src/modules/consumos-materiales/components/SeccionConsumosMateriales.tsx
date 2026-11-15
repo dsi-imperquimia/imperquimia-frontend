@@ -31,6 +31,13 @@ const numero = (value: string | number) =>
 const fecha = (value: string) =>
   new Intl.DateTimeFormat("es-SV", { timeZone: "UTC" }).format(new Date(value));
 
+function nuevaClave(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return "00000000-0000-4000-8000-000000000000";
+}
+
 function RevertirConsumoDialog({
   consumo,
   onSuccess,
@@ -39,9 +46,7 @@ function RevertirConsumoDialog({
   onSuccess: () => Promise<void>;
 }) {
   const [motivo, setMotivo] = useState("");
-  const [claveOperacion, setClaveOperacion] = useState(() =>
-    globalThis.crypto.randomUUID(),
-  );
+  const [claveOperacion, setClaveOperacion] = useState(nuevaClave);
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -94,7 +99,7 @@ function RevertirConsumoDialog({
                     toast.success("Consumo corregido");
                     setOpen(false);
                     setMotivo("");
-                    setClaveOperacion(globalThis.crypto.randomUUID());
+                    setClaveOperacion(nuevaClave());
                   } catch (requestError) {
                     setError(errorConsumoMaterial(requestError));
                   } finally {

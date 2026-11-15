@@ -27,7 +27,12 @@ type FilaEnvio = {
   origen: "PRESUPUESTO" | "MANUAL";
 };
 
-const nuevaClave = () => globalThis.crypto.randomUUID();
+function nuevaClave(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return "00000000-0000-4000-8000-000000000000";
+}
 const searchable = (value: string) =>
   value
     .normalize("NFD")

@@ -18,7 +18,12 @@ type FilaDevolucion = {
   claveOperacion: string;
 };
 
-const nuevaClave = () => globalThis.crypto.randomUUID();
+function nuevaClave(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return "00000000-0000-4000-8000-000000000000";
+}
 const numero = (value: string | number) =>
   Number(value).toLocaleString("es-SV", { maximumFractionDigits: 2 });
 
