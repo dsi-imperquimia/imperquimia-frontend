@@ -7,6 +7,8 @@ export interface MiAsignacion {
   fechaFin?: string | null;
   vista: boolean;
   vistaAt?: string | null;
+  /** true si el empleado es el jefe de proyecto de esta obra. */
+  esJefe: boolean;
 }
 
 export interface MisAsignaciones {

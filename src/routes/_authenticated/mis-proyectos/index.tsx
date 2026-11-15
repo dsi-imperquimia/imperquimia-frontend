@@ -95,6 +95,11 @@ function MisProyectos() {
                       {ESTADO_LABEL[item.estado] ?? item.estado} ·{" "}
                       {fecha(item.fechaInicio)} – {fecha(item.fechaFin)}
                     </p>
+                    {item.esJefe && (
+                      <Chip color="accent" size="sm" className="mt-1 w-fit">
+                        Jefe de proyecto
+                      </Chip>
+                    )}
                   </Card.Content>
                 </Card>
               </Link>
