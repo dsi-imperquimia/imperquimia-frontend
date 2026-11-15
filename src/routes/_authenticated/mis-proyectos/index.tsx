@@ -4,6 +4,7 @@ import { Chip } from "@heroui/react/chip";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { listMisAsignaciones } from "@modules/mis-asignaciones/api/misAsignaciones";
+import type { PrioridadAsignacion } from "@modules/mis-asignaciones/types/asignacion";
 import { fecha } from "@modules/proyectos/types/proyectos";
 import axios from "axios";
 import { CheckCircle2, MapPin } from "lucide-react";
@@ -11,6 +12,21 @@ import { CheckCircle2, MapPin } from "lucide-react";
 const ESTADO_LABEL: Record<string, string> = {
   GARANTIA: "GARANTÍA",
   EN_PAUSA: "EN PAUSA",
+};
+
+const PRIORIDAD_LABEL: Record<PrioridadAsignacion, string> = {
+  ALTA: "Prioridad alta",
+  MEDIA: "Prioridad media",
+  BAJA: "Prioridad baja",
+};
+
+const PRIORIDAD_COLOR: Record<
+  PrioridadAsignacion,
+  "danger" | "warning" | "default"
+> = {
+  ALTA: "danger",
+  MEDIA: "warning",
+  BAJA: "default",
 };
 
 export const Route = createFileRoute("/_authenticated/mis-proyectos/")({
@@ -95,11 +111,16 @@ function MisProyectos() {
                       {ESTADO_LABEL[item.estado] ?? item.estado} ·{" "}
                       {fecha(item.fechaInicio)} – {fecha(item.fechaFin)}
                     </p>
-                    {item.esJefe && (
-                      <Chip color="accent" size="sm" className="mt-1 w-fit">
-                        Jefe de proyecto
+                    <div className="mt-1 flex flex-wrap gap-1.5">
+                      <Chip color={PRIORIDAD_COLOR[item.prioridad]} size="sm" className="w-fit">
+                        {PRIORIDAD_LABEL[item.prioridad]}
                       </Chip>
-                    )}
+                      {item.esJefe && (
+                        <Chip color="accent" size="sm" className="w-fit">
+                          Jefe de proyecto
+                        </Chip>
+                      )}
+                    </div>
                   </Card.Content>
                 </Card>
               </Link>

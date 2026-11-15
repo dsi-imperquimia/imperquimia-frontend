@@ -1,3 +1,5 @@
+export type PrioridadAsignacion = "ALTA" | "MEDIA" | "BAJA";
+
 export interface MiAsignacion {
   id: number;
   nombre: string;
@@ -9,6 +11,8 @@ export interface MiAsignacion {
   vistaAt?: string | null;
   /** true si el empleado es el jefe de proyecto de esta obra. */
   esJefe: boolean;
+  /** Según qué tan cerca está la fecha de inicio del proyecto. */
+  prioridad: PrioridadAsignacion;
 }
 
 export interface MisAsignaciones {

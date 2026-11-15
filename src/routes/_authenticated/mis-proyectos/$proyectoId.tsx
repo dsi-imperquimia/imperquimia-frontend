@@ -9,12 +9,28 @@ import {
   mapaUrl,
   marcarAsignacionVista,
 } from "@modules/mis-asignaciones/api/misAsignaciones";
+import type { PrioridadAsignacion } from "@modules/mis-asignaciones/types/asignacion";
 import { fecha } from "@modules/proyectos/types/proyectos";
 import { Mail, MapPin } from "lucide-react";
 
 const ESTADO_LABEL: Record<string, string> = {
   GARANTIA: "GARANTÍA",
   EN_PAUSA: "EN PAUSA",
+};
+
+const PRIORIDAD_LABEL: Record<PrioridadAsignacion, string> = {
+  ALTA: "Prioridad alta",
+  MEDIA: "Prioridad media",
+  BAJA: "Prioridad baja",
+};
+
+const PRIORIDAD_COLOR: Record<
+  PrioridadAsignacion,
+  "danger" | "warning" | "default"
+> = {
+  ALTA: "danger",
+  MEDIA: "warning",
+  BAJA: "default",
 };
 
 export const Route = createFileRoute("/_authenticated/mis-proyectos/$proyectoId")({
@@ -64,8 +80,11 @@ function MiProyectoDetalle() {
         ← Volver a mis proyectos
       </Link>
       <div>
-        <h1 className="flex items-center gap-3 text-2xl font-bold">
+        <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold">
           {p.nombre}
+          <Chip color={PRIORIDAD_COLOR[p.prioridad]} size="sm">
+            {PRIORIDAD_LABEL[p.prioridad]}
+          </Chip>
           {p.esJefe && (
             <Chip color="accent" size="sm">
               Jefe de proyecto
