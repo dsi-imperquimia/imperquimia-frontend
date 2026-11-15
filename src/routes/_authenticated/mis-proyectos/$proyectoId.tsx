@@ -10,8 +10,8 @@ import {
   marcarAsignacionVista,
 } from "@modules/mis-asignaciones/api/misAsignaciones";
 import type { PrioridadAsignacion } from "@modules/mis-asignaciones/types/asignacion";
-import { fecha } from "@modules/proyectos/types/proyectos";
-import { Mail, MapPin } from "lucide-react";
+import { fecha, TIPOS_OBRA_LABEL } from "@modules/proyectos/types/proyectos";
+import { Mail, MapPin, Users } from "lucide-react";
 
 const ESTADO_LABEL: Record<string, string> = {
   GARANTIA: "GARANTÍA",
@@ -94,6 +94,8 @@ function MiProyectoDetalle() {
         <p className="mt-1 text-gray-500">
           {ESTADO_LABEL[p.estado] ?? p.estado} · {fecha(p.fechaInicio)} –{" "}
           {fecha(p.fechaFin)}
+          {p.cliente && <> · {p.cliente}</>}
+          {p.tipoObra && <> · {TIPOS_OBRA_LABEL[p.tipoObra]}</>}
         </p>
       </div>
       <Card>
@@ -143,6 +145,33 @@ function MiProyectoDetalle() {
             <p className="text-gray-500">
               Este proyecto todavía no tiene un jefe de proyecto asignado.
             </p>
+          )}
+        </Card.Content>
+      </Card>
+      <Card>
+        <Card.Header>
+          <Card.Title>Equipo asignado</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          {p.equipo.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
+              {p.equipo.map((miembro, index) => (
+                <li
+                  key={`${miembro.nombreCompleto}-${index}`}
+                  className="flex items-center gap-3 py-2 first:pt-0 last:pb-0"
+                >
+                  <Users className="size-4 text-gray-400" />
+                  <div>
+                    <p className="font-medium">{miembro.nombreCompleto}</p>
+                    {miembro.cargo && (
+                      <p className="text-sm text-gray-500">{miembro.cargo}</p>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-500">No hay más gente asignada a esta obra por ahora.</p>
           )}
         </Card.Content>
       </Card>

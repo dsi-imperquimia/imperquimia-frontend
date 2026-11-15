@@ -1,3 +1,5 @@
+import type { TipoObra } from "@modules/proyectos/types/proyectos";
+
 export type PrioridadAsignacion = "ALTA" | "MEDIA" | "BAJA";
 
 export interface MiAsignacion {
@@ -22,5 +24,9 @@ export interface MisAsignaciones {
 
 export interface MiAsignacionDetalle extends MiAsignacion {
   descripcion?: string | null;
+  cliente?: string | null;
+  tipoObra?: TipoObra | null;
   jefeProyecto: { nombreCompleto: string; email: string | null } | null;
+  /** Resto del equipo con asignación vigente en la obra (sin incluirse a uno mismo). */
+  equipo: { nombreCompleto: string; cargo: string | null }[];
 }
