@@ -68,6 +68,26 @@ export async function confirmarInicioJornada(jornadaId: number) {
   return data;
 }
 
+export async function verificarItemRetorno(
+  jornadaId: number,
+  itemId: number,
+  estado: EstadoVerificacionHerramienta,
+  observacion?: string,
+) {
+  const { data } = await http.patch<JornadaHerramientas>(
+    `/jornada-herramientas/${jornadaId}/items/${itemId}/retorno`,
+    { estado, observacion: observacion?.trim() || undefined },
+  );
+  return data;
+}
+
+export async function confirmarRetornoJornada(jornadaId: number) {
+  const { data } = await http.patch<JornadaHerramientas>(
+    `/jornada-herramientas/${jornadaId}/confirmar-retorno`,
+  );
+  return data;
+}
+
 export function errorJornadaHerramientas(error: unknown): string {
   const mensaje: unknown = isAxiosError(error)
     ? error.response?.data?.message

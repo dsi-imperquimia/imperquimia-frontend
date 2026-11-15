@@ -10,6 +10,7 @@ import {
   listProyectosDisponiblesJornada,
 } from "@modules/jornada-herramientas/api/jornada-herramientas";
 import { ChecklistHerramientasInicio } from "@modules/jornada-herramientas/components/ChecklistHerramientasInicio";
+import { ChecklistHerramientasRetorno } from "@modules/jornada-herramientas/components/ChecklistHerramientasRetorno";
 import {
   fechaHoyIso,
   type JornadaHerramientas,
@@ -94,7 +95,7 @@ function JornadaHerramientasPage() {
         <h1 className="text-2xl font-bold">Verificación de herramientas</h1>
         <p className="text-sm text-gray-500">
           Verifica el inventario de herramientas despachadas al técnico al
-          inicio de la jornada.
+          inicio de la jornada y confirma su retorno al finalizarla.
         </p>
       </div>
 
@@ -193,10 +194,16 @@ function JornadaHerramientasPage() {
           )}
 
           {jornadaActual && (
-            <ChecklistHerramientasInicio
-              jornada={jornadaActual}
-              onCambio={setJornada}
-            />
+            <>
+              <ChecklistHerramientasInicio
+                jornada={jornadaActual}
+                onCambio={setJornada}
+              />
+              <ChecklistHerramientasRetorno
+                jornada={jornadaActual}
+                onCambio={setJornada}
+              />
+            </>
           )}
         </>
       )}
