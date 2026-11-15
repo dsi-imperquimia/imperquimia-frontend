@@ -463,4 +463,54 @@ describe("ActividadesDiariasPage", () => {
       screen.getByRole("button", { name: /Elegir de la galería/i }),
     ).toBeTruthy();
   });
+
+  it("limpia el texto escrito en el filtro de proyecto aunque selectedProyectoId ya sea null al usar 'Limpiar filtros'", async () => {
+    mocks.listarProyectos.mockResolvedValue([
+      {
+        id: 10,
+        nombre: "Proyecto Edificio Central",
+        ubicacion: "San Salvador",
+        estado: "ACTIVO",
+      },
+      {
+        id: 22,
+        nombre: "Bodega Industrial Norte",
+        ubicacion: "Soyapango",
+        estado: "ACTIVO",
+      },
+    ]);
+
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ActividadesDiariasPage />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+    );
+
+    const filtroProyecto = screen.getByRole("combobox", {
+      name: /Filtrar por proyecto/i,
+    }) as HTMLInputElement;
+
+    fireEvent.change(filtroProyecto, { target: { value: "xyz" } });
+    expect(filtroProyecto.value).toBe("xyz");
+
+    fireEvent.click(screen.getByRole("button", { name: "Última semana" }));
+    const botonLimpiar = await screen.findByRole("button", {
+      name: "Limpiar filtros",
+    });
+
+    fireEvent.click(botonLimpiar);
+
+    await waitFor(() => expect(filtroProyecto.value).toBe(""));
+    await waitFor(() =>
+      expect(mocks.listarActividades).toHaveBeenLastCalledWith(null),
+    );
+  });
 });

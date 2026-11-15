@@ -54,6 +54,7 @@ function MiniaturaEvidenciaGuardada({
   useEffect(() => {
     let cancelado = false;
     let urlCreada: string | null = null;
+    setUrlImagen(null);
     setErrorCarga(false);
 
     void obtenerImagenEvidenciaUrlBlob(actividadId, evidencia.id)

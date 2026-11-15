@@ -32,6 +32,7 @@ export function ActividadesDiariasPage() {
   const [selectedProyectoId, setSelectedProyectoId] = useState<number | null>(
     null,
   );
+  const [resetProyectoSignal, setResetProyectoSignal] = useState(0);
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
   const [exportandoFormato, setExportandoFormato] =
@@ -131,6 +132,7 @@ export function ActividadesDiariasPage() {
     if (proyectos.length > 1) {
       setSelectedProyectoId(null);
     }
+    setResetProyectoSignal((prev) => prev + 1);
     setFechaInicio("");
     setFechaFin("");
   }
@@ -239,6 +241,7 @@ export function ActividadesDiariasPage() {
               selectedProyectoId={selectedProyectoId}
               onSelectProyecto={handleSelectProyecto}
               autoSelectSingle={true}
+              resetSignal={resetProyectoSignal}
               label="Filtrar por proyecto"
               placeholder="Todos los proyectos (escribe para buscar)"
               description=""
