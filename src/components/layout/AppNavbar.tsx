@@ -1,5 +1,6 @@
 import { Breadcrumbs } from "@heroui/react/breadcrumbs";
 import { contarAlertasNoLeidas } from "@modules/alertas/api/alertas";
+import { BIENVENIDA_SESSION_KEY } from "@modules/auth/const/StorageKey";
 import { useAuth, userActions } from "@modules/auth/store/authStore";
 import { Button } from "@heroui/react/button";
 import { toast } from "@heroui/react/toast";
@@ -28,11 +29,19 @@ const PAGE_LABELS: Record<string, string> = {
   "/cargo-empleado/create": "Crear cargo",
   "/cotizaciones/create": "Crear cotización",
   "/proyectos/create": "Crear proyecto",
+  "/actividades-diarias/create": "Crear actividad diaria",
   "/materiales/gestion": "Gestionar materiales",
 };
 
 function findCrumbs(pathname: string): Crumb[] | null {
   if (pathname === "/") return [{ label: "Dashboard", to: "/", icon: Home }];
+
+  if (pathname.startsWith("/actividades-diarias/editar/")) {
+    const parentCrumbs = findCrumbs("/actividades-diarias");
+    if (parentCrumbs) {
+      return [...parentCrumbs, { label: "Editar actividad diaria" }];
+    }
+  }
 
   const pageLabel = PAGE_LABELS[pathname];
   if (pageLabel) {
@@ -84,7 +93,26 @@ function getBreadcrumbs(pathname: string): Crumb[] {
   return [{ label: "Dashboard", to: "/", icon: Home }, { label: "Actual" }];
 }
 
+function yaMostroBienvenidaEnSesion(userId: number): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem(BIENVENIDA_SESSION_KEY) === String(userId);
+  } catch {
+    return false;
+  }
+}
+
+function marcarBienvenidaEnSesion(userId: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(BIENVENIDA_SESSION_KEY, String(userId));
+  } catch {
+    // modo privado o almacenamiento no disponible
+  }
+}
+
 export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
+  const navigate = useNavigate();
   const state = useRouterState();
   const pathname = state.location.pathname;
   const crumbs = getBreadcrumbs(pathname);
@@ -100,12 +128,24 @@ export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
       </button>
 
       <Breadcrumbs>
-        {crumbs.map((crumb) => (
-          <Breadcrumbs.Item key={crumb.label} href={crumb.to}>
-            {crumb.icon && <crumb.icon size={16} className="mr-1" />}
-            {crumb.label}
-          </Breadcrumbs.Item>
-        ))}
+        {crumbs.map((crumb) => {
+          const destino = crumb.to;
+          return (
+            <Breadcrumbs.Item
+              key={crumb.label}
+              onPress={
+                destino
+                  ? () => {
+                      void navigate({ to: destino });
+                    }
+                  : undefined
+              }
+            >
+              {crumb.icon && <crumb.icon size={16} className="mr-1" />}
+              {crumb.label}
+            </Breadcrumbs.Item>
+          );
+        })}
       </Breadcrumbs>
 
       <div className="ml-auto flex items-center gap-1">
@@ -138,12 +178,17 @@ function AlertasShortcut() {
   });
 
   useEffect(() => {
-    if (!user?.id || avisoMostradoPara.current === user.id) {
+    if (
+      !user?.id ||
+      avisoMostradoPara.current === user.id ||
+      yaMostroBienvenidaEnSesion(user.id)
+    ) {
       return;
     }
     if (puedeConsultar && !isFetchedAfterMount) return;
 
     avisoMostradoPara.current = user.id;
+    marcarBienvenidaEnSesion(user.id);
     if (isSuccess && data > 0) {
       toast.info(
         data === 1
