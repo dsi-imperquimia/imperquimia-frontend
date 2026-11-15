@@ -189,11 +189,18 @@ export const NAV_ITEMS: NavItem[] = [
         to: "/herramientas/marcas",
         permission: ["HERRAMIENTA_CREATE", "HERRAMIENTA_UPDATE"],
       },
+      {
+        label: "Verificación de jornada",
+        to: "/jornada-herramientas",
+        permission: ["JORNADA_HERRAMIENTA_READ", "JORNADA_HERRAMIENTA_VERIFY"],
+      },
     ],
     permission: [
       "HERRAMIENTA_READ",
       "HERRAMIENTA_CREATE",
       "HERRAMIENTA_UPDATE",
+      "JORNADA_HERRAMIENTA_READ",
+      "JORNADA_HERRAMIENTA_VERIFY",
     ],
   },
   {
