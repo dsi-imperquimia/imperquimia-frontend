@@ -59,6 +59,13 @@ export interface ActividadDiaria {
     nombreCompleto: string;
   } | null;
   evidencias?: EvidenciaActividadDiaria[];
+  /** Incidencias vinculadas a la jornada (GPRCIMPER-142). */
+  incidencias?: {
+    id: number;
+    titulo: string;
+    prioridad: "BAJA" | "MEDIA" | "ALTA" | "CRITICA";
+    estado: "ABIERTA" | "EN_PROCESO" | "RESUELTA";
+  }[];
 }
 
 export interface RegistrarActividadDiaria {

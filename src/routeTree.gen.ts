@@ -29,6 +29,9 @@ import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/
 import { Route as AuthenticatedHerramientasIndexRouteImport } from './routes/_authenticated/herramientas/index'
 import { Route as AuthenticatedHerramientasMarcasRouteImport } from './routes/_authenticated/herramientas/marcas'
 import { Route as AuthenticatedHerramientasTiposRouteImport } from './routes/_authenticated/herramientas/tipos'
+import { Route as AuthenticatedIncidenciasIndexRouteImport } from './routes/_authenticated/incidencias/index'
+import { Route as AuthenticatedIncidenciasIncidenciaIdRouteImport } from './routes/_authenticated/incidencias/$incidenciaId'
+import { Route as AuthenticatedIncidenciasCreateRouteImport } from './routes/_authenticated/incidencias/create'
 import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
 import { Route as AuthenticatedMaterialesInventarioRouteImport } from './routes/_authenticated/materiales/inventario'
@@ -162,6 +165,24 @@ const AuthenticatedHerramientasTiposRoute =
   AuthenticatedHerramientasTiposRouteImport.update({
     id: '/herramientas/tipos',
     path: '/herramientas/tipos',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedIncidenciasIndexRoute =
+  AuthenticatedIncidenciasIndexRouteImport.update({
+    id: '/incidencias/',
+    path: '/incidencias/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedIncidenciasIncidenciaIdRoute =
+  AuthenticatedIncidenciasIncidenciaIdRouteImport.update({
+    id: '/incidencias/$incidenciaId',
+    path: '/incidencias/$incidenciaId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedIncidenciasCreateRoute =
+  AuthenticatedIncidenciasCreateRouteImport.update({
+    id: '/incidencias/create',
+    path: '/incidencias/create',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedMaterialesIndexRoute =
@@ -299,6 +320,8 @@ export interface FileRoutesByFullPath {
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
+  '/incidencias/$incidenciaId': typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  '/incidencias/create': typeof AuthenticatedIncidenciasCreateRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
@@ -311,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas/': typeof AuthenticatedHerramientasIndexRoute
+  '/incidencias/': typeof AuthenticatedIncidenciasIndexRoute
   '/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos/': typeof AuthenticatedProyectosIndexRoute
@@ -340,6 +364,8 @@ export interface FileRoutesByTo {
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
+  '/incidencias/$incidenciaId': typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  '/incidencias/create': typeof AuthenticatedIncidenciasCreateRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
@@ -352,6 +378,7 @@ export interface FileRoutesByTo {
   '/cotizaciones': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas': typeof AuthenticatedHerramientasIndexRoute
+  '/incidencias': typeof AuthenticatedIncidenciasIndexRoute
   '/materiales': typeof AuthenticatedMaterialesIndexRoute
   '/mis-proyectos': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos': typeof AuthenticatedProyectosIndexRoute
@@ -383,6 +410,8 @@ export interface FileRoutesById {
   '/_authenticated/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/_authenticated/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/_authenticated/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
+  '/_authenticated/incidencias/$incidenciaId': typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  '/_authenticated/incidencias/create': typeof AuthenticatedIncidenciasCreateRoute
   '/_authenticated/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
   '/_authenticated/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
   '/_authenticated/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
@@ -395,6 +424,7 @@ export interface FileRoutesById {
   '/_authenticated/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/_authenticated/herramientas/': typeof AuthenticatedHerramientasIndexRoute
+  '/_authenticated/incidencias/': typeof AuthenticatedIncidenciasIndexRoute
   '/_authenticated/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/_authenticated/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/_authenticated/proyectos/': typeof AuthenticatedProyectosIndexRoute
@@ -426,6 +456,8 @@ export interface FileRouteTypes {
     | '/empleados/habilidades'
     | '/herramientas/marcas'
     | '/herramientas/tipos'
+    | '/incidencias/$incidenciaId'
+    | '/incidencias/create'
     | '/materiales/gestion'
     | '/materiales/inventario'
     | '/mis-proyectos/$proyectoId'
@@ -438,6 +470,7 @@ export interface FileRouteTypes {
     | '/cotizaciones/'
     | '/empleados/'
     | '/herramientas/'
+    | '/incidencias/'
     | '/materiales/'
     | '/mis-proyectos/'
     | '/proyectos/'
@@ -467,6 +500,8 @@ export interface FileRouteTypes {
     | '/empleados/habilidades'
     | '/herramientas/marcas'
     | '/herramientas/tipos'
+    | '/incidencias/$incidenciaId'
+    | '/incidencias/create'
     | '/materiales/gestion'
     | '/materiales/inventario'
     | '/mis-proyectos/$proyectoId'
@@ -479,6 +514,7 @@ export interface FileRouteTypes {
     | '/cotizaciones'
     | '/empleados'
     | '/herramientas'
+    | '/incidencias'
     | '/materiales'
     | '/mis-proyectos'
     | '/proyectos'
@@ -509,6 +545,8 @@ export interface FileRouteTypes {
     | '/_authenticated/empleados/habilidades'
     | '/_authenticated/herramientas/marcas'
     | '/_authenticated/herramientas/tipos'
+    | '/_authenticated/incidencias/$incidenciaId'
+    | '/_authenticated/incidencias/create'
     | '/_authenticated/materiales/gestion'
     | '/_authenticated/materiales/inventario'
     | '/_authenticated/mis-proyectos/$proyectoId'
@@ -521,6 +559,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cotizaciones/'
     | '/_authenticated/empleados/'
     | '/_authenticated/herramientas/'
+    | '/_authenticated/incidencias/'
     | '/_authenticated/materiales/'
     | '/_authenticated/mis-proyectos/'
     | '/_authenticated/proyectos/'
@@ -683,6 +722,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHerramientasTiposRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/incidencias/': {
+      id: '/_authenticated/incidencias/'
+      path: '/incidencias'
+      fullPath: '/incidencias/'
+      preLoaderRoute: typeof AuthenticatedIncidenciasIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/incidencias/$incidenciaId': {
+      id: '/_authenticated/incidencias/$incidenciaId'
+      path: '/incidencias/$incidenciaId'
+      fullPath: '/incidencias/$incidenciaId'
+      preLoaderRoute: typeof AuthenticatedIncidenciasIncidenciaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/incidencias/create': {
+      id: '/_authenticated/incidencias/create'
+      path: '/incidencias/create'
+      fullPath: '/incidencias/create'
+      preLoaderRoute: typeof AuthenticatedIncidenciasCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/materiales/': {
       id: '/_authenticated/materiales/'
       path: '/materiales'
@@ -840,6 +900,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEmpleadosHabilidadesRoute: typeof AuthenticatedEmpleadosHabilidadesRoute
   AuthenticatedHerramientasMarcasRoute: typeof AuthenticatedHerramientasMarcasRoute
   AuthenticatedHerramientasTiposRoute: typeof AuthenticatedHerramientasTiposRoute
+  AuthenticatedIncidenciasIncidenciaIdRoute: typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  AuthenticatedIncidenciasCreateRoute: typeof AuthenticatedIncidenciasCreateRoute
   AuthenticatedMaterialesGestionRoute: typeof AuthenticatedMaterialesGestionRoute
   AuthenticatedMaterialesInventarioRoute: typeof AuthenticatedMaterialesInventarioRoute
   AuthenticatedMisProyectosProyectoIdRoute: typeof AuthenticatedMisProyectosProyectoIdRoute
@@ -852,6 +914,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedCotizacionesIndexRoute: typeof AuthenticatedCotizacionesIndexRoute
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
   AuthenticatedHerramientasIndexRoute: typeof AuthenticatedHerramientasIndexRoute
+  AuthenticatedIncidenciasIndexRoute: typeof AuthenticatedIncidenciasIndexRoute
   AuthenticatedMaterialesIndexRoute: typeof AuthenticatedMaterialesIndexRoute
   AuthenticatedMisProyectosIndexRoute: typeof AuthenticatedMisProyectosIndexRoute
   AuthenticatedProyectosIndexRoute: typeof AuthenticatedProyectosIndexRoute
@@ -885,6 +948,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedEmpleadosHabilidadesRoute,
   AuthenticatedHerramientasMarcasRoute: AuthenticatedHerramientasMarcasRoute,
   AuthenticatedHerramientasTiposRoute: AuthenticatedHerramientasTiposRoute,
+  AuthenticatedIncidenciasIncidenciaIdRoute:
+    AuthenticatedIncidenciasIncidenciaIdRoute,
+  AuthenticatedIncidenciasCreateRoute: AuthenticatedIncidenciasCreateRoute,
   AuthenticatedMaterialesGestionRoute: AuthenticatedMaterialesGestionRoute,
   AuthenticatedMaterialesInventarioRoute:
     AuthenticatedMaterialesInventarioRoute,
@@ -900,6 +966,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCotizacionesIndexRoute: AuthenticatedCotizacionesIndexRoute,
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
   AuthenticatedHerramientasIndexRoute: AuthenticatedHerramientasIndexRoute,
+  AuthenticatedIncidenciasIndexRoute: AuthenticatedIncidenciasIndexRoute,
   AuthenticatedMaterialesIndexRoute: AuthenticatedMaterialesIndexRoute,
   AuthenticatedMisProyectosIndexRoute: AuthenticatedMisProyectosIndexRoute,
   AuthenticatedProyectosIndexRoute: AuthenticatedProyectosIndexRoute,
