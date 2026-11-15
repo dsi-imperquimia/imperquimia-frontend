@@ -177,7 +177,7 @@ export const NAV_ITEMS: NavItem[] = [
       {
         label: "Lista de herramientas",
         to: "/herramientas",
-        permission: ["HERRAMIENTA_READ"],
+        permission: ["HERRAMIENTA_READ", "HERRAMIENTA_ASIGNADA_READ"],
       },
       {
         label: "Tipos de herramientas",
@@ -192,6 +192,7 @@ export const NAV_ITEMS: NavItem[] = [
     ],
     permission: [
       "HERRAMIENTA_READ",
+      "HERRAMIENTA_ASIGNADA_READ",
       "HERRAMIENTA_CREATE",
       "HERRAMIENTA_UPDATE",
     ],

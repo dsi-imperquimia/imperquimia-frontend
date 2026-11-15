@@ -34,6 +34,7 @@ const getEstadoLabel = (estado: EstadoHerramienta | "ACTIVOS") => {
 };
 
 function RouteComponent() {
+  const puedeVerTodo = userActions.hasPermission("HERRAMIENTA_READ");
   // REQUERIMIENTO: Estado inicial en "ACTIVOS" para ver todos los operativos excepto desecho
   const [filtroEstado, setFiltroEstado] = useState<
     EstadoHerramienta | "ACTIVOS"
@@ -68,6 +69,7 @@ function RouteComponent() {
   const { data: proyectos = [] } = useQuery({
     queryKey: ["proyectos-filter"],
     queryFn: listProyectos,
+    enabled: puedeVerTodo,
   });
 
   // REQUERIMIENTO: Filtrado preventivo local para asegurar que la opción "ACTIVOS" barra los desechos
@@ -128,7 +130,9 @@ function RouteComponent() {
       {/* Encabezado Principal */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Control de Inventario</h1>
+          <h1 className="text-2xl font-bold">
+            {puedeVerTodo ? "Control de Inventario" : "Herramientas asignadas"}
+          </h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Custodia de activos fijos e historial operativo.
           </p>
@@ -191,7 +195,7 @@ function RouteComponent() {
         </div>
 
         {/* REQUERIMIENTO: Mostrar filtro de Proyecto SOLO cuando se selecciona EN_PROYECTO */}
-        {filtroEstado === EstadoHerramienta.EN_PROYECTO && (
+        {puedeVerTodo && filtroEstado === EstadoHerramienta.EN_PROYECTO && (
           <div className="flex flex-col gap-1 min-w-[250px]">
             {/* REQUERIMIENTO: Texto cambiado de 'Frente de Obra' a 'Proyecto' */}
             <span className="text-xs font-semibold text-gray-600">
