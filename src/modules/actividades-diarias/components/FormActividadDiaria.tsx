@@ -52,12 +52,14 @@ export function FormActividadDiaria({
   selectedProyectoId: selectedProyectoIdProp,
   onProyectoChange,
   proyectos: proyectosProp,
+  soloLectura = false,
   onSuccess,
 }: {
   actividad?: ActividadDiaria;
   selectedProyectoId?: number | null;
   onProyectoChange?: (proyectoId: number | null) => void;
   proyectos?: ProyectoDisponibleActividad[];
+  soloLectura?: boolean;
   onSuccess?: (actualizada: ActividadDiaria) => void;
 } = {}) {
   const { user } = useAuth();
@@ -66,8 +68,9 @@ export function FormActividadDiaria({
     actividad && !actividad.descripcion?.trim(),
   );
   const esEdicion = Boolean(actividad && actividad.descripcion?.trim());
-  const habilitadoParaEditar =
+  const habilitadoPorPlazo =
     !esEdicion || puedeEditarActividad(actividad!.createdAt, user?.role?.name);
+  const habilitadoParaEditar = !soloLectura && habilitadoPorPlazo;
 
   const [proyectoId, setProyectoId] = useState<number | null>(() =>
     actividad ? actividad.proyectoId : (selectedProyectoIdProp ?? null),
@@ -219,13 +222,13 @@ export function FormActividadDiaria({
     try {
       const respuesta = await registrarActividadDiaria(payload);
       eliminarBorrador(claveOperacion);
-      await queryClient.invalidateQueries({
-        queryKey: ["actividades-diarias"],
-      });
       if (!esRegistroDelSistemaPendiente) {
         limpiarFormulario();
       }
       mostrarModal("exito");
+      await queryClient.invalidateQueries({
+        queryKey: ["actividades-diarias"],
+      });
       onSuccess?.(respuesta.actividad);
     } catch (error) {
       if (esErrorDeConexion(error)) {
@@ -350,7 +353,16 @@ export function FormActividadDiaria({
           </div>
         )}
 
-        {esEdicion && !habilitadoParaEditar && (
+        {soloLectura && (
+          <p
+            role="alert"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
+            No cuentas con permiso para registrar ni editar actividades diarias.
+          </p>
+        )}
+
+        {!soloLectura && esEdicion && !habilitadoPorPlazo && (
           <p
             role="alert"
             className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
@@ -416,6 +428,7 @@ export function FormActividadDiaria({
           label="Descripción de la actividad"
           placeholder="Describe el trabajo realizado durante la jornada"
           rows={4}
+          maxLength={2000}
           value={descripcion}
           disabled={isPending || !habilitadoParaEditar}
           onChange={(event) => {
@@ -433,6 +446,7 @@ export function FormActividadDiaria({
           label="Observaciones"
           placeholder="Incidentes, notas adicionales o comentarios opcionales"
           rows={3}
+          maxLength={1000}
           value={observaciones}
           disabled={isPending || !habilitadoParaEditar}
           onChange={(event) => {

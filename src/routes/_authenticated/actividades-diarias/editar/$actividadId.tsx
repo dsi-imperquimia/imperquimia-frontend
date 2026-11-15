@@ -2,6 +2,7 @@ import { Button } from "@heroui/react/button";
 import { getActividadDiaria } from "@modules/actividades-diarias/api/actividades-diarias";
 import { FormActividadDiaria } from "@modules/actividades-diarias/components/FormActividadDiaria";
 import { PanelEvidenciasActividad } from "@modules/actividades-diarias/components/PanelEvidenciasActividad";
+import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -13,6 +14,11 @@ export const Route = createFileRoute(
 
 function EditarActividadDiariaPage() {
   const { actividadId } = Route.useParams();
+  const { hasAnyPermission } = useAuth();
+  const puedeGestionar = hasAnyPermission([
+    "ACTIVIDAD_UPDATE",
+    "ACTIVIDAD_CREATE",
+  ]);
   const id = Number(actividadId);
   const valido = Number.isInteger(id) && id > 0;
 
@@ -45,12 +51,16 @@ function EditarActividadDiariaPage() {
           ? "Guardar registro de actividad diaria"
           : "Editar registro de actividad diaria"}
       </h1>
-      <FormActividadDiaria key={data.id} actividad={data} />
+      <FormActividadDiaria
+        key={data.id}
+        actividad={data}
+        soloLectura={!puedeGestionar}
+      />
       <PanelEvidenciasActividad
         actividadId={data.id}
         actividadNombre={data.nombre}
         evidenciasIniciales={data.evidencias}
-        soloLectura={data.proyecto?.estado !== "ACTIVO"}
+        soloLectura={!puedeGestionar || data.proyecto?.estado !== "ACTIVO"}
       />
     </div>
   );

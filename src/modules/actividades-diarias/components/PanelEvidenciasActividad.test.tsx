@@ -275,4 +275,44 @@ describe("PanelEvidenciasActividad (GPRIMPER-53)", () => {
       HTMLCanvasElement.prototype.toBlob = originalToBlob;
     }
   });
+
+  it("detiene las pistas de cámara si el usuario cancela antes de que getUserMedia resuelva", async () => {
+    const stopTrack = vi.fn();
+    let resolverStream!: (stream: MediaStream) => void;
+    const getUserMedia = vi.fn(
+      () =>
+        new Promise<MediaStream>((resolve) => {
+          resolverStream = resolve;
+        }),
+    );
+    const originalMediaDevices = navigator.mediaDevices;
+
+    Object.defineProperty(navigator, "mediaDevices", {
+      configurable: true,
+      value: { getUserMedia },
+    });
+
+    try {
+      renderPanel();
+
+      fireEvent.click(screen.getByRole("button", { name: /Tomar foto/i }));
+      expect(await screen.findByText("Tomar fotografía")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+      await waitFor(() =>
+        expect(screen.queryByText("Tomar fotografía")).toBeNull(),
+      );
+
+      resolverStream({
+        getTracks: () => [{ stop: stopTrack }],
+      } as unknown as MediaStream);
+
+      await waitFor(() => expect(stopTrack).toHaveBeenCalledTimes(1));
+    } finally {
+      Object.defineProperty(navigator, "mediaDevices", {
+        configurable: true,
+        value: originalMediaDevices,
+      });
+    }
+  });
 });

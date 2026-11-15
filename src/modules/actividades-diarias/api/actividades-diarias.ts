@@ -1,12 +1,13 @@
 import { http } from "@lib/http";
 import { isAxiosError } from "axios";
-import type {
-  ActividadDiaria,
-  ActualizarActividadDiaria,
-  ErroresActividadDiaria,
-  EvidenciaActividadDiaria,
-  ProyectoDisponibleActividad,
-  RegistrarActividadDiaria,
+import {
+  fechaHoyIso,
+  type ActividadDiaria,
+  type ActualizarActividadDiaria,
+  type ErroresActividadDiaria,
+  type EvidenciaActividadDiaria,
+  type ProyectoDisponibleActividad,
+  type RegistrarActividadDiaria,
 } from "../types/actividad-diaria";
 
 const CODIGOS_ESTADO_TRANSITORIOS = new Set([502, 503, 504]);
@@ -83,7 +84,7 @@ export async function exportarActividadesDiarias(
           ? `desde_${filtros.fechaInicio}`
           : filtros?.fechaFin
             ? `hasta_${filtros.fechaFin}`
-            : new Date().toISOString().slice(0, 10);
+            : fechaHoyIso();
     const fallback = `actividades-diarias-${sufijo}.${ext}`;
     const disposition = (
       response.headers as Record<string, unknown> | undefined

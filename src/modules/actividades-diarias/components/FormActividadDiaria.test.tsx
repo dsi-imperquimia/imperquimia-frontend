@@ -616,9 +616,13 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     });
     fireEvent.change(inputProyecto, { target: { value: "bodega" } });
 
+    expect(inputProyecto.value).toBe("bodega");
     const opcionDestino = await screen.findByRole("option", {
       name: /Bodega Industrial Soyapango/i,
     });
+    expect(
+      screen.queryByRole("option", { name: /Proyecto Edificio Central/i }),
+    ).toBeNull();
     fireEvent.click(opcionDestino);
 
     fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
@@ -760,5 +764,42 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     );
     expect(mocks.actualizar).not.toHaveBeenCalled();
     expect(await screen.findByText(MENSAJES_ACTIVIDAD.exito)).toBeTruthy();
+  });
+
+  it("bloquea el formulario cuando soloLectura está activo", () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <FormActividadDiaria
+          soloLectura
+          actividad={{
+            id: 105,
+            claveOperacion: "00000000-0000-4000-8000-000000000105",
+            proyectoId: 10,
+            usuarioId: 7,
+            empleadoId: 7,
+            fecha: "2026-11-14",
+            nombre: "Registro solo lectura",
+            descripcion: "Contenido existente",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }}
+        />
+      </QueryClientProvider>,
+    );
+
+    expect(
+      screen.getByText(
+        "No cuentas con permiso para registrar ni editar actividades diarias.",
+      ),
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole("button", { name: "Guardar cambios" })
+        .hasAttribute("disabled"),
+    ).toBe(true);
   });
 });

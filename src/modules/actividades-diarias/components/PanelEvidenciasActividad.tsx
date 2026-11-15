@@ -243,6 +243,7 @@ export function PanelEvidenciasActividad({
   const camaraFallbackInputRef = useRef<HTMLInputElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const camaraSesionRef = useRef(0);
   const pendientesRef = useRef<ImagenPendiente[]>([]);
 
   const [pendientes, setPendientes] = useState<ImagenPendiente[]>([]);
@@ -263,9 +264,11 @@ export function PanelEvidenciasActividad({
     queryKey: ["actividades-diarias", "evidencias", actividadId],
     queryFn: () => listEvidenciasActividad(actividadId),
     initialData: evidenciasIniciales,
+    initialDataUpdatedAt: evidenciasIniciales ? 0 : undefined,
   });
 
   const detenerStreamCamara = useCallback(() => {
+    camaraSesionRef.current += 1;
     if (mediaStreamRef.current) {
       for (const track of mediaStreamRef.current.getTracks()) {
         track.stop();
@@ -392,6 +395,7 @@ export function PanelEvidenciasActividad({
 
   async function iniciarStreamCamara(facingMode: ModoCamara) {
     detenerStreamCamara();
+    const sesion = ++camaraSesionRef.current;
     setCargandoCamara(true);
     setCamaraLista(false);
     setErrorCamara(null);
@@ -401,6 +405,12 @@ export function PanelEvidenciasActividad({
         video: { facingMode: { ideal: facingMode } },
         audio: false,
       });
+      if (sesion !== camaraSesionRef.current) {
+        for (const track of stream.getTracks()) {
+          track.stop();
+        }
+        return;
+      }
       mediaStreamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -408,11 +418,14 @@ export function PanelEvidenciasActividad({
       }
       setCamaraLista(true);
     } catch {
+      if (sesion !== camaraSesionRef.current) return;
       setErrorCamara(
         "No se pudo acceder a la cámara en vivo. Puedes elegir una foto o usar la cámara del dispositivo.",
       );
     } finally {
-      setCargandoCamara(false);
+      if (sesion === camaraSesionRef.current) {
+        setCargandoCamara(false);
+      }
     }
   }
 
@@ -420,6 +433,12 @@ export function PanelEvidenciasActividad({
     if (soloLectura || subiendo) return;
     setMensajeError(null);
     setMensajeExito(null);
+    if (pendientes.length >= MAX_ARCHIVOS_EVIDENCIA) {
+      setMensajeError(
+        `Puedes preparar hasta ${MAX_ARCHIVOS_EVIDENCIA} imágenes por subida.`,
+      );
+      return;
+    }
 
     const soportaCamara =
       typeof navigator !== "undefined" &&

@@ -40,6 +40,7 @@ export function SelectorProyectoActividad({
 }) {
   const [busqueda, setBusqueda] = useState("");
   const autoSeleccionadoRef = useRef(false);
+  const editandoDesdeInputRef = useRef(false);
 
   // CA1: Solo proyectos activos asignados
   const proyectosActivos = useMemo(
@@ -57,6 +58,10 @@ export function SelectorProyectoActividad({
 
   // Sincroniza el texto visible cuando selectedProyectoId viene preestablecido o cambia desde fuera
   useEffect(() => {
+    if (editandoDesdeInputRef.current) {
+      editandoDesdeInputRef.current = false;
+      return;
+    }
     setBusqueda(proyectoSeleccionado?.nombre ?? "");
   }, [proyectoSeleccionado]);
 
@@ -109,10 +114,12 @@ export function SelectorProyectoActividad({
       onInputChange={(value) => {
         setBusqueda(value);
         if (proyectoSeleccionado && value !== proyectoSeleccionado.nombre) {
+          editandoDesdeInputRef.current = true;
           onSelectProyecto(null);
         }
       }}
       onSelectionChange={(key) => {
+        editandoDesdeInputRef.current = false;
         const valor = String(key ?? "");
         const idNumero = valor ? Number(valor) : null;
         const elegido =
