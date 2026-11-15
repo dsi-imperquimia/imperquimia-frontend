@@ -61,6 +61,9 @@ function ReasignarEmpleadoModal({
       await Promise.all([
         client.invalidateQueries({ queryKey: ["proyectos"] }),
         client.invalidateQueries({ queryKey: ["empleados", "asignaciones"] }),
+        // Por si quien reasigna también ve "Mis proyectos" (p. ej. es jefe
+        // de alguno de los dos proyectos involucrados).
+        client.invalidateQueries({ queryKey: ["mis-asignaciones"] }),
       ]);
       onReasignado();
       toast.success(`${nombreEmpleado} fue reasignado de proyecto`);
