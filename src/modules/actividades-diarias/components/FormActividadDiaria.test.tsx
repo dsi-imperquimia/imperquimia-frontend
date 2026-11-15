@@ -392,6 +392,8 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
       Date.now() - 50 * 60 * 60 * 1000,
     ).toISOString();
 
+    const onEditar = vi.fn();
+
     render(
       <TablaActividadesProyecto
         actividades={[
@@ -420,7 +422,7 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
             updatedAt: hace50Horas,
           },
         ]}
-        onEditar={vi.fn()}
+        onEditar={onEditar}
       />,
     );
 
@@ -429,6 +431,18 @@ describe("Editar registro de actividad diaria (GPRCIMPER-34)", () => {
     expect(botonesEditar[0]?.hasAttribute("disabled")).toBe(false);
     expect(botonesEditar[1]?.hasAttribute("disabled")).toBe(true);
     expect(screen.getByText("Sellado reciente")).toBeTruthy();
+
+    fireEvent.click(botonesEditar[0]!);
+    expect(onEditar).toHaveBeenCalledTimes(1);
+    expect(onEditar).toHaveBeenLastCalledWith(
+      expect.objectContaining({ id: 101 }),
+    );
+
+    fireEvent.click(screen.getByText("Sellado reciente"));
+    expect(onEditar).toHaveBeenCalledTimes(2);
+
+    fireEvent.click(screen.getByText("Sellado vencido"));
+    expect(onEditar).toHaveBeenCalledTimes(2);
   });
 
   it("CA1: el botón Editar sigue habilitado después de 48 horas cuando el usuario es de administración", () => {

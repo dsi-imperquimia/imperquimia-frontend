@@ -8,7 +8,7 @@ import { ModalResultadoActividad } from "@modules/actividades-diarias/components
 import { SelectorProyectoActividad } from "@modules/actividades-diarias/components/SelectorProyectoActividad";
 import { TablaActividadesProyecto } from "@modules/actividades-diarias/components/TablaActividadesProyecto";
 import { useBorradoresActividad } from "@modules/actividades-diarias/hooks/useBorradoresActividad";
-import { userActions } from "@modules/auth/store/authStore";
+import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
@@ -20,12 +20,16 @@ export const Route = createFileRoute("/_authenticated/actividades-diarias/")({
 export function ActividadesDiariasPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { hasPermission, hasAnyPermission } = useAuth();
   const [selectedProyectoId, setSelectedProyectoId] = useState<number | null>(
     null,
   );
 
-  const puedeCrear = userActions.hasPermission("ACTIVIDAD_CREATE");
-  const puedeEditar = userActions.hasPermission("ACTIVIDAD_UPDATE");
+  const puedeCrear = hasPermission("ACTIVIDAD_CREATE");
+  const puedeEditar = hasAnyPermission([
+    "ACTIVIDAD_UPDATE",
+    "ACTIVIDAD_CREATE",
+  ]);
   const {
     borradores,
     claveEnProceso,

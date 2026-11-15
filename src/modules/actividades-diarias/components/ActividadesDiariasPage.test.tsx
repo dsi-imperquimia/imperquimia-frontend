@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   listarProyectos: vi.fn(),
   listarActividades: vi.fn(),
   navigate: vi.fn(),
+  permisos: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ"],
 }));
 
 vi.mock("@tanstack/react-router", () => ({
@@ -41,7 +42,7 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("@modules/auth/store/authStore", () => ({
   userActions: {
-    hasPermission: () => true,
+    hasPermission: (p: string) => mocks.permisos.includes(p),
   },
   useAuth: () => ({
     user: {
@@ -51,6 +52,9 @@ vi.mock("@modules/auth/store/authStore", () => ({
       role: { name: "Jefe de proyecto" },
     },
     isAuthenticated: true,
+    hasPermission: (p: string) => mocks.permisos.includes(p),
+    hasAnyPermission: (ps: string[]) =>
+      ps.some((p) => mocks.permisos.includes(p)),
   }),
 }));
 
@@ -162,5 +166,36 @@ describe("ActividadesDiariasPage", () => {
     });
     expect(linkCrear.getAttribute("href")).toBe("/actividades-diarias/create");
     expect(linkCrear.getAttribute("data-search")).toBe("");
+  });
+
+  it("muestra el botón Editar en cada fila y permite abrir la edición desde el botón o al hacer clic en la fila", async () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <ActividadesDiariasPage />
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() =>
+      expect(screen.getByText("Impermeabilización de cubierta")).toBeTruthy(),
+    );
+
+    const botonEditar = screen.getByRole("button", { name: "Editar" });
+    fireEvent.click(botonEditar);
+    expect(mocks.navigate).toHaveBeenCalledTimes(1);
+    expect(mocks.navigate).toHaveBeenLastCalledWith({
+      to: "/actividades-diarias/editar/$actividadId",
+      params: { actividadId: "1" },
+    });
+
+    fireEvent.click(screen.getByText("Impermeabilización de cubierta"));
+    expect(mocks.navigate).toHaveBeenCalledTimes(2);
+    expect(mocks.navigate).toHaveBeenLastCalledWith({
+      to: "/actividades-diarias/editar/$actividadId",
+      params: { actividadId: "1" },
+    });
   });
 });

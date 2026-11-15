@@ -73,8 +73,17 @@ export function TablaActividadesProyecto({
         <tbody>
           {actividades.map((a) => {
             const habilitado = puedeEditarActividad(a.createdAt, rolNombre);
+            const filaEditable = Boolean(onEditar && habilitado);
             return (
-              <tr key={a.id} className="border-t border-gray-200">
+              <tr
+                key={a.id}
+                onClick={filaEditable ? () => onEditar?.(a) : undefined}
+                className={
+                  filaEditable
+                    ? "cursor-pointer border-t border-gray-200 transition-colors hover:bg-gray-50"
+                    : "border-t border-gray-200"
+                }
+              >
                 <td className="whitespace-nowrap px-4 py-4">
                   {fecha(a.fecha)}
                 </td>
@@ -102,7 +111,10 @@ export function TablaActividadesProyecto({
                         variant="outline"
                         size="sm"
                         isDisabled={!habilitado}
-                        onClick={() => onEditar(a)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onEditar(a);
+                        }}
                       >
                         Editar
                       </Button>
