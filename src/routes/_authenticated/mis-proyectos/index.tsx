@@ -1,8 +1,11 @@
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
+import { Chip } from "@heroui/react/chip";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { listMisAsignaciones } from "@modules/mis-asignaciones/api/misAsignaciones";
 import { fecha } from "@modules/proyectos/types/proyectos";
+import axios from "axios";
 import { CheckCircle2, MapPin } from "lucide-react";
 
 const ESTADO_LABEL: Record<string, string> = {
@@ -15,21 +18,29 @@ export const Route = createFileRoute("/_authenticated/mis-proyectos/")({
 });
 
 function MisProyectos() {
-  const { data, isPending, isError, refetch } = useQuery({
+  const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ["mis-asignaciones"],
     queryFn: listMisAsignaciones,
   });
 
   if (isPending) return <p role="status">Cargando tus proyectos…</p>;
-  if (isError)
+  if (isError) {
+    const sinEmpleado = axios.isAxiosError(error) && error.response?.status === 403;
     return (
       <div role="alert">
-        No se pudieron cargar tus proyectos asignados.{" "}
-        <Button variant="outline" onClick={() => refetch()}>
-          Reintentar
-        </Button>
+        {sinEmpleado ? (
+          "Tu usuario no está vinculado a un empleado, así que no tienes proyectos que mostrar aquí."
+        ) : (
+          <>
+            No se pudieron cargar tus proyectos asignados.{" "}
+            <Button variant="outline" onClick={() => refetch()}>
+              Reintentar
+            </Button>
+          </>
+        )}
       </div>
     );
+  }
 
   const { items, pendientes } = data;
 
@@ -39,9 +50,9 @@ function MisProyectos() {
         <h1 className="flex items-center gap-3 text-2xl font-bold">
           Mis proyectos
           {pendientes > 0 && (
-            <span className="rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-700">
+            <Chip color="warning" size="sm">
               {pendientes} pendiente{pendientes > 1 ? "s" : ""}
-            </span>
+            </Chip>
           )}
         </h1>
         <p className="text-sm text-gray-500">
@@ -49,9 +60,9 @@ function MisProyectos() {
         </p>
       </div>
       {items.length === 0 ? (
-        <p className="rounded-xl border border-gray-200 bg-white p-8 text-center text-gray-500">
+        <Card className="p-8 text-center text-gray-500">
           No tienes proyectos asignados por el momento.
-        </p>
+        </Card>
       ) : (
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => (
@@ -59,29 +70,33 @@ function MisProyectos() {
               <Link
                 to="/mis-proyectos/$proyectoId"
                 params={{ proyectoId: String(item.id) }}
-                className="block h-full rounded-xl border border-gray-200 bg-white p-5 hover:border-gray-300 hover:shadow-sm"
+                className="block h-full"
               >
-                <div className="mb-2 flex items-start justify-between gap-2">
-                  <h2 className="font-semibold">{item.nombre}</h2>
-                  {item.vista ? (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600">
-                      <CheckCircle2 className="size-3.5" />
-                      Vista
-                    </span>
-                  ) : (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
-                      Pendiente
-                    </span>
-                  )}
-                </div>
-                <p className="flex items-center gap-1.5 text-sm text-gray-500">
-                  <MapPin className="size-3.5" />
-                  {item.ubicacion || "Sin ubicación"}
-                </p>
-                <p className="mt-2 text-sm text-gray-500">
-                  {ESTADO_LABEL[item.estado] ?? item.estado} ·{" "}
-                  {fecha(item.fechaInicio)} – {fecha(item.fechaFin)}
-                </p>
+                <Card className="h-full gap-2 hover:border-gray-300 hover:shadow-sm">
+                  <Card.Header className="flex-row items-start justify-between gap-2">
+                    <Card.Title>{item.nombre}</Card.Title>
+                    {item.vista ? (
+                      <Chip size="sm">
+                        <CheckCircle2 className="size-3.5" />
+                        Vista
+                      </Chip>
+                    ) : (
+                      <Chip color="warning" size="sm">
+                        Pendiente
+                      </Chip>
+                    )}
+                  </Card.Header>
+                  <Card.Content className="gap-1">
+                    <p className="flex items-center gap-1.5 text-sm text-gray-500">
+                      <MapPin className="size-3.5" />
+                      {item.ubicacion || "Sin ubicación"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {ESTADO_LABEL[item.estado] ?? item.estado} ·{" "}
+                      {fecha(item.fechaInicio)} – {fecha(item.fechaFin)}
+                    </p>
+                  </Card.Content>
+                </Card>
               </Link>
             </li>
           ))}

@@ -1,4 +1,5 @@
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect } from "react";
@@ -68,48 +69,56 @@ function MiProyectoDetalle() {
           {fecha(p.fechaFin)}
         </p>
       </div>
-      <section className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold">Ubicación</h2>
-        {p.ubicacion ? (
-          <a
-            href={mapaUrl(p.ubicacion)}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-2 text-blue-700 hover:underline"
-          >
-            <MapPin className="size-4" />
-            {p.ubicacion} — ver en el mapa
-          </a>
-        ) : (
-          <p className="text-gray-500">Este proyecto no tiene ubicación registrada.</p>
-        )}
-        {p.descripcion && <p className="mt-4 whitespace-pre-wrap">{p.descripcion}</p>}
-      </section>
-      <section className="rounded-xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-semibold">Jefe de proyecto</h2>
-        {p.jefeProyecto ? (
-          <div>
-            <p className="font-medium">{p.jefeProyecto.nombreCompleto}</p>
-            {p.jefeProyecto.email ? (
-              <a
-                href={`mailto:${p.jefeProyecto.email}`}
-                className="mt-1 flex items-center gap-2 text-blue-700 hover:underline"
-              >
-                <Mail className="size-4" />
-                {p.jefeProyecto.email}
-              </a>
-            ) : (
-              <p className="mt-1 text-sm text-gray-500">
-                Sin correo de contacto registrado.
-              </p>
-            )}
-          </div>
-        ) : (
-          <p className="text-gray-500">
-            Este proyecto todavía no tiene un jefe de proyecto asignado.
-          </p>
-        )}
-      </section>
+      <Card>
+        <Card.Header>
+          <Card.Title>Ubicación</Card.Title>
+        </Card.Header>
+        <Card.Content className="gap-4">
+          {p.ubicacion ? (
+            <a
+              href={mapaUrl(p.ubicacion)}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 text-blue-700 hover:underline"
+            >
+              <MapPin className="size-4" />
+              {p.ubicacion} — ver en el mapa
+            </a>
+          ) : (
+            <p className="text-gray-500">Este proyecto no tiene ubicación registrada.</p>
+          )}
+          {p.descripcion && <p className="whitespace-pre-wrap">{p.descripcion}</p>}
+        </Card.Content>
+      </Card>
+      <Card>
+        <Card.Header>
+          <Card.Title>Jefe de proyecto</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          {p.jefeProyecto ? (
+            <div>
+              <p className="font-medium">{p.jefeProyecto.nombreCompleto}</p>
+              {p.jefeProyecto.email ? (
+                <a
+                  href={`mailto:${p.jefeProyecto.email}`}
+                  className="mt-1 flex items-center gap-2 text-blue-700 hover:underline"
+                >
+                  <Mail className="size-4" />
+                  {p.jefeProyecto.email}
+                </a>
+              ) : (
+                <p className="mt-1 text-sm text-gray-500">
+                  Sin correo de contacto registrado.
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-500">
+              Este proyecto todavía no tiene un jefe de proyecto asignado.
+            </p>
+          )}
+        </Card.Content>
+      </Card>
     </div>
   );
 }
