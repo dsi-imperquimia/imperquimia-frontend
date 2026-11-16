@@ -1,14 +1,28 @@
-import { useRef, useState } from "react";
-import { useNavigate, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@heroui/react/button";
-import { toast } from "@heroui/react/toast";
 import { InputField } from "@components/fields/InputField";
-import { guardarProyecto, errorProyecto } from "../api/guardarProyecto";
-import type { DatosProyecto, ErroresProyecto } from "../api/guardarProyecto";
-import type { ProyectoDetalle } from "../types/proyectos";
-import { dinero } from "../types/proyectos";
+import { SelectedField } from "@components/fields/SelectedField";
+import { TextAreaField } from "@components/fields/TextAreaField";
+import { Button } from "@heroui/react/button";
+import { ListBox } from "@heroui/react/list-box";
+import { Table } from "@heroui/react/table";
+import { toast } from "@heroui/react/toast";
+import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { listMateriales } from "@modules/materiales/api/list-materiales";
+import { MaterialPickerModal } from "@modules/materiales/components/MaterialPickerModal";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { HardHat } from "lucide-react";
+import { useRef, useState } from "react";
+import type { DatosProyecto, ErroresProyecto } from "../api/guardarProyecto";
+import { errorProyecto, guardarProyecto } from "../api/guardarProyecto";
+import { listProyectos } from "../api/listProyectos";
+import type {
+  EstadoEditableProyecto,
+  ProyectoDetalle,
+  TipoObra,
+} from "../types/proyectos";
+import { dinero, TIPOS_OBRA_LABEL } from "../types/proyectos";
+import { AsignarEmpleadosProyecto } from "./AsignarEmpleadosProyecto";
+import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
 
 function esFechaValida(fecha: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
@@ -40,6 +54,28 @@ function etiquetaDetalle(clave: string) {
     : `Cantidad del material ${numeroMaterial}`;
 }
 
+// Todos se pueden alternar entre sí desde la edición general. Cancelar desde
+// aquí exige motivo y notifica a los empleados asignados, igual que el
+// flujo dedicado (GPRCIMPER-28).
+const ESTADOS_EDITABLES: EstadoEditableProyecto[] = [
+  "ACTIVO",
+  "EN_PAUSA",
+  "FINALIZADO",
+  "PAGADO",
+  "GARANTIA",
+  "CANCELADO",
+];
+const ESTADO_EDITABLE_LABEL: Record<EstadoEditableProyecto, string> = {
+  ACTIVO: "Activo",
+  EN_PAUSA: "En pausa",
+  FINALIZADO: "Finalizado",
+  PAGADO: "Pagado",
+  GARANTIA: "Garantía",
+  CANCELADO: "Cancelado",
+};
+const estadoEsEditable = (estado?: string): estado is EstadoEditableProyecto =>
+  (ESTADOS_EDITABLES as string[]).includes(estado ?? "");
+
 export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [datos, setDatos] = useState<Omit<DatosProyecto, "detalles">>({
@@ -51,7 +87,13 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     email: proyecto?.email ?? "",
     fechaInicio: proyecto?.fechaInicio?.slice(0, 10) ?? "",
     fechaFin: proyecto?.fechaFin?.slice(0, 10) ?? "",
+    jefeProyectoId: undefined,
+    estado: estadoEsEditable(proyecto?.estado) ? proyecto.estado : undefined,
+    tipoObra: proyecto?.tipoObra ?? "",
+    presupuesto:
+      proyecto?.presupuesto != null ? String(proyecto.presupuesto) : "",
   });
+  const [motivo, setMotivo] = useState("");
   const [detalles, setDetalles] = useState(
     proyecto?.detalles.map((detalle) => ({
       materialId: String(detalle.material.id),
@@ -63,6 +105,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     {},
   );
   const [guardando, setGuardando] = useState(false);
+  const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false);
   const erroresDetalle = Object.entries(erroresCampo).filter(([clave]) =>
     /^detalles\.\d+\.(materialId|cantidad)$/.test(clave),
   );
@@ -70,9 +113,12 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     const campo = formRef.current?.querySelector<HTMLElement>(
       `[data-campo="${clave}"] select, [data-campo="${clave}"] input`,
     );
-    campo?.focus();
-    if (campo && typeof campo.scrollIntoView === "function")
-      campo.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (!campo) return;
+    window.setTimeout(() => {
+      campo.focus();
+      if (typeof campo.scrollIntoView === "function")
+        campo.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 0);
   };
   const limpiarErrorDetalle = (index: number, campo: CampoDetalle) => {
     setErroresCampo((actuales) => {
@@ -100,6 +146,25 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     queryFn: listMateriales,
   });
   const materiales = materialesQuery.data ?? [];
+  // Solo se usa al crear: en edición, el jefe se asigna aparte (AsignarJefeProyecto).
+  const { data: empleadosParaJefe = [] } = useQuery({
+    queryKey: ["empleados"],
+    queryFn: listEmpleados,
+    enabled: !proyecto,
+  });
+  const { data: proyectosParaJefe = [] } = useQuery({
+    queryKey: ["proyectos"],
+    queryFn: listProyectos,
+    enabled: !proyecto,
+  });
+  const ocupadosComoJefe = new Set(
+    proyectosParaJefe
+      .filter((otro) => otro.estado === "ACTIVO" && otro.jefeProyectoId)
+      .map((otro) => otro.jefeProyectoId),
+  );
+  const empleadosDisponiblesComoJefe = empleadosParaJefe.filter(
+    (empleado) => empleado.activo && !ocupadosComoJefe.has(empleado.id),
+  );
   const materialesElegibles = materiales.filter(
     (material) =>
       material.estado ||
@@ -145,13 +210,11 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
     { key: "fechaFin", label: "Fecha de fin", type: "date", required: true },
     { key: "phone", label: "Teléfono", type: "tel" },
     { key: "email", label: "Correo", type: "email" },
-    { key: "ubicacion", label: "Ubicación" },
-    { key: "descripcion", label: "Descripción" },
   ];
   return (
     <form
       ref={formRef}
-      className="max-w-3xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
+      className="max-w-6xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
       noValidate
       onSubmit={async (e) => {
         e.preventDefault();
@@ -225,14 +288,26 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
             materialesVistos.add(materialId);
           }
           if (
-            !Number.isFinite(cantidad) ||
-            cantidad <= 0 ||
-            !/^\d+(?:\.\d{1,2})?$/.test(detalle.cantidad)
+            !Number.isSafeInteger(cantidad) ||
+            cantidad < 1 ||
+            !/^\d+$/.test(detalle.cantidad)
           ) {
             nuevosErrores[claveDetalle(index, "cantidad")] =
-              "Ingresa una cantidad mayor que cero, con hasta dos decimales.";
+              "Ingresa una cantidad entera mayor que cero.";
           }
         });
+        if (
+          proyecto &&
+          datos.presupuesto &&
+          (!/^\d+(?:\.\d{1,2})?$/.test(String(datos.presupuesto)) ||
+            Number(datos.presupuesto) < 0)
+        ) {
+          nuevosErrores.presupuesto =
+            "Ingresa un presupuesto válido, mayor o igual a 0, con hasta dos decimales.";
+        }
+        if (proyecto && datos.estado === "CANCELADO" && !motivo.trim()) {
+          nuevosErrores.motivo = "Ingresa el motivo de la cancelación.";
+        }
         if (Object.keys(nuevosErrores).length > 0) {
           setErroresCampo(nuevosErrores);
           setError(
@@ -260,6 +335,16 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
               ...datos,
               phone: datos.phone.replace(/\D/g, ""),
               detalles: detallesPayload,
+              estado: proyecto ? datos.estado : undefined,
+              tipoObra: proyecto && datos.tipoObra ? datos.tipoObra : undefined,
+              presupuesto:
+                proyecto && datos.presupuesto
+                  ? Number(datos.presupuesto)
+                  : undefined,
+              motivo:
+                proyecto && datos.estado === "CANCELADO"
+                  ? motivo.trim()
+                  : undefined,
             },
             proyecto?.id,
           );
@@ -288,13 +373,14 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
         }
       }}
     >
+      <h2 className="text-lg font-semibold">Detalles del proyecto</h2>
       {!proyecto && (
         <p className="text-sm text-gray-500">
-          Creación directa, sin cotización. Puedes agregar materiales al
-          presupuesto.
+          Creación directa, sin cotización. Puedes agregar los materiales
+          cotizados.
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {campos.map((c) => (
           <InputField
             key={c.key}
@@ -346,9 +432,105 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
       <p className="text-sm text-gray-500">
         Teléfono o correo: completa al menos uno. Puedes ingresar ambos.
       </p>
+      <TextAreaField
+        label="Ubicación"
+        disabled={guardando}
+        errorMessage={erroresCampo.ubicacion}
+        value={datos.ubicacion}
+        onChange={(e) => setDatos({ ...datos, ubicacion: e.target.value })}
+      />
+      <TextAreaField
+        label="Descripción"
+        disabled={guardando}
+        errorMessage={erroresCampo.descripcion}
+        value={datos.descripcion}
+        onChange={(e) => setDatos({ ...datos, descripcion: e.target.value })}
+      />
+      {proyecto && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <SelectedField
+            label="Tipo de obra"
+            placeholder="Sin definir"
+            isDisabled={guardando}
+            value={datos.tipoObra ?? ""}
+            onChange={(value) =>
+              setDatos({ ...datos, tipoObra: value as TipoObra | "" })
+            }
+          >
+            <ListBox.Item id="" textValue="Sin definir">
+              Sin definir
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
+            {Object.entries(TIPOS_OBRA_LABEL).map(([valor, etiqueta]) => (
+              <ListBox.Item key={valor} id={valor} textValue={etiqueta}>
+                {etiqueta}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </SelectedField>
+          <InputField
+            label="Presupuesto"
+            type="number"
+            min="0"
+            step="0.01"
+            disabled={guardando}
+            errorMessage={erroresCampo.presupuesto}
+            value={datos.presupuesto ?? ""}
+            onChange={(e) => {
+              setDatos({ ...datos, presupuesto: e.target.value });
+              setErroresCampo((actuales) => {
+                const siguientes = { ...actuales };
+                delete siguientes.presupuesto;
+                return siguientes;
+              });
+            }}
+          />
+          {estadoEsEditable(proyecto.estado) ? (
+            <SelectedField
+              label="Estado"
+              isDisabled={guardando}
+              value={datos.estado ?? proyecto.estado}
+              onChange={(value) =>
+                setDatos({
+                  ...datos,
+                  estado: value as EstadoEditableProyecto,
+                })
+              }
+            >
+              {ESTADOS_EDITABLES.map((valor) => (
+                <ListBox.Item
+                  key={valor}
+                  id={valor}
+                  textValue={ESTADO_EDITABLE_LABEL[valor]}
+                >
+                  {ESTADO_EDITABLE_LABEL[valor]}
+                  <ListBox.ItemIndicator />
+                </ListBox.Item>
+              ))}
+            </SelectedField>
+          ) : (
+            <div className="flex flex-col gap-1 text-sm">
+              <span className="text-gray-700">Estado</span>
+              <span className="rounded-lg border border-gray-200 bg-gray-50 p-2 text-gray-500">
+                {proyecto.estado} (no editable aquí)
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+      {proyecto && datos.estado === "CANCELADO" && (
+        <TextAreaField
+          label="Motivo de la cancelación *"
+          disabled={guardando}
+          errorMessage={erroresCampo.motivo}
+          value={motivo}
+          placeholder="Explica por qué se cancela este proyecto"
+          onChange={(e) => setMotivo(e.target.value)}
+        />
+      )}
       <section className="space-y-4 border-t border-gray-200 pt-5">
         <div>
-          <h2 className="text-lg font-semibold">Presupuesto de materiales</h2>
+          <h2 className="text-lg font-semibold">Materiales cotizados</h2>
           <p className="text-sm text-gray-500">
             Los importes son una vista previa. Al guardar se calculan con los
             precios del servidor.
@@ -358,195 +540,278 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
         {materialesQuery.isError && (
           <div role="alert" className="text-sm text-red-700">
             No se pudo cargar el catálogo de materiales.{" "}
-            <button
+            <Button
               type="button"
-              className="underline"
+              variant="ghost"
+              size="sm"
+              className="h-auto p-0 underline"
               onClick={() => materialesQuery.refetch()}
             >
               Reintentar
-            </button>
+            </Button>
           </div>
         )}
-        {detalles.map((detalle, index) => {
-          const id = Number(detalle.materialId);
-          const anterior = proyecto?.detalles.find(
-            (item) => item.material.id === id,
-          );
-          const material = materiales.find((item) => item.id === id);
-          const costo = Number(
-            anterior?.costoUnitario ?? material?.costoUnitario ?? 0,
-          );
-          const unidad = anterior?.unidad ?? material?.unidad ?? "";
-          const cantidad = Number(detalle.cantidad);
-          const subtotal =
-            Number.isFinite(cantidad) && cantidad > 0
-              ? Math.round(cantidad * costo * 100) / 100
-              : 0;
-          const iva = Math.round(subtotal * 0.13 * 100) / 100;
-          const opciones = materialesElegibles.filter(
-            (item) =>
-              item.id === id ||
-              !detalles.some(
-                (otro, i) => i !== index && Number(otro.materialId) === item.id,
-              ),
-          );
-          return (
-            <div
-              key={index}
-              className="space-y-3 rounded-lg border border-gray-200 p-4"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <h3 className="font-medium">Material {index + 1}</h3>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  isDisabled={guardando}
-                  onClick={() => {
-                    setDetalles(detalles.filter((_, i) => i !== index));
-                    limpiarErroresDetalle();
-                  }}
-                >
-                  Quitar
-                </Button>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label
-                  className="flex flex-col gap-1 text-sm"
-                  data-campo={claveDetalle(index, "materialId")}
-                >
-                  Material
-                  <select
-                    aria-label={`Material ${index + 1}`}
-                    aria-invalid={Boolean(
-                      erroresCampo[claveDetalle(index, "materialId")],
-                    )}
-                    aria-describedby={
-                      erroresCampo[claveDetalle(index, "materialId")]
-                        ? `error-material-${index}`
-                        : undefined
-                    }
-                    className="rounded-lg border border-gray-300 bg-white p-2"
-                    value={detalle.materialId}
-                    disabled={guardando}
-                    onChange={(e) => {
-                      setDetalles(
-                        detalles.map((item, i) =>
-                          i === index
-                            ? { ...item, materialId: e.target.value }
-                            : item,
-                        ),
-                      );
-                      limpiarErrorDetalle(index, "materialId");
-                    }}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button
+            type="button"
+            variant="secondary"
+            isDisabled={
+              guardando ||
+              materialesQuery.isPending ||
+              materialesQuery.isError ||
+              detalles.length >= materialesElegibles.length
+            }
+            onClick={() => setIsMaterialModalOpen(true)}
+          >
+            Agregar material
+          </Button>
+        </div>
+        {detalles.length ? (
+          <Table>
+            <Table.ScrollContainer>
+              <Table.Content
+                aria-label="Materiales cotizados"
+                className="min-w-[900px]"
+              >
+                <Table.Header>
+                  <Table.Column isRowHeader>#</Table.Column>
+                  <Table.Column>Material</Table.Column>
+                  <Table.Column>Cantidad</Table.Column>
+                  <Table.Column>Precio unitario</Table.Column>
+                  <Table.Column>Subtotal</Table.Column>
+                  <Table.Column>IVA</Table.Column>
+                  <Table.Column>Total</Table.Column>
+                  <Table.Column>Acción</Table.Column>
+                </Table.Header>
+                <Table.Body>
+                  <Table.Collection
+                    items={detalles.map((detalle, index) => ({
+                      detalle,
+                      index,
+                    }))}
                   >
-                    <option value="">Selecciona un material</option>
-                    {anterior && !opciones.some((item) => item.id === id) && (
-                      <option value={id}>{anterior.material.nombre}</option>
-                    )}
-                    {opciones.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.nombre}
-                      </option>
-                    ))}
-                  </select>
-                  {erroresCampo[claveDetalle(index, "materialId")] && (
-                    <span
-                      id={`error-material-${index}`}
-                      role="alert"
-                      className="text-sm text-red-700"
-                    >
-                      {erroresCampo[claveDetalle(index, "materialId")]}
-                    </span>
-                  )}
-                </label>
-                <div data-campo={claveDetalle(index, "cantidad")}>
-                  <InputField
-                    label="Cantidad"
-                    aria-label={`Cantidad del material ${index + 1}`}
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    value={detalle.cantidad}
-                    disabled={guardando}
-                    errorMessage={erroresCampo[claveDetalle(index, "cantidad")]}
-                    onChange={(e) => {
-                      setDetalles(
-                        detalles.map((item, i) =>
-                          i === index
-                            ? { ...item, cantidad: e.target.value }
-                            : item,
-                        ),
+                    {({ detalle, index }) => {
+                      const id = Number(detalle.materialId);
+                      const anterior = proyecto?.detalles.find(
+                        (item) => item.material.id === id,
                       );
-                      limpiarErrorDetalle(index, "cantidad");
+                      const material = materiales.find(
+                        (item) => item.id === id,
+                      );
+                      const costo = Number(
+                        anterior?.costoUnitario ?? material?.costoUnitario ?? 0,
+                      );
+                      const unidad = anterior?.unidad ?? material?.unidad ?? "";
+                      const cantidad = Number(detalle.cantidad);
+                      const subtotal =
+                        Number.isFinite(cantidad) && cantidad > 0
+                          ? Math.round(cantidad * costo * 100) / 100
+                          : 0;
+                      const iva = Math.round(subtotal * 0.13 * 100) / 100;
+                      return (
+                        <Table.Row key={`${detalle.materialId}-${index}`}>
+                          <Table.Cell className="text-gray-500">
+                            {index + 1}
+                          </Table.Cell>
+                          <Table.Cell
+                            data-campo={claveDetalle(index, "materialId")}
+                          >
+                            <span className="font-medium">
+                              {material?.nombre ??
+                                anterior?.material.nombre ??
+                                "Material"}
+                            </span>
+                            <span className="block text-xs text-gray-500">
+                              {material?.codigo || `#${id}`} ·{" "}
+                              {unidad || "Sin unidad"}
+                            </span>
+                            {erroresCampo[
+                              claveDetalle(index, "materialId")
+                            ] && (
+                              <span
+                                className="block text-xs text-red-700"
+                                role="alert"
+                              >
+                                {
+                                  erroresCampo[
+                                    claveDetalle(index, "materialId")
+                                  ]
+                                }
+                              </span>
+                            )}
+                          </Table.Cell>
+                          <Table.Cell
+                            data-campo={claveDetalle(index, "cantidad")}
+                          >
+                            <InputField
+                              aria-label={`Cantidad del material ${index + 1}`}
+                              type="text"
+                              inputMode="numeric"
+                              value={detalle.cantidad}
+                              disabled={guardando}
+                              errorMessage={
+                                erroresCampo[claveDetalle(index, "cantidad")]
+                              }
+                              onChange={(e) => {
+                                setDetalles(
+                                  detalles.map((item, i) =>
+                                    i === index
+                                      ? { ...item, cantidad: e.target.value }
+                                      : item,
+                                  ),
+                                );
+                                limpiarErrorDetalle(index, "cantidad");
+                              }}
+                            />
+                          </Table.Cell>
+                          <Table.Cell>{dinero(costo)}</Table.Cell>
+                          <Table.Cell>{dinero(subtotal)}</Table.Cell>
+                          <Table.Cell>{dinero(iva)}</Table.Cell>
+                          <Table.Cell className="font-semibold">
+                            {dinero(subtotal + iva)}
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="danger"
+                              isDisabled={guardando}
+                              onClick={() => {
+                                setDetalles(
+                                  detalles.filter((_, i) => i !== index),
+                                );
+                                limpiarErroresDetalle();
+                              }}
+                            >
+                              Quitar
+                            </Button>
+                          </Table.Cell>
+                        </Table.Row>
+                      );
                     }}
-                  />
-                </div>
-              </div>
-              {id > 0 && (
-                <p className="text-sm text-gray-600">
-                  {unidad || "Sin unidad"} · {dinero(costo)} por unidad ·
-                  Subtotal {dinero(subtotal)} · IVA {dinero(iva)} · Total{" "}
-                  {dinero(subtotal + iva)}
-                </p>
-              )}
-            </div>
-          );
-        })}
-        <Button
-          type="button"
-          variant="secondary"
-          isDisabled={
-            guardando ||
-            materialesQuery.isPending ||
-            materialesQuery.isError ||
-            detalles.length >= materialesElegibles.length
+                  </Table.Collection>
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
+          </Table>
+        ) : (
+          <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500">
+              Aún no hay materiales. Usa “Agregar material” para definir lo
+              cotizado.
+            </p>
+          </div>
+        )}
+        <MaterialPickerModal
+          isOpen={isMaterialModalOpen}
+          onOpenChange={setIsMaterialModalOpen}
+          materiales={materialesElegibles}
+          isLoading={materialesQuery.isPending}
+          hasError={materialesQuery.isError}
+          onRetry={() => void materialesQuery.refetch()}
+          selectedIds={
+            new Set(detalles.map((detalle) => Number(detalle.materialId)))
           }
-          onClick={() =>
-            setDetalles([...detalles, { materialId: "", cantidad: "1" }])
-          }
-        >
-          Agregar material
-        </Button>
+          onAdd={(materialId) => {
+            setDetalles((actuales) =>
+              actuales.some(
+                (detalle) => Number(detalle.materialId) === materialId,
+              )
+                ? actuales
+                : [
+                    ...actuales,
+                    { materialId: String(materialId), cantidad: "1" },
+                  ],
+            );
+            limpiarErroresDetalle();
+          }}
+        />
         {erroresCampo.detalles && (
           <p role="alert" className="text-sm text-red-700">
             {erroresCampo.detalles}
           </p>
         )}
         {erroresDetalle.length > 0 && (
-          <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+          <div
+            role="alert"
+            className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
+          >
             <p>Corrige los siguientes materiales:</p>
             <ul className="mt-1 list-disc pl-5">
               {erroresDetalle.map(([clave, mensaje]) => (
                 <li key={clave}>
-                  <button
+                  <Button
                     type="button"
-                    className="text-left underline"
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto p-0 text-left underline"
                     onClick={() => enfocarDetalle(clave)}
                   >
                     {etiquetaDetalle(clave)}: {mensaje}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           </div>
         )}
-        <dl className="flex flex-wrap justify-end gap-6 border-t border-gray-200 pt-4">
-          <div>
-            <dt className="text-sm text-gray-500">Subtotal</dt>
-            <dd className="font-semibold">{dinero(resumen.subTotal)}</dd>
+        <div className="flex justify-end">
+          <div className="w-full max-w-md space-y-2 rounded-xl border bg-gray-50 p-4">
+            <div className="flex justify-between">
+              <span>Subtotal general</span>
+              <strong>{dinero(resumen.subTotal)}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>IVA general</span>
+              <strong>{dinero(resumen.totalIva)}</strong>
+            </div>
+            <div className="flex justify-between border-t pt-2 text-lg">
+              <span>Total general</span>
+              <strong>{dinero(resumen.subTotal + resumen.totalIva)}</strong>
+            </div>
           </div>
-          <div>
-            <dt className="text-sm text-gray-500">IVA</dt>
-            <dd className="font-semibold">{dinero(resumen.totalIva)}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-gray-500">Total</dt>
-            <dd className="font-semibold">
-              {dinero(resumen.subTotal + resumen.totalIva)}
-            </dd>
-          </div>
-        </dl>
+        </div>
       </section>
+      {proyecto ? (
+        <>
+          <AsignarJefeProyecto proyecto={proyecto} variant="embedded" />
+          <AsignarEmpleadosProyecto proyecto={proyecto} variant="embedded" />
+        </>
+      ) : (
+        <section className="space-y-4 border-t border-gray-200 pt-5">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <HardHat className="size-5 text-gray-400" />
+            Jefe de proyecto
+          </h2>
+          <SelectedField
+            label="Asignar empleado como jefe (opcional)"
+            placeholder="Selecciona un empleado"
+            className="max-w-sm"
+            isDisabled={guardando}
+            value={datos.jefeProyectoId ?? ""}
+            onChange={(value) =>
+              setDatos({
+                ...datos,
+                jefeProyectoId: value === "" ? undefined : Number(value),
+              })
+            }
+          >
+            <ListBox.Item id="" textValue="Ninguno">
+              Ninguno
+              <ListBox.ItemIndicator />
+            </ListBox.Item>
+            {empleadosDisponiblesComoJefe.map((empleado) => (
+              <ListBox.Item
+                key={empleado.id}
+                id={empleado.id}
+                textValue={empleado.nombreCompleto}
+              >
+                {empleado.nombreCompleto}
+                <ListBox.ItemIndicator />
+              </ListBox.Item>
+            ))}
+          </SelectedField>
+        </section>
+      )}
       {error && (
         <p
           role="alert"

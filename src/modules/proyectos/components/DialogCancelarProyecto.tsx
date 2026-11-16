@@ -1,20 +1,29 @@
 import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
+import { TextAreaField } from "@components/fields/TextAreaField";
 import { toast } from "@heroui/react/toast";
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { cancelarProyecto, errorCancelarProyecto } from "../api/guardarProyecto";
+import {
+  cancelarProyecto,
+  errorCancelarProyecto,
+} from "../api/guardarProyecto";
 import type { Proyecto } from "../types/proyectos";
+import { Ban } from "lucide-react";
 
 export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [motivo, setMotivo] = useState("");
   const navigate = useNavigate();
   const client = useQueryClient();
   return (
     <AlertDialog>
-      <Button variant="danger">Cancelar proyecto</Button>
+      <Button variant="danger">
+        <Ban className="mr-1 size-4" />
+        Cancelar proyecto
+      </Button>
       <AlertDialog.Backdrop>
         <AlertDialog.Container>
           <AlertDialog.Dialog>
@@ -24,9 +33,18 @@ export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
             <AlertDialog.Body>
               <p>
                 ¿Cancelar «{proyecto.nombre}»? Permanecerá en el listado para
-                consulta. Antes debes retirar sus herramientas y empleados
-                asignados.
+                consulta, con una etiqueta de "Cancelado". Los empleados
+                asignados serán notificados. Esta acción no se puede deshacer.
               </p>
+              <TextAreaField
+                label="Motivo de la cancelación"
+                isRequired
+                rows={3}
+                value={motivo}
+                disabled={pending}
+                onChange={(e) => setMotivo(e.target.value)}
+                placeholder="Explica por qué se cancela este proyecto"
+              />
               {error && (
                 <p role="alert" className="mt-3 text-red-700">
                   {error}
@@ -40,12 +58,12 @@ export function DialogCancelarProyecto({ proyecto }: { proyecto: Proyecto }) {
               <Button
                 variant="danger"
                 isPending={pending}
-                isDisabled={pending}
+                isDisabled={pending || !motivo.trim()}
                 onClick={async () => {
                   setPending(true);
                   setError("");
                   try {
-                    await cancelarProyecto(proyecto.id);
+                    await cancelarProyecto(proyecto.id, motivo.trim());
                     await client.invalidateQueries({ queryKey: ["proyectos"] });
                     await client.invalidateQueries({
                       queryKey: ["proyectos-filter"],

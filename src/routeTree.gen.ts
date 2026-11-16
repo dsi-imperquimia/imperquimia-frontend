@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAlertasRouteImport } from './routes/_authenticated/alertas'
+import { Route as AuthenticatedActividadesDiariasIndexRouteImport } from './routes/_authenticated/actividades-diarias/index'
+import { Route as AuthenticatedActividadesDiariasCreateRouteImport } from './routes/_authenticated/actividades-diarias/create'
 import { Route as AuthenticatedCargoEmpleadoIndexRouteImport } from './routes/_authenticated/cargo-empleado/index'
 import { Route as AuthenticatedCargoEmpleadoCargoIdRouteImport } from './routes/_authenticated/cargo-empleado/$cargoId'
 import { Route as AuthenticatedCargoEmpleadoCreateRouteImport } from './routes/_authenticated/cargo-empleado/create'
@@ -20,19 +23,28 @@ import { Route as AuthenticatedCotizacionesCreateRouteImport } from './routes/_a
 import { Route as AuthenticatedDemoStoreRouteImport } from './routes/_authenticated/demo/store'
 import { Route as AuthenticatedEmpleadosIndexRouteImport } from './routes/_authenticated/empleados/index'
 import { Route as AuthenticatedEmpleadosEmpleadoIdRouteImport } from './routes/_authenticated/empleados/$empleadoId'
+import { Route as AuthenticatedEmpleadosAsignacionesRouteImport } from './routes/_authenticated/empleados/asignaciones'
 import { Route as AuthenticatedEmpleadosCreateRouteImport } from './routes/_authenticated/empleados/create'
 import { Route as AuthenticatedEmpleadosHabilidadesRouteImport } from './routes/_authenticated/empleados/habilidades'
 import { Route as AuthenticatedHerramientasIndexRouteImport } from './routes/_authenticated/herramientas/index'
 import { Route as AuthenticatedHerramientasMarcasRouteImport } from './routes/_authenticated/herramientas/marcas'
 import { Route as AuthenticatedHerramientasTiposRouteImport } from './routes/_authenticated/herramientas/tipos'
+import { Route as AuthenticatedIncidenciasIndexRouteImport } from './routes/_authenticated/incidencias/index'
+import { Route as AuthenticatedIncidenciasIncidenciaIdRouteImport } from './routes/_authenticated/incidencias/$incidenciaId'
+import { Route as AuthenticatedIncidenciasCreateRouteImport } from './routes/_authenticated/incidencias/create'
+import { Route as AuthenticatedJornadaHerramientasIndexRouteImport } from './routes/_authenticated/jornada-herramientas/index'
 import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
+import { Route as AuthenticatedMaterialesInventarioRouteImport } from './routes/_authenticated/materiales/inventario'
+import { Route as AuthenticatedMisProyectosIndexRouteImport } from './routes/_authenticated/mis-proyectos/index'
+import { Route as AuthenticatedMisProyectosProyectoIdRouteImport } from './routes/_authenticated/mis-proyectos/$proyectoId'
 import { Route as AuthenticatedProyectosIndexRouteImport } from './routes/_authenticated/proyectos/index'
 import { Route as AuthenticatedProyectosProyectoIdRouteImport } from './routes/_authenticated/proyectos/$proyectoId'
 import { Route as AuthenticatedProyectosCreateRouteImport } from './routes/_authenticated/proyectos/create'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUsersUserIdRouteImport } from './routes/_authenticated/users/$userId'
 import { Route as AuthenticatedUsersCreateRouteImport } from './routes/_authenticated/users/create'
+import { Route as AuthenticatedActividadesDiariasEditarActividadIdRouteImport } from './routes/_authenticated/actividades-diarias/editar/$actividadId'
 import { Route as AuthenticatedCotizacionesCotizacionIdEditRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/edit'
 import { Route as AuthenticatedCotizacionesCotizacionIdViewRouteImport } from './routes/_authenticated/cotizaciones/$cotizacionId/view'
 import { Route as AuthenticatedHerramientasHerramientaIdEditRouteImport } from './routes/_authenticated/herramientas/$herramientaId/edit'
@@ -56,6 +68,23 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAlertasRoute = AuthenticatedAlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedActividadesDiariasIndexRoute =
+  AuthenticatedActividadesDiariasIndexRouteImport.update({
+    id: '/actividades-diarias/',
+    path: '/actividades-diarias/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedActividadesDiariasCreateRoute =
+  AuthenticatedActividadesDiariasCreateRouteImport.update({
+    id: '/actividades-diarias/create',
+    path: '/actividades-diarias/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedCargoEmpleadoIndexRoute =
   AuthenticatedCargoEmpleadoIndexRouteImport.update({
     id: '/cargo-empleado/',
@@ -103,6 +132,12 @@ const AuthenticatedEmpleadosEmpleadoIdRoute =
     path: '/empleados/$empleadoId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedEmpleadosAsignacionesRoute =
+  AuthenticatedEmpleadosAsignacionesRouteImport.update({
+    id: '/empleados/asignaciones',
+    path: '/empleados/asignaciones',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEmpleadosCreateRoute =
   AuthenticatedEmpleadosCreateRouteImport.update({
     id: '/empleados/create',
@@ -133,6 +168,30 @@ const AuthenticatedHerramientasTiposRoute =
     path: '/herramientas/tipos',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedIncidenciasIndexRoute =
+  AuthenticatedIncidenciasIndexRouteImport.update({
+    id: '/incidencias/',
+    path: '/incidencias/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedIncidenciasIncidenciaIdRoute =
+  AuthenticatedIncidenciasIncidenciaIdRouteImport.update({
+    id: '/incidencias/$incidenciaId',
+    path: '/incidencias/$incidenciaId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedIncidenciasCreateRoute =
+  AuthenticatedIncidenciasCreateRouteImport.update({
+    id: '/incidencias/create',
+    path: '/incidencias/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedJornadaHerramientasIndexRoute =
+  AuthenticatedJornadaHerramientasIndexRouteImport.update({
+    id: '/jornada-herramientas/',
+    path: '/jornada-herramientas/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMaterialesIndexRoute =
   AuthenticatedMaterialesIndexRouteImport.update({
     id: '/materiales/',
@@ -143,6 +202,24 @@ const AuthenticatedMaterialesGestionRoute =
   AuthenticatedMaterialesGestionRouteImport.update({
     id: '/materiales/gestion',
     path: '/materiales/gestion',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMaterialesInventarioRoute =
+  AuthenticatedMaterialesInventarioRouteImport.update({
+    id: '/materiales/inventario',
+    path: '/materiales/inventario',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMisProyectosIndexRoute =
+  AuthenticatedMisProyectosIndexRouteImport.update({
+    id: '/mis-proyectos/',
+    path: '/mis-proyectos/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedMisProyectosProyectoIdRoute =
+  AuthenticatedMisProyectosProyectoIdRouteImport.update({
+    id: '/mis-proyectos/$proyectoId',
+    path: '/mis-proyectos/$proyectoId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedProyectosIndexRoute =
@@ -178,6 +255,12 @@ const AuthenticatedUsersCreateRoute =
   AuthenticatedUsersCreateRouteImport.update({
     id: '/users/create',
     path: '/users/create',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedActividadesDiariasEditarActividadIdRoute =
+  AuthenticatedActividadesDiariasEditarActividadIdRouteImport.update({
+    id: '/actividades-diarias/editar/$actividadId',
+    path: '/actividades-diarias/editar/$actividadId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedCotizacionesCotizacionIdEditRoute =
@@ -232,27 +315,39 @@ const AuthenticatedUsersRolesCreateRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
+  '/actividades-diarias/create': typeof AuthenticatedActividadesDiariasCreateRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  '/empleados/asignaciones': typeof AuthenticatedEmpleadosAsignacionesRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
+  '/incidencias/$incidenciaId': typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  '/incidencias/create': typeof AuthenticatedIncidenciasCreateRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
+  '/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
+  '/actividades-diarias/': typeof AuthenticatedActividadesDiariasIndexRoute
   '/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas/': typeof AuthenticatedHerramientasIndexRoute
+  '/incidencias/': typeof AuthenticatedIncidenciasIndexRoute
+  '/jornada-herramientas/': typeof AuthenticatedJornadaHerramientasIndexRoute
   '/materiales/': typeof AuthenticatedMaterialesIndexRoute
+  '/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos/': typeof AuthenticatedProyectosIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
+  '/actividades-diarias/editar/$actividadId': typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -264,28 +359,40 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/alertas': typeof AuthenticatedAlertasRoute
   '/': typeof AuthenticatedIndexRoute
+  '/actividades-diarias/create': typeof AuthenticatedActividadesDiariasCreateRoute
   '/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/demo/store': typeof AuthenticatedDemoStoreRoute
   '/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  '/empleados/asignaciones': typeof AuthenticatedEmpleadosAsignacionesRoute
   '/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
+  '/incidencias/$incidenciaId': typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  '/incidencias/create': typeof AuthenticatedIncidenciasCreateRoute
   '/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
+  '/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
   '/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/users/create': typeof AuthenticatedUsersCreateRoute
+  '/actividades-diarias': typeof AuthenticatedActividadesDiariasIndexRoute
   '/cargo-empleado': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/cotizaciones': typeof AuthenticatedCotizacionesIndexRoute
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas': typeof AuthenticatedHerramientasIndexRoute
+  '/incidencias': typeof AuthenticatedIncidenciasIndexRoute
+  '/jornada-herramientas': typeof AuthenticatedJornadaHerramientasIndexRoute
   '/materiales': typeof AuthenticatedMaterialesIndexRoute
+  '/mis-proyectos': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos': typeof AuthenticatedProyectosIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/actividades-diarias/editar/$actividadId': typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   '/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -299,28 +406,40 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/alertas': typeof AuthenticatedAlertasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/actividades-diarias/create': typeof AuthenticatedActividadesDiariasCreateRoute
   '/_authenticated/cargo-empleado/$cargoId': typeof AuthenticatedCargoEmpleadoCargoIdRoute
   '/_authenticated/cargo-empleado/create': typeof AuthenticatedCargoEmpleadoCreateRoute
   '/_authenticated/cotizaciones/create': typeof AuthenticatedCotizacionesCreateRoute
   '/_authenticated/demo/store': typeof AuthenticatedDemoStoreRoute
   '/_authenticated/empleados/$empleadoId': typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  '/_authenticated/empleados/asignaciones': typeof AuthenticatedEmpleadosAsignacionesRoute
   '/_authenticated/empleados/create': typeof AuthenticatedEmpleadosCreateRoute
   '/_authenticated/empleados/habilidades': typeof AuthenticatedEmpleadosHabilidadesRoute
   '/_authenticated/herramientas/marcas': typeof AuthenticatedHerramientasMarcasRoute
   '/_authenticated/herramientas/tipos': typeof AuthenticatedHerramientasTiposRoute
+  '/_authenticated/incidencias/$incidenciaId': typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  '/_authenticated/incidencias/create': typeof AuthenticatedIncidenciasCreateRoute
   '/_authenticated/materiales/gestion': typeof AuthenticatedMaterialesGestionRoute
+  '/_authenticated/materiales/inventario': typeof AuthenticatedMaterialesInventarioRoute
+  '/_authenticated/mis-proyectos/$proyectoId': typeof AuthenticatedMisProyectosProyectoIdRoute
   '/_authenticated/proyectos/$proyectoId': typeof AuthenticatedProyectosProyectoIdRoute
   '/_authenticated/proyectos/create': typeof AuthenticatedProyectosCreateRoute
   '/_authenticated/users/$userId': typeof AuthenticatedUsersUserIdRoute
   '/_authenticated/users/create': typeof AuthenticatedUsersCreateRoute
+  '/_authenticated/actividades-diarias/': typeof AuthenticatedActividadesDiariasIndexRoute
   '/_authenticated/cargo-empleado/': typeof AuthenticatedCargoEmpleadoIndexRoute
   '/_authenticated/cotizaciones/': typeof AuthenticatedCotizacionesIndexRoute
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/_authenticated/herramientas/': typeof AuthenticatedHerramientasIndexRoute
+  '/_authenticated/incidencias/': typeof AuthenticatedIncidenciasIndexRoute
+  '/_authenticated/jornada-herramientas/': typeof AuthenticatedJornadaHerramientasIndexRoute
   '/_authenticated/materiales/': typeof AuthenticatedMaterialesIndexRoute
+  '/_authenticated/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/_authenticated/proyectos/': typeof AuthenticatedProyectosIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/actividades-diarias/editar/$actividadId': typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   '/_authenticated/cotizaciones/$cotizacionId/edit': typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   '/_authenticated/cotizaciones/$cotizacionId/view': typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   '/_authenticated/herramientas/$herramientaId/edit': typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -335,27 +454,39 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/alertas'
+    | '/actividades-diarias/create'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
     | '/cotizaciones/create'
     | '/demo/store'
     | '/empleados/$empleadoId'
+    | '/empleados/asignaciones'
     | '/empleados/create'
     | '/empleados/habilidades'
     | '/herramientas/marcas'
     | '/herramientas/tipos'
+    | '/incidencias/$incidenciaId'
+    | '/incidencias/create'
     | '/materiales/gestion'
+    | '/materiales/inventario'
+    | '/mis-proyectos/$proyectoId'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
     | '/users/create'
+    | '/actividades-diarias/'
     | '/cargo-empleado/'
     | '/cotizaciones/'
     | '/empleados/'
     | '/herramientas/'
+    | '/incidencias/'
+    | '/jornada-herramientas/'
     | '/materiales/'
+    | '/mis-proyectos/'
     | '/proyectos/'
     | '/users/'
+    | '/actividades-diarias/editar/$actividadId'
     | '/cotizaciones/$cotizacionId/edit'
     | '/cotizaciones/$cotizacionId/view'
     | '/herramientas/$herramientaId/edit'
@@ -367,28 +498,40 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/alertas'
     | '/'
+    | '/actividades-diarias/create'
     | '/cargo-empleado/$cargoId'
     | '/cargo-empleado/create'
     | '/cotizaciones/create'
     | '/demo/store'
     | '/empleados/$empleadoId'
+    | '/empleados/asignaciones'
     | '/empleados/create'
     | '/empleados/habilidades'
     | '/herramientas/marcas'
     | '/herramientas/tipos'
+    | '/incidencias/$incidenciaId'
+    | '/incidencias/create'
     | '/materiales/gestion'
+    | '/materiales/inventario'
+    | '/mis-proyectos/$proyectoId'
     | '/proyectos/$proyectoId'
     | '/proyectos/create'
     | '/users/$userId'
     | '/users/create'
+    | '/actividades-diarias'
     | '/cargo-empleado'
     | '/cotizaciones'
     | '/empleados'
     | '/herramientas'
+    | '/incidencias'
+    | '/jornada-herramientas'
     | '/materiales'
+    | '/mis-proyectos'
     | '/proyectos'
     | '/users'
+    | '/actividades-diarias/editar/$actividadId'
     | '/cotizaciones/$cotizacionId/edit'
     | '/cotizaciones/$cotizacionId/view'
     | '/herramientas/$herramientaId/edit'
@@ -401,28 +544,40 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/alertas'
     | '/_authenticated/'
+    | '/_authenticated/actividades-diarias/create'
     | '/_authenticated/cargo-empleado/$cargoId'
     | '/_authenticated/cargo-empleado/create'
     | '/_authenticated/cotizaciones/create'
     | '/_authenticated/demo/store'
     | '/_authenticated/empleados/$empleadoId'
+    | '/_authenticated/empleados/asignaciones'
     | '/_authenticated/empleados/create'
     | '/_authenticated/empleados/habilidades'
     | '/_authenticated/herramientas/marcas'
     | '/_authenticated/herramientas/tipos'
+    | '/_authenticated/incidencias/$incidenciaId'
+    | '/_authenticated/incidencias/create'
     | '/_authenticated/materiales/gestion'
+    | '/_authenticated/materiales/inventario'
+    | '/_authenticated/mis-proyectos/$proyectoId'
     | '/_authenticated/proyectos/$proyectoId'
     | '/_authenticated/proyectos/create'
     | '/_authenticated/users/$userId'
     | '/_authenticated/users/create'
+    | '/_authenticated/actividades-diarias/'
     | '/_authenticated/cargo-empleado/'
     | '/_authenticated/cotizaciones/'
     | '/_authenticated/empleados/'
     | '/_authenticated/herramientas/'
+    | '/_authenticated/incidencias/'
+    | '/_authenticated/jornada-herramientas/'
     | '/_authenticated/materiales/'
+    | '/_authenticated/mis-proyectos/'
     | '/_authenticated/proyectos/'
     | '/_authenticated/users/'
+    | '/_authenticated/actividades-diarias/editar/$actividadId'
     | '/_authenticated/cotizaciones/$cotizacionId/edit'
     | '/_authenticated/cotizaciones/$cotizacionId/view'
     | '/_authenticated/herramientas/$herramientaId/edit'
@@ -459,6 +614,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/alertas': {
+      id: '/_authenticated/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AuthenticatedAlertasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/actividades-diarias/': {
+      id: '/_authenticated/actividades-diarias/'
+      path: '/actividades-diarias'
+      fullPath: '/actividades-diarias/'
+      preLoaderRoute: typeof AuthenticatedActividadesDiariasIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/actividades-diarias/create': {
+      id: '/_authenticated/actividades-diarias/create'
+      path: '/actividades-diarias/create'
+      fullPath: '/actividades-diarias/create'
+      preLoaderRoute: typeof AuthenticatedActividadesDiariasCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cargo-empleado/': {
@@ -517,6 +693,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmpleadosEmpleadoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/empleados/asignaciones': {
+      id: '/_authenticated/empleados/asignaciones'
+      path: '/empleados/asignaciones'
+      fullPath: '/empleados/asignaciones'
+      preLoaderRoute: typeof AuthenticatedEmpleadosAsignacionesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/empleados/create': {
       id: '/_authenticated/empleados/create'
       path: '/empleados/create'
@@ -552,6 +735,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHerramientasTiposRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/incidencias/': {
+      id: '/_authenticated/incidencias/'
+      path: '/incidencias'
+      fullPath: '/incidencias/'
+      preLoaderRoute: typeof AuthenticatedIncidenciasIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/incidencias/$incidenciaId': {
+      id: '/_authenticated/incidencias/$incidenciaId'
+      path: '/incidencias/$incidenciaId'
+      fullPath: '/incidencias/$incidenciaId'
+      preLoaderRoute: typeof AuthenticatedIncidenciasIncidenciaIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/incidencias/create': {
+      id: '/_authenticated/incidencias/create'
+      path: '/incidencias/create'
+      fullPath: '/incidencias/create'
+      preLoaderRoute: typeof AuthenticatedIncidenciasCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/jornada-herramientas/': {
+      id: '/_authenticated/jornada-herramientas/'
+      path: '/jornada-herramientas'
+      fullPath: '/jornada-herramientas/'
+      preLoaderRoute: typeof AuthenticatedJornadaHerramientasIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/materiales/': {
       id: '/_authenticated/materiales/'
       path: '/materiales'
@@ -564,6 +775,27 @@ declare module '@tanstack/react-router' {
       path: '/materiales/gestion'
       fullPath: '/materiales/gestion'
       preLoaderRoute: typeof AuthenticatedMaterialesGestionRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/materiales/inventario': {
+      id: '/_authenticated/materiales/inventario'
+      path: '/materiales/inventario'
+      fullPath: '/materiales/inventario'
+      preLoaderRoute: typeof AuthenticatedMaterialesInventarioRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mis-proyectos/': {
+      id: '/_authenticated/mis-proyectos/'
+      path: '/mis-proyectos'
+      fullPath: '/mis-proyectos/'
+      preLoaderRoute: typeof AuthenticatedMisProyectosIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/mis-proyectos/$proyectoId': {
+      id: '/_authenticated/mis-proyectos/$proyectoId'
+      path: '/mis-proyectos/$proyectoId'
+      fullPath: '/mis-proyectos/$proyectoId'
+      preLoaderRoute: typeof AuthenticatedMisProyectosProyectoIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/proyectos/': {
@@ -606,6 +838,13 @@ declare module '@tanstack/react-router' {
       path: '/users/create'
       fullPath: '/users/create'
       preLoaderRoute: typeof AuthenticatedUsersCreateRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/actividades-diarias/editar/$actividadId': {
+      id: '/_authenticated/actividades-diarias/editar/$actividadId'
+      path: '/actividades-diarias/editar/$actividadId'
+      fullPath: '/actividades-diarias/editar/$actividadId'
+      preLoaderRoute: typeof AuthenticatedActividadesDiariasEditarActividadIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/cotizaciones/$cotizacionId/edit': {
@@ -668,28 +907,40 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAlertasRoute: typeof AuthenticatedAlertasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedActividadesDiariasCreateRoute: typeof AuthenticatedActividadesDiariasCreateRoute
   AuthenticatedCargoEmpleadoCargoIdRoute: typeof AuthenticatedCargoEmpleadoCargoIdRoute
   AuthenticatedCargoEmpleadoCreateRoute: typeof AuthenticatedCargoEmpleadoCreateRoute
   AuthenticatedCotizacionesCreateRoute: typeof AuthenticatedCotizacionesCreateRoute
   AuthenticatedDemoStoreRoute: typeof AuthenticatedDemoStoreRoute
   AuthenticatedEmpleadosEmpleadoIdRoute: typeof AuthenticatedEmpleadosEmpleadoIdRoute
+  AuthenticatedEmpleadosAsignacionesRoute: typeof AuthenticatedEmpleadosAsignacionesRoute
   AuthenticatedEmpleadosCreateRoute: typeof AuthenticatedEmpleadosCreateRoute
   AuthenticatedEmpleadosHabilidadesRoute: typeof AuthenticatedEmpleadosHabilidadesRoute
   AuthenticatedHerramientasMarcasRoute: typeof AuthenticatedHerramientasMarcasRoute
   AuthenticatedHerramientasTiposRoute: typeof AuthenticatedHerramientasTiposRoute
+  AuthenticatedIncidenciasIncidenciaIdRoute: typeof AuthenticatedIncidenciasIncidenciaIdRoute
+  AuthenticatedIncidenciasCreateRoute: typeof AuthenticatedIncidenciasCreateRoute
   AuthenticatedMaterialesGestionRoute: typeof AuthenticatedMaterialesGestionRoute
+  AuthenticatedMaterialesInventarioRoute: typeof AuthenticatedMaterialesInventarioRoute
+  AuthenticatedMisProyectosProyectoIdRoute: typeof AuthenticatedMisProyectosProyectoIdRoute
   AuthenticatedProyectosProyectoIdRoute: typeof AuthenticatedProyectosProyectoIdRoute
   AuthenticatedProyectosCreateRoute: typeof AuthenticatedProyectosCreateRoute
   AuthenticatedUsersUserIdRoute: typeof AuthenticatedUsersUserIdRoute
   AuthenticatedUsersCreateRoute: typeof AuthenticatedUsersCreateRoute
+  AuthenticatedActividadesDiariasIndexRoute: typeof AuthenticatedActividadesDiariasIndexRoute
   AuthenticatedCargoEmpleadoIndexRoute: typeof AuthenticatedCargoEmpleadoIndexRoute
   AuthenticatedCotizacionesIndexRoute: typeof AuthenticatedCotizacionesIndexRoute
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
   AuthenticatedHerramientasIndexRoute: typeof AuthenticatedHerramientasIndexRoute
+  AuthenticatedIncidenciasIndexRoute: typeof AuthenticatedIncidenciasIndexRoute
+  AuthenticatedJornadaHerramientasIndexRoute: typeof AuthenticatedJornadaHerramientasIndexRoute
   AuthenticatedMaterialesIndexRoute: typeof AuthenticatedMaterialesIndexRoute
+  AuthenticatedMisProyectosIndexRoute: typeof AuthenticatedMisProyectosIndexRoute
   AuthenticatedProyectosIndexRoute: typeof AuthenticatedProyectosIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedActividadesDiariasEditarActividadIdRoute: typeof AuthenticatedActividadesDiariasEditarActividadIdRoute
   AuthenticatedCotizacionesCotizacionIdEditRoute: typeof AuthenticatedCotizacionesCotizacionIdEditRoute
   AuthenticatedCotizacionesCotizacionIdViewRoute: typeof AuthenticatedCotizacionesCotizacionIdViewRoute
   AuthenticatedHerramientasHerramientaIdEditRoute: typeof AuthenticatedHerramientasHerramientaIdEditRoute
@@ -701,30 +952,50 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAlertasRoute: AuthenticatedAlertasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedActividadesDiariasCreateRoute:
+    AuthenticatedActividadesDiariasCreateRoute,
   AuthenticatedCargoEmpleadoCargoIdRoute:
     AuthenticatedCargoEmpleadoCargoIdRoute,
   AuthenticatedCargoEmpleadoCreateRoute: AuthenticatedCargoEmpleadoCreateRoute,
   AuthenticatedCotizacionesCreateRoute: AuthenticatedCotizacionesCreateRoute,
   AuthenticatedDemoStoreRoute: AuthenticatedDemoStoreRoute,
   AuthenticatedEmpleadosEmpleadoIdRoute: AuthenticatedEmpleadosEmpleadoIdRoute,
+  AuthenticatedEmpleadosAsignacionesRoute:
+    AuthenticatedEmpleadosAsignacionesRoute,
   AuthenticatedEmpleadosCreateRoute: AuthenticatedEmpleadosCreateRoute,
   AuthenticatedEmpleadosHabilidadesRoute:
     AuthenticatedEmpleadosHabilidadesRoute,
   AuthenticatedHerramientasMarcasRoute: AuthenticatedHerramientasMarcasRoute,
   AuthenticatedHerramientasTiposRoute: AuthenticatedHerramientasTiposRoute,
+  AuthenticatedIncidenciasIncidenciaIdRoute:
+    AuthenticatedIncidenciasIncidenciaIdRoute,
+  AuthenticatedIncidenciasCreateRoute: AuthenticatedIncidenciasCreateRoute,
   AuthenticatedMaterialesGestionRoute: AuthenticatedMaterialesGestionRoute,
+  AuthenticatedMaterialesInventarioRoute:
+    AuthenticatedMaterialesInventarioRoute,
+  AuthenticatedMisProyectosProyectoIdRoute:
+    AuthenticatedMisProyectosProyectoIdRoute,
   AuthenticatedProyectosProyectoIdRoute: AuthenticatedProyectosProyectoIdRoute,
   AuthenticatedProyectosCreateRoute: AuthenticatedProyectosCreateRoute,
   AuthenticatedUsersUserIdRoute: AuthenticatedUsersUserIdRoute,
   AuthenticatedUsersCreateRoute: AuthenticatedUsersCreateRoute,
+  AuthenticatedActividadesDiariasIndexRoute:
+    AuthenticatedActividadesDiariasIndexRoute,
   AuthenticatedCargoEmpleadoIndexRoute: AuthenticatedCargoEmpleadoIndexRoute,
   AuthenticatedCotizacionesIndexRoute: AuthenticatedCotizacionesIndexRoute,
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
   AuthenticatedHerramientasIndexRoute: AuthenticatedHerramientasIndexRoute,
+  AuthenticatedIncidenciasIndexRoute: AuthenticatedIncidenciasIndexRoute,
+  AuthenticatedJornadaHerramientasIndexRoute:
+    AuthenticatedJornadaHerramientasIndexRoute,
   AuthenticatedMaterialesIndexRoute: AuthenticatedMaterialesIndexRoute,
+  AuthenticatedMisProyectosIndexRoute: AuthenticatedMisProyectosIndexRoute,
   AuthenticatedProyectosIndexRoute: AuthenticatedProyectosIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedActividadesDiariasEditarActividadIdRoute:
+    AuthenticatedActividadesDiariasEditarActividadIdRoute,
   AuthenticatedCotizacionesCotizacionIdEditRoute:
     AuthenticatedCotizacionesCotizacionIdEditRoute,
   AuthenticatedCotizacionesCotizacionIdViewRoute:

@@ -2,7 +2,16 @@ import { queryClient } from "@lib/queryClient";
 import type { User } from "@modules/user/types/user";
 import { useSelector } from "@tanstack/react-store";
 import { Store } from "@tanstack/store";
-import { STORAGE_KEY } from "../const/StorageKey";
+import { BIENVENIDA_SESSION_KEY, STORAGE_KEY } from "../const/StorageKey";
+
+function limpiarBanderaBienvenida(): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.removeItem(BIENVENIDA_SESSION_KEY);
+  } catch {
+    // modo privado o almacenamiento no disponible
+  }
+}
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -57,15 +66,32 @@ export const authStore = new Store<AuthState>(loadPersistedAuth());
 
 export const authActions = {
   login: (user: User, token: string) => {
+    limpiarBanderaBienvenida();
     const next: AuthState = { isAuthenticated: true, user, accessToken: token };
     queryClient.removeQueries({ queryKey: ["auth", "me"] }); // fuerza recarga del nuevo usuario
     authStore.setState(() => next);
     persistAuth(next);
   },
+  // Actualiza el usuario en el store (p. ej. tras refrescar /auth/me en el
+  // beforeLoad de la ruta raíz) y lo persiste, para que un F5 posterior lea
+  // desde localStorage los datos completos (incluyendo empleadoId/empleado)
+  // en vez de los que haya guardado el login original.
+  syncUser: (state: AuthState) => {
+    authStore.setState(() => state);
+    persistAuth(state);
+  },
   logout: () => {
+    limpiarBanderaBienvenida();
     queryClient.removeQueries({ queryKey: ["auth", "me"] });
     authStore.setState(() => DEFAULT_STATE);
     persistAuth(DEFAULT_STATE);
+  },
+  refreshUser: (user: User) => {
+    const current = authStore.state;
+    if (!current.isAuthenticated) return;
+    const next: AuthState = { ...current, user };
+    authStore.setState(() => next);
+    persistAuth(next);
   },
 };
 

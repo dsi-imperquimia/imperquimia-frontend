@@ -4,7 +4,7 @@ import { RouteProgressBar } from "@components/layout/RouteProgressBar";
 import { Toast } from "@heroui/react/toast";
 import { queryClient } from "@lib/queryClient";
 import { authMeQueryOptions, getMe } from "@modules/auth/api/authApi";
-import { authStore } from "@modules/auth/store/authStore";
+import { authActions, authStore } from "@modules/auth/store/authStore";
 import { getAuth } from "@modules/auth/utils/get-auth-store";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -31,7 +31,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     if (user === auth.user) return { auth };
 
     const next = { ...auth, user };
-    authStore.setState(() => next); // actualiza store solo si el usuario cambió
+    authActions.syncUser(next); // actualiza store y localStorage solo si el usuario cambió
     return { auth: next };
   },
   head: () => ({

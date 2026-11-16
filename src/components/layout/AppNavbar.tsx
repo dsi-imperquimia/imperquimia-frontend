@@ -1,6 +1,13 @@
 import { Breadcrumbs } from "@heroui/react/breadcrumbs";
-import { useRouterState } from "@tanstack/react-router";
-import { Home, PanelLeft } from "lucide-react";
+import { contarAlertasNoLeidas } from "@modules/alertas/api/alertas";
+import { BIENVENIDA_SESSION_KEY } from "@modules/auth/const/StorageKey";
+import { useAuth, userActions } from "@modules/auth/store/authStore";
+import { Button } from "@heroui/react/button";
+import { toast } from "@heroui/react/toast";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { Bell, Home, PanelLeft } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { NAV_ITEMS } from "./navItems";
 import { UserDropdown } from "./UserDropdown";
 
@@ -15,6 +22,7 @@ interface Crumb {
 }
 
 const PAGE_LABELS: Record<string, string> = {
+  "/alertas": "Alertas",
   "/users/create": "Crear usuario",
   "/users/roles/create": "Crear rol",
   "/empleados/create": "Crear empleado",
@@ -27,9 +35,22 @@ const PAGE_LABELS: Record<string, string> = {
 function findCrumbs(pathname: string): Crumb[] | null {
   if (pathname === "/") return [{ label: "Dashboard", to: "/", icon: Home }];
 
+  if (pathname.startsWith("/actividades-diarias/editar/")) {
+    const parentCrumbs = findCrumbs("/actividades-diarias");
+    if (parentCrumbs) {
+      return [...parentCrumbs, { label: "Registro de bitácora" }];
+    }
+  }
+
   const pageLabel = PAGE_LABELS[pathname];
   if (pageLabel) {
     const parentPath = pathname.slice(0, pathname.lastIndexOf("/"));
+    if (!parentPath) {
+      return [
+        { label: "Dashboard", to: "/", icon: Home },
+        { label: pageLabel },
+      ];
+    }
     const parentCrumbs = findCrumbs(parentPath);
     if (parentCrumbs) return [...parentCrumbs, { label: pageLabel }];
   }
@@ -71,33 +92,168 @@ function getBreadcrumbs(pathname: string): Crumb[] {
   return [{ label: "Dashboard", to: "/", icon: Home }, { label: "Actual" }];
 }
 
+function yaMostroBienvenidaEnSesion(userId: number): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return sessionStorage.getItem(BIENVENIDA_SESSION_KEY) === String(userId);
+  } catch {
+    return false;
+  }
+}
+
+function marcarBienvenidaEnSesion(userId: number): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(BIENVENIDA_SESSION_KEY, String(userId));
+  } catch {
+    // modo privado o almacenamiento no disponible
+  }
+}
+
+function CrumbTrail({
+  crumbs,
+  onNavigate,
+  className,
+}: {
+  crumbs: Crumb[];
+  onNavigate: (to: string) => void;
+  className?: string;
+}) {
+  return (
+    <Breadcrumbs className={className}>
+      {crumbs.map((crumb) => {
+        const destino = crumb.to;
+        return (
+          <Breadcrumbs.Item
+            key={crumb.label}
+            onPress={destino ? () => onNavigate(destino) : undefined}
+          >
+            {crumb.icon && <crumb.icon size={16} className="mr-1 shrink-0" />}
+            <span className="max-w-40 truncate sm:max-w-none">{crumb.label}</span>
+          </Breadcrumbs.Item>
+        );
+      })}
+    </Breadcrumbs>
+  );
+}
+
 export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
+  const navigate = useNavigate();
   const state = useRouterState();
   const pathname = state.location.pathname;
   const crumbs = getBreadcrumbs(pathname);
+  const mobileCrumbs = crumbs.length > 2 ? crumbs.slice(-2) : crumbs;
+  const handleNavigate = (to: string) => void navigate({ to });
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4">
       <button
         onClick={onSidebarToggle}
-        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 hidden"
-        aria-label="Toggle sidebar"
+        className="shrink-0 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+        aria-label="Alternar menú de navegación"
       >
         <PanelLeft size={20} />
       </button>
 
-      <Breadcrumbs>
-        {crumbs.map((crumb) => (
-          <Breadcrumbs.Item key={crumb.label} href={crumb.to}>
-            {crumb.icon && <crumb.icon size={16} className="mr-1" />}
-            {crumb.label}
-          </Breadcrumbs.Item>
-        ))}
-      </Breadcrumbs>
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <CrumbTrail
+          crumbs={crumbs}
+          onNavigate={handleNavigate}
+          className="hidden sm:flex"
+        />
+        <CrumbTrail
+          crumbs={mobileCrumbs}
+          onNavigate={handleNavigate}
+          className="flex sm:hidden"
+        />
+      </div>
 
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex shrink-0 items-center gap-1">
+        <AlertasShortcut />
         <UserDropdown />
       </div>
     </header>
+  );
+}
+
+function AlertasShortcut() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const avisoMostradoPara = useRef<number | null>(null);
+  const tieneAcceso = userActions.hasAnyPermission([
+    "ALERTA_READ",
+    "ALERTA_CREATE",
+    "ALERTA_CONFIGURE",
+  ]);
+  const puedeConsultar = userActions.hasPermission("ALERTA_READ");
+  const {
+    data = 0,
+    isSuccess,
+    isFetchedAfterMount,
+  } = useQuery({
+    queryKey: ["alertas", "no-leidas", user?.id],
+    queryFn: contarAlertasNoLeidas,
+    enabled: !!user?.id && puedeConsultar,
+    refetchInterval: 30_000,
+  });
+
+  useEffect(() => {
+    if (
+      !user?.id ||
+      avisoMostradoPara.current === user.id ||
+      yaMostroBienvenidaEnSesion(user.id)
+    ) {
+      return;
+    }
+    if (puedeConsultar && !isFetchedAfterMount) return;
+
+    avisoMostradoPara.current = user.id;
+    marcarBienvenidaEnSesion(user.id);
+    if (isSuccess && data > 0) {
+      toast.info(
+        data === 1
+          ? "Tienes una notificación pendiente"
+          : `Tienes ${data} notificaciones pendientes`,
+        {
+          description: "Revisa tu bandeja de alertas.",
+          indicator: <Bell className="size-4" />,
+          actionProps: {
+            children: "Ver alertas",
+            onPress: () => void navigate({ to: "/alertas" }),
+          },
+          timeout: 10_000,
+        },
+      );
+    }
+    toast.success(`¡Bienvenido, ${user.name}!`, {
+      description: "Has iniciado sesión correctamente.",
+      timeout: 5_000,
+    });
+  }, [
+    data,
+    isFetchedAfterMount,
+    isSuccess,
+    navigate,
+    puedeConsultar,
+    user?.id,
+    user?.name,
+  ]);
+
+  if (!tieneAcceso) return null;
+  return (
+    <Button
+      isIconOnly
+      variant="ghost"
+      aria-label={data ? `Alertas, ${data} sin leer` : "Alertas"}
+      onPress={() => void navigate({ to: "/alertas" })}
+      className="relative text-gray-600"
+    >
+      <Bell className="size-5" />
+      {data > 0 && (
+        <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-600 px-1.5 py-0.5 text-center text-xs font-semibold text-white">
+          {data > 99 ? "99+" : data}
+        </span>
+      )}
+    </Button>
   );
 }

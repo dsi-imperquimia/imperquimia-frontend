@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, expect, it, vi } from "vitest";
 import { FormHerramienta } from "./FormHerramienta";
@@ -37,10 +43,15 @@ it("envía los identificadores de marca y tipo activos al registrar una herramie
   });
   const marca = await screen.findByLabelText("Marca de herramienta");
   const tipo = await screen.findByLabelText("Tipo de herramienta");
-  await waitFor(() => expect(marca.hasAttribute("disabled")).toBe(false));
+  await waitFor(() => expect(marca.hasAttribute("aria-disabled")).toBe(false));
+
+  fireEvent.click(marca);
   expect(screen.queryByRole("option", { name: /Antigua/ })).toBeNull();
-  fireEvent.change(marca, { target: { value: "7" } });
-  fireEvent.change(tipo, { target: { value: "3" } });
+  fireEvent.click(await screen.findByRole("option", { name: "Bosch" }));
+
+  fireEvent.click(tipo);
+  fireEvent.click(await screen.findByRole("option", { name: "Eléctrica" }));
+
   fireEvent.click(screen.getByRole("button", { name: "Guardar herramienta" }));
 
   await waitFor(() =>

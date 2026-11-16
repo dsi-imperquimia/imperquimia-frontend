@@ -1,5 +1,9 @@
 import { http } from "@lib/http";
-import type { Proyecto } from "../types/proyectos";
+import type {
+  EstadoEditableProyecto,
+  Proyecto,
+  TipoObra,
+} from "../types/proyectos";
 import { isAxiosError } from "axios";
 
 export interface DatosProyecto {
@@ -12,6 +16,13 @@ export interface DatosProyecto {
   fechaInicio: string;
   fechaFin: string;
   detalles: { materialId: number; cantidad: number }[];
+  jefeProyectoId?: number;
+  // Solo aplican al editar un proyecto existente (GPRCIMPER-27).
+  estado?: EstadoEditableProyecto;
+  tipoObra?: TipoObra | "";
+  presupuesto?: string | number;
+  // Obligatorio cuando estado se envía como CANCELADO (GPRCIMPER-28).
+  motivo?: string;
 }
 
 export interface ErroresProyecto {
@@ -25,8 +36,8 @@ export async function guardarProyecto(datos: DatosProyecto, id?: number) {
     : await http.post<Proyecto>("/proyectos", datos);
   return data;
 }
-export async function cancelarProyecto(id: number) {
-  await http.patch(`/proyectos/${id}/cancelar`);
+export async function cancelarProyecto(id: number, motivo: string) {
+  await http.patch(`/proyectos/${id}/cancelar`, { motivo });
 }
 
 export function errorCancelarProyecto(error: unknown) {
@@ -36,6 +47,60 @@ export function errorCancelarProyecto(error: unknown) {
   return typeof mensaje === "string"
     ? mensaje
     : "No se pudo cancelar el proyecto. Inténtalo de nuevo.";
+}
+
+export async function asignarJefeProyecto(id: number, empleadoId: number) {
+  const { data } = await http.post<Proyecto>(
+    `/proyectos/${id}/jefe/${empleadoId}`,
+  );
+  return data;
+}
+
+export async function retirarJefeProyecto(id: number) {
+  const { data } = await http.patch<Proyecto>(`/proyectos/${id}/jefe/retirar`);
+  return data;
+}
+
+export function errorJefeProyecto(error: unknown) {
+  const mensaje: unknown = isAxiosError(error)
+    ? error.response?.data?.message
+    : null;
+  return typeof mensaje === "string"
+    ? mensaje
+    : "No se pudo actualizar el jefe de proyecto. Inténtalo de nuevo.";
+}
+
+export async function asignarEmpleadoProyecto(id: number, empleadoId: number) {
+  const { data } = await http.post<Proyecto>(
+    `/proyectos/${id}/empleados/${empleadoId}`,
+  );
+  return data;
+}
+
+export async function retirarEmpleadoProyecto(id: number, empleadoId: number) {
+  const { data } = await http.patch<Proyecto>(
+    `/proyectos/${id}/empleados/${empleadoId}/retirar`,
+  );
+  return data;
+}
+
+export async function reasignarEmpleadoProyecto(
+  origenId: number,
+  empleadoId: number,
+  destinoId: number,
+) {
+  await http.patch(`/proyectos/${origenId}/empleados/${empleadoId}/reasignar`, {
+    destinoId,
+  });
+}
+
+export function errorEmpleadoProyecto(error: unknown) {
+  const mensaje: unknown = isAxiosError(error)
+    ? error.response?.data?.message
+    : null;
+  return typeof mensaje === "string"
+    ? mensaje
+    : "No se pudo actualizar el técnico asignado. Inténtalo de nuevo.";
 }
 
 export function errorProyecto(error: unknown) {
@@ -58,6 +123,10 @@ export function errorProyecto(error: unknown) {
       fechaFin:
         "Ingresa una fecha de fin válida en formato AAAA-MM-DD y que no sea anterior al inicio.",
       detalles: "Revisa los materiales y sus cantidades.",
+      estado: "Selecciona un estado válido.",
+      tipoObra: "Selecciona un tipo de obra válido.",
+      presupuesto: "Ingresa un presupuesto válido, mayor o igual a 0.",
+      motivo: "Ingresa el motivo de la cancelación.",
     };
 
     for (const [campo, valor] of Object.entries(errores)) {
@@ -68,7 +137,8 @@ export function errorProyecto(error: unknown) {
         continue;
       }
       if (campo === "materialId" || campo === "cantidad") {
-        if (!tieneFilas) campos.detalles = "Revisa los materiales y sus cantidades.";
+        if (!tieneFilas)
+          campos.detalles = "Revisa los materiales y sus cantidades.";
         continue;
       }
       const campoTipado = campo as keyof DatosProyecto;

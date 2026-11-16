@@ -1,6 +1,10 @@
+import type { User } from "@modules/user/types/user";
 import {
   BriefcaseBusiness,
+  TriangleAlert,
+  ClipboardList,
   FileText,
+  HardHat,
   Layers,
   LayoutDashboard,
   ShieldUser,
@@ -23,10 +27,18 @@ export interface NavItem {
   children?: SubItem[];
   hasArrow?: boolean;
   permission?: string[];
+  /** Solo visible para usuarios vinculados a un empleado (ver `user.empleadoId`). */
+  requiresEmpleado?: boolean;
 }
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/" },
+  {
+    label: "Mis proyectos",
+    icon: HardHat,
+    to: "/mis-proyectos",
+    requiresEmpleado: true,
+  },
   {
     label: "Usuarios",
     icon: Users,
@@ -55,6 +67,11 @@ export const NAV_ITEMS: NavItem[] = [
       {
         label: "Lista de empleados",
         to: "/empleados",
+        permission: ["EMPLEADO_READ"],
+      },
+      {
+        label: "Asignaciones",
+        to: "/empleados/asignaciones",
         permission: ["EMPLEADO_READ"],
       },
       {
@@ -123,6 +140,36 @@ export const NAV_ITEMS: NavItem[] = [
     permission: ["PROYECTO_READ"],
   },
   {
+    label: "Actividades diarias",
+    icon: ClipboardList,
+    to: "/actividades-diarias",
+    children: [
+      {
+        label: "Lista de actividades",
+        to: "/actividades-diarias",
+        permission: ["ACTIVIDAD_READ", "ACTIVIDAD_CREATE", "ACTIVIDAD_UPDATE"],
+      },
+    ],
+    permission: ["ACTIVIDAD_CREATE", "ACTIVIDAD_READ", "ACTIVIDAD_UPDATE"],
+  },
+  {
+    label: "Incidencias",
+    icon: TriangleAlert,
+    to: "/incidencias",
+    children: [
+      {
+        label: "Lista de incidencias",
+        to: "/incidencias",
+        permission: [
+          "INCIDENCIA_READ",
+          "INCIDENCIA_CREATE",
+          "INCIDENCIA_UPDATE",
+        ],
+      },
+    ],
+    permission: ["INCIDENCIA_READ", "INCIDENCIA_CREATE", "INCIDENCIA_UPDATE"],
+  },
+  {
     label: "Herramientas",
     icon: Wrench,
     to: "/herramientas",
@@ -130,7 +177,7 @@ export const NAV_ITEMS: NavItem[] = [
       {
         label: "Lista de herramientas",
         to: "/herramientas",
-        permission: ["HERRAMIENTA_READ"],
+        permission: ["HERRAMIENTA_READ", "HERRAMIENTA_ASIGNADA_READ"],
       },
       {
         label: "Tipos de herramientas",
@@ -142,17 +189,41 @@ export const NAV_ITEMS: NavItem[] = [
         to: "/herramientas/marcas",
         permission: ["HERRAMIENTA_CREATE", "HERRAMIENTA_UPDATE"],
       },
+      {
+        label: "Verificación de jornada",
+        to: "/jornada-herramientas",
+        permission: ["JORNADA_HERRAMIENTA_READ", "JORNADA_HERRAMIENTA_VERIFY"],
+      },
     ],
     permission: [
       "HERRAMIENTA_READ",
+      "HERRAMIENTA_ASIGNADA_READ",
       "HERRAMIENTA_CREATE",
       "HERRAMIENTA_UPDATE",
+      "JORNADA_HERRAMIENTA_READ",
+      "JORNADA_HERRAMIENTA_VERIFY",
     ],
   },
   {
     label: "Materiales",
     icon: Layers,
     to: "/materiales",
-    children: [{ label: "Lista de materiales", to: "/materiales" }],
+    children: [
+      { label: "Lista de materiales", to: "/materiales" },
+      {
+        label: "Inventario de materiales",
+        to: "/materiales/inventario",
+        permission: ["INVENTARIO_MATERIAL_READ"],
+      },
+    ],
   },
 ];
+
+export function isNavItemVisible(
+  item: Pick<NavItem, "permission" | "requiresEmpleado">,
+  user: Pick<User, "empleadoId"> | null | undefined,
+  hasAnyPermission: (permissions: string[]) => boolean,
+): boolean {
+  if (item.requiresEmpleado && !user?.empleadoId) return false;
+  return hasAnyPermission(item.permission ?? []);
+}

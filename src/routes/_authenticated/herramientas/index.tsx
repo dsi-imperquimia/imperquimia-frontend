@@ -1,5 +1,6 @@
 import { ListBox, Select, Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
 import { Table } from "@heroui/react/table";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -12,6 +13,7 @@ import { listHerramientas } from "@modules/herramientas/api/list-herramientas";
 import { DialogCreateHerramienta } from "@modules/herramientas/components/DialogRegistrarHerramienta";
 import type { Herramienta } from "@modules/herramientas/types/herramientas";
 import { EstadoHerramienta } from "@modules/herramientas/types/herramientas";
+import { getUbicacionHerramientaLabel } from "@modules/herramientas/utils/ubicacionHerramienta";
 import DialogMovimientoHerramienta from "@modules/movimientosHerramientas/components/DialogMovimientoHerramienta";
 import { listProyectos } from "@modules/proyectos/api/listProyectos";
 
@@ -26,12 +28,14 @@ const getEstadoLabel = (estado: EstadoHerramienta | "ACTIVOS") => {
     [EstadoHerramienta.EN_PROYECTO]: "EN PROYECTO",
     [EstadoHerramienta.MANTENIMIENTO]: "MANTENIMIENTO",
     [EstadoHerramienta.DANADA]: "DAÑADA",
+    [EstadoHerramienta.REQUIERE_REVISION]: "REQUIERE REVISIÓN",
     [EstadoHerramienta.DESECHO]: "DESECHO",
   };
   return labels[estado];
 };
 
 function RouteComponent() {
+  const puedeVerTodo = userActions.hasPermission("HERRAMIENTA_READ");
   // REQUERIMIENTO: Estado inicial en "ACTIVOS" para ver todos los operativos excepto desecho
   const [filtroEstado, setFiltroEstado] = useState<
     EstadoHerramienta | "ACTIVOS"
@@ -66,6 +70,7 @@ function RouteComponent() {
   const { data: proyectos = [] } = useQuery({
     queryKey: ["proyectos-filter"],
     queryFn: listProyectos,
+    enabled: puedeVerTodo,
   });
 
   // REQUERIMIENTO: Filtrado preventivo local para asegurar que la opción "ACTIVOS" barra los desechos
@@ -96,12 +101,18 @@ function RouteComponent() {
       [EstadoHerramienta.MANTENIMIENTO]:
         "bg-amber-50 text-amber-700 border-amber-200",
       [EstadoHerramienta.DANADA]: "bg-rose-50 text-rose-700 border-rose-200",
+      [EstadoHerramienta.REQUIERE_REVISION]:
+        "bg-orange-50 text-orange-800 border-orange-200",
       [EstadoHerramienta.DESECHO]: "bg-gray-100 text-gray-600 border-gray-300",
     };
 
     // Mapeo para forzar la visualización de la Ñ correcta en la celda de la tabla
     const textoVisual =
-      estado === EstadoHerramienta.DANADA ? "DAÑADA" : estado.replace("_", " ");
+      estado === EstadoHerramienta.DANADA
+        ? "DAÑADA"
+        : estado === EstadoHerramienta.REQUIERE_REVISION
+          ? "REQUIERE REVISIÓN"
+          : estado.replace("_", " ");
 
     return (
       <span
@@ -120,7 +131,9 @@ function RouteComponent() {
       {/* Encabezado Principal */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Control de Inventario</h1>
+          <h1 className="text-2xl font-bold">
+            {puedeVerTodo ? "Control de Inventario" : "Herramientas asignadas"}
+          </h1>
           <p className="text-sm text-gray-500 mt-0.5">
             Custodia de activos fijos e historial operativo.
           </p>
@@ -142,7 +155,7 @@ function RouteComponent() {
       </div>
 
       {/* Contenedor de Filtros */}
-      <div className="flex flex-wrap gap-4 bg-gray-50 border border-gray-200 rounded-xl p-4 items-center mb-6">
+      <Card className="flex-row flex-wrap items-center gap-4 mb-6">
         <div className="flex flex-col gap-1 min-w-[200px]">
           <span className="text-xs font-semibold text-gray-600">
             Filtrar por Estado
@@ -183,7 +196,7 @@ function RouteComponent() {
         </div>
 
         {/* REQUERIMIENTO: Mostrar filtro de Proyecto SOLO cuando se selecciona EN_PROYECTO */}
-        {filtroEstado === EstadoHerramienta.EN_PROYECTO && (
+        {puedeVerTodo && filtroEstado === EstadoHerramienta.EN_PROYECTO && (
           <div className="flex flex-col gap-1 min-w-[250px]">
             {/* REQUERIMIENTO: Texto cambiado de 'Frente de Obra' a 'Proyecto' */}
             <span className="text-xs font-semibold text-gray-600">
@@ -222,7 +235,7 @@ function RouteComponent() {
             </Select>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Tabla Oficial de Inventario */}
       <Table>
@@ -262,12 +275,14 @@ function RouteComponent() {
                       {getEstadoBadge(herramienta.estado)}
                     </Table.Cell>
                     <Table.Cell>
-                      {herramienta.proyecto ? (
+                      {herramienta.ubicacionActual === "PROYECTO" ? (
                         <span className="text-blue-700 font-semibold">
-                          {herramienta.proyecto.nombre}
+                          {getUbicacionHerramientaLabel(herramienta)}
                         </span>
                       ) : (
-                        <span className="text-gray-500">Bodega General</span>
+                        <span className="text-gray-500">
+                          {getUbicacionHerramientaLabel(herramienta)}
+                        </span>
                       )}
                     </Table.Cell>
                     <Table.Cell>
@@ -296,16 +311,17 @@ function RouteComponent() {
                           </Link>
                         )}
 
-                        {herramienta.estado !== EstadoHerramienta.DESECHO ? (
+                        {userActions.hasPermission("HERRAMIENTA_UPDATE") &&
+                        herramienta.estado !== EstadoHerramienta.DESECHO ? (
                           <DialogMovimientoHerramienta
                             herramienta={herramienta}
                             onMovementSuccess={handleMovementSuccess}
                           />
-                        ) : (
+                        ) : herramienta.estado === EstadoHerramienta.DESECHO ? (
                           <span className="text-xs text-gray-400 italic px-3">
                             De baja
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </Table.Cell>
                   </Table.Row>
