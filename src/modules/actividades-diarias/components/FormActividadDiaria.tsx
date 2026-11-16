@@ -1,3 +1,4 @@
+import { DatePickerField } from "@components/fields/DatePickerField";
 import { InputField } from "@components/fields/InputField";
 import { TextAreaField } from "@components/fields/TextAreaField";
 import { AlertDialog } from "@heroui/react/alert-dialog";
@@ -282,16 +283,15 @@ export function FormActividadDiaria({
   }
 
   const campoFecha = (
-    <InputField
+    <DatePickerField
       label="Fecha de la actividad"
-      type="date"
       max={maxFechaPermitida}
       value={fecha}
-      disabled={
+      isDisabled={
         isPending || !habilitadoParaEditar || esRegistroDelSistemaPendiente
       }
-      onChange={(event) => {
-        setFecha(event.target.value);
+      onChange={(valor) => {
+        setFecha(valor);
         setErrores((prev) => ({
           ...prev,
           campos: { ...prev.campos, fecha: undefined },

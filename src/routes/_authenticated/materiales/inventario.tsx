@@ -1,7 +1,9 @@
+import { DatePickerField } from "@components/fields/DatePickerField";
 import { InputField } from "@components/fields/InputField";
 import { SelectedField } from "@components/fields/SelectedField";
 import { Spinner } from "@heroui/react";
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
 import { ListBox } from "@heroui/react/list-box";
 import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
@@ -178,70 +180,70 @@ function InventarioMateriales() {
             className="w-full sm:max-w-sm"
           />
         </div>
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <Table>
-            <Table.ScrollContainer>
-              <Table.Content
-                aria-label="Existencias de materiales"
-                className="min-w-full"
-              >
-                <Table.Header>
-                  <Table.Column isRowHeader>Material</Table.Column>
-                  <Table.Column>Ubicación</Table.Column>
-                  <Table.Column>Tipo</Table.Column>
-                  <Table.Column>Cantidad</Table.Column>
-                </Table.Header>
-                <Table.Body>
-                  {existencias.isPending && (
-                    <Table.LoadMore isLoading>
-                      <Table.LoadMoreContent>
-                        <Spinner size="sm" />
-                      </Table.LoadMoreContent>
-                    </Table.LoadMore>
+        <Table>
+          <Table.ScrollContainer>
+            <Table.Content
+              aria-label="Existencias de materiales"
+              className="min-w-full"
+            >
+              <Table.Header>
+                <Table.Column isRowHeader>Material</Table.Column>
+                <Table.Column>Ubicación</Table.Column>
+                <Table.Column>Tipo</Table.Column>
+                <Table.Column>Cantidad</Table.Column>
+              </Table.Header>
+              <Table.Body>
+                {existencias.isPending && (
+                  <Table.LoadMore isLoading>
+                    <Table.LoadMoreContent>
+                      <Spinner size="sm" />
+                    </Table.LoadMoreContent>
+                  </Table.LoadMore>
+                )}
+                <Table.Collection items={saldos}>
+                  {(item: ExistenciaMaterial) => (
+                    <Table.Row key={item.id}>
+                      <Table.Cell>
+                        <div className="font-medium text-gray-900">
+                          {item.material.nombre}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {item.material.codigo || `#${item.material.id}`}
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>{item.ubicacion.nombre}</Table.Cell>
+                      <Table.Cell>
+                        <span
+                          className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${
+                            item.ubicacion.tipo === "BODEGA"
+                              ? "bg-sky-50 text-sky-700"
+                              : "bg-violet-50 text-violet-700"
+                          }`}
+                        >
+                          {item.ubicacion.tipo === "BODEGA"
+                            ? "Bodega"
+                            : "Proyecto"}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell className="font-semibold">
+                        {formatCantidad(item.cantidad, item.material.unidad)}
+                      </Table.Cell>
+                    </Table.Row>
                   )}
-                  <Table.Collection items={saldos}>
-                    {(item: ExistenciaMaterial) => (
-                      <Table.Row key={item.id}>
-                        <Table.Cell>
-                          <div className="font-medium text-gray-900">
-                            {item.material.nombre}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {item.material.codigo || `#${item.material.id}`}
-                          </div>
-                        </Table.Cell>
-                        <Table.Cell>{item.ubicacion.nombre}</Table.Cell>
-                        <Table.Cell>
-                          <span
-                            className={`inline-flex rounded-md px-2 py-1 text-xs font-medium ${
-                              item.ubicacion.tipo === "BODEGA"
-                                ? "bg-sky-50 text-sky-700"
-                                : "bg-violet-50 text-violet-700"
-                            }`}
-                          >
-                            {item.ubicacion.tipo === "BODEGA"
-                              ? "Bodega"
-                              : "Proyecto"}
-                          </span>
-                        </Table.Cell>
-                        <Table.Cell className="font-semibold">
-                          {formatCantidad(item.cantidad, item.material.unidad)}
-                        </Table.Cell>
-                      </Table.Row>
-                    )}
-                  </Table.Collection>
-                </Table.Body>
-              </Table.Content>
-            </Table.ScrollContainer>
-          </Table>
-          {!existencias.isPending && saldos.length === 0 && (
+                </Table.Collection>
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
+        </Table>
+        {!existencias.isPending && saldos.length === 0 && (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <p className="p-8 text-center text-sm text-gray-500">
               {busqueda
                 ? "No hay existencias que coincidan con la búsqueda."
                 : "Todavía no hay existencias registradas."}
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       <section className="space-y-4">
@@ -253,7 +255,7 @@ function InventarioMateriales() {
             Entradas, salidas y traslados, con fecha y usuario responsable.
           </p>
         </div>
-        <div className="grid gap-3 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Card className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <SelectedField
             label="Material"
             placeholder="Todos los materiales"
@@ -292,96 +294,86 @@ function InventarioMateriales() {
               </ListBox.Item>
             ))}
           </SelectedField>
-          <InputField
-            label="Desde"
-            type="date"
-            value={desde}
-            onChange={(event) => setDesde(event.target.value)}
-          />
-          <InputField
-            label="Hasta"
-            type="date"
-            value={hasta}
-            onChange={(event) => setHasta(event.target.value)}
-          />
-        </div>
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <Table>
-            <Table.ScrollContainer>
-              <Table.Content
-                aria-label="Movimientos de materiales"
-                className="min-w-full"
-              >
-                <Table.Header>
-                  <Table.Column isRowHeader>Fecha</Table.Column>
-                  <Table.Column>Material</Table.Column>
-                  <Table.Column>Movimiento</Table.Column>
-                  <Table.Column>Origen</Table.Column>
-                  <Table.Column>Destino</Table.Column>
-                  <Table.Column>Cantidad</Table.Column>
-                  <Table.Column>Responsable</Table.Column>
-                </Table.Header>
-                <Table.Body>
-                  {movimientos.isPending && (
-                    <Table.LoadMore isLoading>
-                      <Table.LoadMoreContent>
-                        <Spinner size="sm" />
-                      </Table.LoadMoreContent>
-                    </Table.LoadMore>
-                  )}
-                  <Table.Collection items={movimientos.data ?? []}>
-                    {(item: MovimientoMaterial) => (
-                      <Table.Row key={item.id}>
-                        <Table.Cell>
-                          {formatFecha(item.fechaMovimiento)}
-                        </Table.Cell>
-                        <Table.Cell>
-                          <span className="font-medium">
-                            {item.material.nombre}
-                          </span>
-                        </Table.Cell>
-                        <Table.Cell>
-                          <div className="flex items-center gap-2">
-                            <ArrowRightLeft className="size-4 text-gray-400" />
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium text-gray-900">
-                                {labelMovimiento(item.motivo)}
-                              </div>
-                              {item.observacion && (
-                                <div className="max-w-56 break-words text-sm text-gray-600">
-                                  {item.motivo === "REVERSO_CONSUMO"
-                                    ? `Motivo: ${item.observacion}`
-                                    : item.observacion}
-                                </div>
-                              )}
+          <DatePickerField label="Desde" value={desde} onChange={setDesde} />
+          <DatePickerField label="Hasta" value={hasta} onChange={setHasta} />
+        </Card>
+        <Table>
+          <Table.ScrollContainer>
+            <Table.Content
+              aria-label="Movimientos de materiales"
+              className="min-w-full"
+            >
+              <Table.Header>
+                <Table.Column isRowHeader>Fecha</Table.Column>
+                <Table.Column>Material</Table.Column>
+                <Table.Column>Movimiento</Table.Column>
+                <Table.Column>Origen</Table.Column>
+                <Table.Column>Destino</Table.Column>
+                <Table.Column>Cantidad</Table.Column>
+                <Table.Column>Responsable</Table.Column>
+              </Table.Header>
+              <Table.Body>
+                {movimientos.isPending && (
+                  <Table.LoadMore isLoading>
+                    <Table.LoadMoreContent>
+                      <Spinner size="sm" />
+                    </Table.LoadMoreContent>
+                  </Table.LoadMore>
+                )}
+                <Table.Collection items={movimientos.data ?? []}>
+                  {(item: MovimientoMaterial) => (
+                    <Table.Row key={item.id}>
+                      <Table.Cell>
+                        {formatFecha(item.fechaMovimiento)}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <span className="font-medium">
+                          {item.material.nombre}
+                        </span>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <div className="flex items-center gap-2">
+                          <ArrowRightLeft className="size-4 text-gray-400" />
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-gray-900">
+                              {labelMovimiento(item.motivo)}
                             </div>
+                            {item.observacion && (
+                              <div className="max-w-56 break-words text-sm text-gray-600">
+                                {item.motivo === "REVERSO_CONSUMO"
+                                  ? `Motivo: ${item.observacion}`
+                                  : item.observacion}
+                              </div>
+                            )}
                           </div>
-                        </Table.Cell>
-                        <Table.Cell>
-                          {item.origen?.nombre ?? "Externo"}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {item.destino?.nombre ?? "Externo"}
-                        </Table.Cell>
-                        <Table.Cell className="font-semibold">
-                          {formatCantidad(item.cantidad, item.material.unidad)}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {item.usuario.name} {item.usuario.lastName}
-                        </Table.Cell>
-                      </Table.Row>
-                    )}
-                  </Table.Collection>
-                </Table.Body>
-              </Table.Content>
-            </Table.ScrollContainer>
-          </Table>
-          {!movimientos.isPending && (movimientos.data?.length ?? 0) === 0 && (
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>
+                        {item.origen?.nombre ?? "Externo"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {item.destino?.nombre ?? "Externo"}
+                      </Table.Cell>
+                      <Table.Cell className="font-semibold">
+                        {formatCantidad(item.cantidad, item.material.unidad)}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {item.usuario.name} {item.usuario.lastName}
+                      </Table.Cell>
+                    </Table.Row>
+                  )}
+                </Table.Collection>
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
+        </Table>
+        {!movimientos.isPending && (movimientos.data?.length ?? 0) === 0 && (
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
             <p className="p-8 text-center text-sm text-gray-500">
               No hay movimientos para los filtros seleccionados.
             </p>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {error && !isLoading && (
@@ -404,14 +396,14 @@ function SummaryCard({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <div className="rounded-lg bg-gray-100 p-2 text-gray-600">
+    <Card className="flex-row items-center gap-3">
+      <div className="rounded-lg bg-default p-2 text-muted">
         <Icon className="size-5" />
       </div>
-      <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-xl font-semibold text-gray-900">{value}</p>
-      </div>
-    </div>
+      <Card.Header className="gap-0">
+        <Card.Description>{label}</Card.Description>
+        <Card.Title className="text-xl font-semibold">{value}</Card.Title>
+      </Card.Header>
+    </Card>
   );
 }
