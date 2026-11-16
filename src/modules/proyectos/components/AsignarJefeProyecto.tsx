@@ -1,35 +1,42 @@
+import { InputField } from "@components/fields/InputField";
 import { SelectedField } from "@components/fields/SelectedField";
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
 import { ListBox } from "@heroui/react/list-box";
+import { Modal } from "@heroui/react/modal";
+import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { HardHat, UserMinus, UserPlus, UserX } from "lucide-react";
-import { useState } from "react";
-import { listEmpleados } from "@modules/empleados/api/list-empleados";
 import { userActions } from "@modules/auth/store/authStore";
-import { listProyectos } from "../api/listProyectos";
+import { listEmpleados } from "@modules/empleados/api/list-empleados";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { HardHat, Search, UserMinus, UserPlus, UserX } from "lucide-react";
+import { useState } from "react";
 import {
   asignarJefeProyecto,
   errorJefeProyecto,
   retirarJefeProyecto,
 } from "../api/guardarProyecto";
+import { listProyectos } from "../api/listProyectos";
 import type { ProyectoDetalle } from "../types/proyectos";
 
 export function AsignarJefeProyecto({
   proyecto,
   editable = true,
-  className = "rounded-xl border border-gray-200 bg-white p-6",
+  variant = "card",
 }: {
   proyecto: ProyectoDetalle;
   /** En la vista de solo lectura (detalle del proyecto) no se permite editar. */
   editable?: boolean;
-  /** Permite fundir el bloque dentro de otro contenedor (p. ej. el formulario de edición). */
-  className?: string;
+  /** "card" lo envuelve en una Card independiente (detalle del proyecto);
+   * "embedded" lo funde como sección dentro de otro contenedor (formulario de edición). */
+  variant?: "card" | "embedded";
 }) {
   const client = useQueryClient();
   const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
-  const [empleadoId, setEmpleadoId] = useState<number | "">("");
-  const [pending, setPending] = useState(false);
+  const puedeAsignar = puedeEditar && proyecto.estado === "ACTIVO";
+  const [pendiente, setPendiente] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  const [cargoFiltro, setCargoFiltro] = useState("");
 
   const { data: empleados = [] } = useQuery({
     queryKey: ["empleados"],
@@ -59,23 +66,21 @@ export function AsignarJefeProyecto({
     await client.invalidateQueries({ queryKey: ["proyectos", proyecto.id] });
   }
 
-  async function handleAsignar() {
-    if (empleadoId === "") return;
-    setPending(true);
+  async function handleAsignar(empleadoId: number) {
+    setPendiente(true);
     try {
       await asignarJefeProyecto(proyecto.id, empleadoId);
       await refrescar();
-      setEmpleadoId("");
       toast.success("Jefe de proyecto asignado");
     } catch (error) {
       toast.danger(errorJefeProyecto(error));
     } finally {
-      setPending(false);
+      setPendiente(false);
     }
   }
 
   async function handleRetirar() {
-    setPending(true);
+    setPendiente(true);
     try {
       await retirarJefeProyecto(proyecto.id);
       await refrescar();
@@ -83,7 +88,7 @@ export function AsignarJefeProyecto({
     } catch (error) {
       toast.danger(errorJefeProyecto(error));
     } finally {
-      setPending(false);
+      setPendiente(false);
     }
   }
 
@@ -93,13 +98,129 @@ export function AsignarJefeProyecto({
       empleado.id !== proyecto.jefeProyectoId &&
       !ocupadosEnOtroProyecto.has(empleado.id),
   );
+  const cargosDisponibles = [
+    ...new Set(
+      empleadosDisponibles
+        .map((empleado) => empleado.cargo?.nombre)
+        .filter((nombre): nombre is string => Boolean(nombre)),
+    ),
+  ].sort();
+  const texto = busqueda.trim().toLowerCase();
+  const empleadosFiltrados = empleadosDisponibles.filter(
+    (empleado) =>
+      (!cargoFiltro || empleado.cargo?.nombre === cargoFiltro) &&
+      (!texto ||
+        empleado.nombreCompleto.toLowerCase().includes(texto) ||
+        empleado.dui.toLowerCase().includes(texto) ||
+        (empleado.cargo?.nombre ?? "").toLowerCase().includes(texto)),
+  );
 
-  return (
-    <section className={className}>
-      <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
-        <HardHat className="size-5 text-gray-400" />
-        Jefe de proyecto
-      </h2>
+  const botonAsignar = puedeAsignar && (
+    <Modal>
+      <Button type="button" variant="outline" size="sm">
+        <UserPlus className="size-4" />
+        Asignar jefe
+      </Button>
+      <Modal.Backdrop>
+        <Modal.Container>
+          <Modal.Dialog className="max-w-4xl w-full">
+            <Modal.CloseTrigger />
+            <Modal.Header className="flex flex-row items-center gap-3">
+              <Modal.Icon className="bg-gray-100 text-gray-500">
+                <HardHat className="size-5" />
+              </Modal.Icon>
+              <Modal.Heading>Asignar jefe de proyecto</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="max-h-[34rem] overflow-y-auto p-0">
+              <div className="flex flex-wrap gap-3 px-0 py-4">
+                <InputField
+                  label="Buscar"
+                  placeholder="Nombre, DUI o cargo"
+                  className="min-w-48 flex-1"
+                  startContent={<Search className="size-4" />}
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+                <SelectedField
+                  label="Cargo"
+                  placeholder="Todos los cargos"
+                  className="min-w-48"
+                  value={cargoFiltro}
+                  onChange={(value) => setCargoFiltro(String(value))}
+                >
+                  <ListBox.Item id="" textValue="Todos los cargos">
+                    Todos los cargos
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                  {cargosDisponibles.map((cargo) => (
+                    <ListBox.Item key={cargo} id={cargo} textValue={cargo}>
+                      {cargo}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </SelectedField>
+              </div>
+              {empleadosFiltrados.length ? (
+                <Table>
+                  <Table.ScrollContainer>
+                    <Table.Content
+                      aria-label="Empleados disponibles"
+                      className="min-w-full"
+                    >
+                      <Table.Header>
+                        <Table.Column isRowHeader>Empleado</Table.Column>
+                        <Table.Column>Cargo</Table.Column>
+                        <Table.Column>Acción</Table.Column>
+                      </Table.Header>
+                      <Table.Body>
+                        <Table.Collection items={empleadosFiltrados}>
+                          {(empleado) => (
+                            <Table.Row key={empleado.id}>
+                              <Table.Cell>{empleado.nombreCompleto}</Table.Cell>
+                              <Table.Cell>
+                                {empleado.cargo?.nombre ?? "Sin cargo"}
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  isDisabled={pendiente}
+                                  isPending={pendiente}
+                                  onClick={() => handleAsignar(empleado.id)}
+                                >
+                                  <UserPlus className="size-4" />
+                                  Asignar
+                                </Button>
+                              </Table.Cell>
+                            </Table.Row>
+                          )}
+                        </Table.Collection>
+                      </Table.Body>
+                    </Table.Content>
+                  </Table.ScrollContainer>
+                </Table>
+              ) : (
+                <p className="flex items-center gap-2 px-6 py-4 text-gray-500">
+                  <UserX className="size-5 text-gray-400" />
+                  {empleadosDisponibles.length
+                    ? "Ningún empleado coincide con el filtro."
+                    : "No hay empleados disponibles para asignar."}
+                </p>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button slot="close" variant="secondary">
+                Cerrar
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
+  );
+
+  const contenido = (
+    <>
       {proyecto.jefeProyecto ? (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
@@ -119,8 +240,8 @@ export function AsignarJefeProyecto({
             <Button
               type="button"
               variant="outline"
-              isDisabled={pending}
-              isPending={pending}
+              isDisabled={pendiente}
+              isPending={pendiente}
               onClick={handleRetirar}
             >
               <UserMinus className="size-4" />
@@ -129,44 +250,39 @@ export function AsignarJefeProyecto({
           )}
         </div>
       ) : (
-        <p className="mb-4 flex items-center gap-2 text-gray-500">
+        <p className="flex items-center gap-2 text-gray-500">
           <UserX className="size-5 text-gray-400" />
           Este proyecto todavía no tiene un jefe de proyecto asignado.
         </p>
       )}
-      {puedeEditar && proyecto.estado === "ACTIVO" && (
-        <div className="mt-4 flex flex-wrap items-end gap-3">
-          <SelectedField
-            label="Asignar empleado como jefe"
-            placeholder="Selecciona un empleado"
-            className="min-w-60"
-            value={empleadoId}
-            onChange={(value) =>
-              setEmpleadoId(value === "" ? "" : Number(value))
-            }
-          >
-            {empleadosDisponibles.map((empleado) => (
-              <ListBox.Item
-                key={empleado.id}
-                id={empleado.id}
-                textValue={empleado.nombreCompleto}
-              >
-                {empleado.nombreCompleto}
-                <ListBox.ItemIndicator />
-              </ListBox.Item>
-            ))}
-          </SelectedField>
-          <Button
-            type="button"
-            isDisabled={empleadoId === "" || pending}
-            isPending={pending}
-            onClick={handleAsignar}
-          >
-            <UserPlus className="size-4" />
-            Asignar
-          </Button>
+    </>
+  );
+
+  if (variant === "embedded") {
+    return (
+      <section className="space-y-4 border-t border-gray-200 pt-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <HardHat className="size-5 text-gray-400" />
+            Jefe de proyecto
+          </h2>
+          {botonAsignar}
         </div>
-      )}
-    </section>
+        {contenido}
+      </section>
+    );
+  }
+
+  return (
+    <Card className="w-full">
+      <Card.Header className="flex flex-row items-center justify-between gap-2 text-lg font-medium">
+        <span className="flex items-center gap-2">
+          <HardHat className="text-muted inline size-5" />
+          Jefe de proyecto
+        </span>
+        {botonAsignar}
+      </Card.Header>
+      <Card.Content>{contenido}</Card.Content>
+    </Card>
   );
 }

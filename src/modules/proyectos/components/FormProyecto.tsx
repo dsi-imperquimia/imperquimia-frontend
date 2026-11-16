@@ -1,28 +1,28 @@
-import { useRef, useState } from "react";
-import { useNavigate, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { InputField } from "@components/fields/InputField";
+import { SelectedField } from "@components/fields/SelectedField";
+import { TextAreaField } from "@components/fields/TextAreaField";
 import { Button } from "@heroui/react/button";
+import { ListBox } from "@heroui/react/list-box";
 import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
+import { listEmpleados } from "@modules/empleados/api/list-empleados";
+import { listMateriales } from "@modules/materiales/api/list-materiales";
+import { MaterialPickerModal } from "@modules/materiales/components/MaterialPickerModal";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { HardHat } from "lucide-react";
-import { InputField } from "@components/fields/InputField";
-import { TextAreaField } from "@components/fields/TextAreaField";
-import { SelectedField } from "@components/fields/SelectedField";
-import { ListBox } from "@heroui/react/list-box";
-import { guardarProyecto, errorProyecto } from "../api/guardarProyecto";
+import { useRef, useState } from "react";
 import type { DatosProyecto, ErroresProyecto } from "../api/guardarProyecto";
+import { errorProyecto, guardarProyecto } from "../api/guardarProyecto";
+import { listProyectos } from "../api/listProyectos";
 import type {
   EstadoEditableProyecto,
   ProyectoDetalle,
   TipoObra,
 } from "../types/proyectos";
 import { dinero, TIPOS_OBRA_LABEL } from "../types/proyectos";
-import { listMateriales } from "@modules/materiales/api/list-materiales";
-import { listEmpleados } from "@modules/empleados/api/list-empleados";
-import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
 import { AsignarEmpleadosProyecto } from "./AsignarEmpleadosProyecto";
-import { listProyectos } from "../api/listProyectos";
-import { MaterialPickerModal } from "@modules/materiales/components/MaterialPickerModal";
+import { AsignarJefeProyecto } from "./AsignarJefeProyecto";
 
 function esFechaValida(fecha: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return false;
@@ -214,7 +214,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
   return (
     <form
       ref={formRef}
-      className="max-w-3xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
+      className="max-w-6xl space-y-5 rounded-xl border border-gray-200 bg-white p-6"
       noValidate
       onSubmit={async (e) => {
         e.preventDefault();
@@ -380,7 +380,7 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           cotizados.
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {campos.map((c) => (
           <InputField
             key={c.key}
@@ -567,143 +567,140 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
           </Button>
         </div>
         {detalles.length ? (
-          <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white">
-            <Table>
-              <Table.ScrollContainer>
-                <Table.Content
-                  aria-label="Materiales cotizados"
-                  className="min-w-[900px]"
-                >
-                  <Table.Header>
-                    <Table.Column isRowHeader>#</Table.Column>
-                    <Table.Column>Material</Table.Column>
-                    <Table.Column>Cantidad</Table.Column>
-                    <Table.Column>Precio unitario</Table.Column>
-                    <Table.Column>Subtotal</Table.Column>
-                    <Table.Column>IVA</Table.Column>
-                    <Table.Column>Total</Table.Column>
-                    <Table.Column>Acción</Table.Column>
-                  </Table.Header>
-                  <Table.Body>
-                    <Table.Collection
-                      items={detalles.map((detalle, index) => ({
-                        detalle,
-                        index,
-                      }))}
-                    >
-                      {({ detalle, index }) => {
-                        const id = Number(detalle.materialId);
-                        const anterior = proyecto?.detalles.find(
-                          (item) => item.material.id === id,
-                        );
-                        const material = materiales.find(
-                          (item) => item.id === id,
-                        );
-                        const costo = Number(
-                          anterior?.costoUnitario ??
-                            material?.costoUnitario ??
-                            0,
-                        );
-                        const unidad =
-                          anterior?.unidad ?? material?.unidad ?? "";
-                        const cantidad = Number(detalle.cantidad);
-                        const subtotal =
-                          Number.isFinite(cantidad) && cantidad > 0
-                            ? Math.round(cantidad * costo * 100) / 100
-                            : 0;
-                        const iva = Math.round(subtotal * 0.13 * 100) / 100;
-                        return (
-                          <Table.Row key={`${detalle.materialId}-${index}`}>
-                            <Table.Cell className="text-gray-500">
-                              {index + 1}
-                            </Table.Cell>
-                            <Table.Cell
-                              data-campo={claveDetalle(index, "materialId")}
-                            >
-                              <span className="font-medium">
-                                {material?.nombre ??
-                                  anterior?.material.nombre ??
-                                  "Material"}
-                              </span>
-                              <span className="block text-xs text-gray-500">
-                                {material?.codigo || `#${id}`} ·{" "}
-                                {unidad || "Sin unidad"}
-                              </span>
-                              {erroresCampo[
-                                claveDetalle(index, "materialId")
-                              ] && (
-                                <span
-                                  className="block text-xs text-red-700"
-                                  role="alert"
-                                >
-                                  {
-                                    erroresCampo[
-                                      claveDetalle(index, "materialId")
-                                    ]
-                                  }
-                                </span>
-                              )}
-                            </Table.Cell>
-                            <Table.Cell
-                              data-campo={claveDetalle(index, "cantidad")}
-                            >
-                              <InputField
-                                aria-label={`Cantidad del material ${index + 1}`}
-                                type="text"
-                                inputMode="numeric"
-                                value={detalle.cantidad}
-                                disabled={guardando}
-                                errorMessage={
-                                  erroresCampo[claveDetalle(index, "cantidad")]
-                                }
-                                onChange={(e) => {
-                                  setDetalles(
-                                    detalles.map((item, i) =>
-                                      i === index
-                                        ? { ...item, cantidad: e.target.value }
-                                        : item,
-                                    ),
-                                  );
-                                  limpiarErrorDetalle(index, "cantidad");
-                                }}
-                              />
-                            </Table.Cell>
-                            <Table.Cell>{dinero(costo)}</Table.Cell>
-                            <Table.Cell>{dinero(subtotal)}</Table.Cell>
-                            <Table.Cell>{dinero(iva)}</Table.Cell>
-                            <Table.Cell className="font-semibold">
-                              {dinero(subtotal + iva)}
-                            </Table.Cell>
-                            <Table.Cell>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="danger"
-                                isDisabled={guardando}
-                                onClick={() => {
-                                  setDetalles(
-                                    detalles.filter((_, i) => i !== index),
-                                  );
-                                  limpiarErroresDetalle();
-                                }}
+          <Table>
+            <Table.ScrollContainer>
+              <Table.Content
+                aria-label="Materiales cotizados"
+                className="min-w-[900px]"
+              >
+                <Table.Header>
+                  <Table.Column isRowHeader>#</Table.Column>
+                  <Table.Column>Material</Table.Column>
+                  <Table.Column>Cantidad</Table.Column>
+                  <Table.Column>Precio unitario</Table.Column>
+                  <Table.Column>Subtotal</Table.Column>
+                  <Table.Column>IVA</Table.Column>
+                  <Table.Column>Total</Table.Column>
+                  <Table.Column>Acción</Table.Column>
+                </Table.Header>
+                <Table.Body>
+                  <Table.Collection
+                    items={detalles.map((detalle, index) => ({
+                      detalle,
+                      index,
+                    }))}
+                  >
+                    {({ detalle, index }) => {
+                      const id = Number(detalle.materialId);
+                      const anterior = proyecto?.detalles.find(
+                        (item) => item.material.id === id,
+                      );
+                      const material = materiales.find(
+                        (item) => item.id === id,
+                      );
+                      const costo = Number(
+                        anterior?.costoUnitario ?? material?.costoUnitario ?? 0,
+                      );
+                      const unidad = anterior?.unidad ?? material?.unidad ?? "";
+                      const cantidad = Number(detalle.cantidad);
+                      const subtotal =
+                        Number.isFinite(cantidad) && cantidad > 0
+                          ? Math.round(cantidad * costo * 100) / 100
+                          : 0;
+                      const iva = Math.round(subtotal * 0.13 * 100) / 100;
+                      return (
+                        <Table.Row key={`${detalle.materialId}-${index}`}>
+                          <Table.Cell className="text-gray-500">
+                            {index + 1}
+                          </Table.Cell>
+                          <Table.Cell
+                            data-campo={claveDetalle(index, "materialId")}
+                          >
+                            <span className="font-medium">
+                              {material?.nombre ??
+                                anterior?.material.nombre ??
+                                "Material"}
+                            </span>
+                            <span className="block text-xs text-gray-500">
+                              {material?.codigo || `#${id}`} ·{" "}
+                              {unidad || "Sin unidad"}
+                            </span>
+                            {erroresCampo[
+                              claveDetalle(index, "materialId")
+                            ] && (
+                              <span
+                                className="block text-xs text-red-700"
+                                role="alert"
                               >
-                                Quitar
-                              </Button>
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      }}
-                    </Table.Collection>
-                  </Table.Body>
-                </Table.Content>
-              </Table.ScrollContainer>
-            </Table>
-          </div>
+                                {
+                                  erroresCampo[
+                                    claveDetalle(index, "materialId")
+                                  ]
+                                }
+                              </span>
+                            )}
+                          </Table.Cell>
+                          <Table.Cell
+                            data-campo={claveDetalle(index, "cantidad")}
+                          >
+                            <InputField
+                              aria-label={`Cantidad del material ${index + 1}`}
+                              type="text"
+                              inputMode="numeric"
+                              value={detalle.cantidad}
+                              disabled={guardando}
+                              errorMessage={
+                                erroresCampo[claveDetalle(index, "cantidad")]
+                              }
+                              onChange={(e) => {
+                                setDetalles(
+                                  detalles.map((item, i) =>
+                                    i === index
+                                      ? { ...item, cantidad: e.target.value }
+                                      : item,
+                                  ),
+                                );
+                                limpiarErrorDetalle(index, "cantidad");
+                              }}
+                            />
+                          </Table.Cell>
+                          <Table.Cell>{dinero(costo)}</Table.Cell>
+                          <Table.Cell>{dinero(subtotal)}</Table.Cell>
+                          <Table.Cell>{dinero(iva)}</Table.Cell>
+                          <Table.Cell className="font-semibold">
+                            {dinero(subtotal + iva)}
+                          </Table.Cell>
+                          <Table.Cell>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="danger"
+                              isDisabled={guardando}
+                              onClick={() => {
+                                setDetalles(
+                                  detalles.filter((_, i) => i !== index),
+                                );
+                                limpiarErroresDetalle();
+                              }}
+                            >
+                              Quitar
+                            </Button>
+                          </Table.Cell>
+                        </Table.Row>
+                      );
+                    }}
+                  </Table.Collection>
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
+          </Table>
         ) : (
-          <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500">
-            Aún no hay materiales. Usa “Agregar material” para definir lo
-            cotizado.
-          </p>
+          <div className="w-full overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500">
+              Aún no hay materiales. Usa “Agregar material” para definir lo
+              cotizado.
+            </p>
+          </div>
         )}
         <MaterialPickerModal
           isOpen={isMaterialModalOpen}
@@ -776,14 +773,8 @@ export function FormProyecto({ proyecto }: { proyecto?: ProyectoDetalle }) {
       </section>
       {proyecto ? (
         <>
-          <AsignarJefeProyecto
-            proyecto={proyecto}
-            className="space-y-4 border-t border-gray-200 pt-5"
-          />
-          <AsignarEmpleadosProyecto
-            proyecto={proyecto}
-            className="space-y-4 border-t border-gray-200 pt-5"
-          />
+          <AsignarJefeProyecto proyecto={proyecto} variant="embedded" />
+          <AsignarEmpleadosProyecto proyecto={proyecto} variant="embedded" />
         </>
       ) : (
         <section className="space-y-4 border-t border-gray-200 pt-5">
