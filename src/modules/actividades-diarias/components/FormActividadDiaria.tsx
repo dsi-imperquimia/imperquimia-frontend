@@ -2,6 +2,7 @@ import { InputField } from "@components/fields/InputField";
 import { TextAreaField } from "@components/fields/TextAreaField";
 import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
+import { nuevaClaveOperacion } from "@lib/uuid";
 import { useAuth } from "@modules/auth/store/authStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -31,16 +32,6 @@ import {
 import { BorradoresActividad } from "./BorradoresActividad";
 import { ModalResultadoActividad } from "./ModalResultadoActividad";
 import { SelectorProyectoActividad } from "./SelectorProyectoActividad";
-
-function nuevaClaveOperacion(): string {
-  if (
-    typeof globalThis.crypto !== "undefined" &&
-    typeof globalThis.crypto.randomUUID === "function"
-  ) {
-    return globalThis.crypto.randomUUID();
-  }
-  return "00000000-0000-4000-8000-000000000000";
-}
 
 /**
  * Formulario unificado de actividad diaria:

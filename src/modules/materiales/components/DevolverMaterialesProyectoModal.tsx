@@ -4,6 +4,7 @@ import { Button } from "@heroui/react/button";
 import { Modal } from "@heroui/react/modal";
 import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
+import { nuevaClaveOperacion as nuevaClave } from "@lib/uuid";
 import type { ResumenMaterialProyecto } from "@modules/consumos-materiales/types/consumo-material";
 import type { ProyectoDetalle } from "@modules/proyectos/types/proyectos";
 import { useEffect, useState, type FormEvent } from "react";
@@ -18,7 +19,6 @@ type FilaDevolucion = {
   claveOperacion: string;
 };
 
-const nuevaClave = () => globalThis.crypto.randomUUID();
 const numero = (value: string | number) =>
   Number(value).toLocaleString("es-SV", { maximumFractionDigits: 2 });
 

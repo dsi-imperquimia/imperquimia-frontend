@@ -3,6 +3,7 @@ import { AlertDialog } from "@heroui/react/alert-dialog";
 import { Button } from "@heroui/react/button";
 import { Table } from "@heroui/react/table";
 import { toast } from "@heroui/react/toast";
+import { nuevaClaveOperacion as nuevaClave } from "@lib/uuid";
 import { userActions } from "@modules/auth/store/authStore";
 import { DevolverMaterialesProyectoModal } from "@modules/materiales/components/DevolverMaterialesProyectoModal";
 import { EnviarMaterialesProyectoModal } from "@modules/materiales/components/EnviarMaterialesProyectoModal";
@@ -39,9 +40,7 @@ function RevertirConsumoDialog({
   onSuccess: () => Promise<void>;
 }) {
   const [motivo, setMotivo] = useState("");
-  const [claveOperacion, setClaveOperacion] = useState(() =>
-    globalThis.crypto.randomUUID(),
-  );
+  const [claveOperacion, setClaveOperacion] = useState(nuevaClave);
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -94,7 +93,7 @@ function RevertirConsumoDialog({
                     toast.success("Consumo corregido");
                     setOpen(false);
                     setMotivo("");
-                    setClaveOperacion(globalThis.crypto.randomUUID());
+                    setClaveOperacion(nuevaClave());
                   } catch (requestError) {
                     setError(errorConsumoMaterial(requestError));
                   } finally {
