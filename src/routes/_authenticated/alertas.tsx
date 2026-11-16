@@ -1,3 +1,10 @@
+import { InputField } from "@components/fields/InputField";
+import { SelectedField } from "@components/fields/SelectedField";
+import { TextAreaField } from "@components/fields/TextAreaField";
+import { Button } from "@heroui/react/button";
+import { ListBox } from "@heroui/react/list-box";
+import { Table } from "@heroui/react/table";
+import { Tabs } from "@heroui/react/tabs";
 import {
   actualizarConfiguracionAlerta,
   atenderNotificacionAlerta,
@@ -19,9 +26,8 @@ import type {
   FrecuenciaAlerta,
   NotificacionAlerta,
 } from "@modules/alertas/types/alerta";
-import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { useAuth, userActions } from "@modules/auth/store/authStore";
-import { Button } from "@heroui/react/button";
+import { listProyectos } from "@modules/proyectos/api/listProyectos";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -379,88 +385,94 @@ function Alertas() {
         )}
       </header>
 
-      <nav
-        className="flex flex-wrap gap-2 border-b border-gray-200"
-        aria-label="Secciones de alertas"
+      <Tabs
+        selectedKey={pestana}
+        onSelectionChange={(key) => setPestana(key as Pestana)}
+        variant="secondary"
       >
-        {tabs.map(([key, Icon, label]) => (
-          <button
-            key={key}
-            onClick={() => setPestana(key)}
-            className={`flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium ${pestana === key ? "border-gray-900 text-gray-900" : "border-transparent text-gray-500 hover:text-gray-800"}`}
-          >
-            <Icon size={16} /> {label}
-          </button>
-        ))}
-      </nav>
+        <Tabs.ListContainer>
+          <Tabs.List aria-label="Secciones de alertas">
+            {tabs.map(([key, Icon, label], index) => (
+              <Tabs.Tab key={key} id={key}>
+                {index > 0 && <Tabs.Separator />}
+                <Icon size={16} className="mr-2 inline" />
+                {label}
+                <Tabs.Indicator />
+              </Tabs.Tab>
+            ))}
+          </Tabs.List>
+        </Tabs.ListContainer>
 
-      {pestana === "bandeja" ? (
-        <SeccionNotificaciones
-          items={alertaItems}
-          historial={false}
-          loading={notificaciones.isPending}
-          error={
-            notificaciones.isError ? "No se pudieron cargar las alertas." : ""
-          }
-          onRetry={() => void notificaciones.refetch()}
-          onOpen={abrirNotificacion}
-          page={paginaNotificaciones}
-          totalPages={notificaciones.data?.totalPages ?? 0}
-          total={notificaciones.data?.total ?? 0}
-          onPageChange={setPaginaNotificaciones}
-        />
-      ) : pestana === "historial" ? (
-        <section className="space-y-4">
-          <div
-            className="flex flex-wrap gap-2"
-            role="tablist"
-            aria-label="Tipo de historial"
+        <Tabs.Panel className="pt-4" id="bandeja">
+          <SeccionNotificaciones
+            items={alertaItems}
+            historial={false}
+            loading={notificaciones.isPending}
+            error={
+              notificaciones.isError ? "No se pudieron cargar las alertas." : ""
+            }
+            onRetry={() => void notificaciones.refetch()}
+            onOpen={abrirNotificacion}
+            page={paginaNotificaciones}
+            totalPages={notificaciones.data?.totalPages ?? 0}
+            total={notificaciones.data?.total ?? 0}
+            onPageChange={setPaginaNotificaciones}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel className="space-y-4 pt-4" id="historial">
+          <Tabs
+            variant="secondary"
+            selectedKey={subhistorial}
+            onSelectionChange={(key) => setSubhistorial(key as Subhistorial)}
           >
-            <button
-              role="tab"
-              aria-selected={subhistorial === "notificaciones"}
-              onClick={() => setSubhistorial("notificaciones")}
-              className={`rounded-lg px-3 py-2 text-sm font-medium ${subhistorial === "notificaciones" ? "bg-gray-900 text-white" : "bg-white text-gray-600 ring-1 ring-gray-200"}`}
-            >
-              Generaciones de alertas
-            </button>
-            <button
-              role="tab"
-              aria-selected={subhistorial === "configuraciones"}
-              onClick={() => setSubhistorial("configuraciones")}
-              className={`rounded-lg px-3 py-2 text-sm font-medium ${subhistorial === "configuraciones" ? "bg-gray-900 text-white" : "bg-white text-gray-600 ring-1 ring-gray-200"}`}
-            >
-              Cambios de configuración
-            </button>
-          </div>
-          {subhistorial === "notificaciones" ? (
-            <SeccionNotificaciones
-              items={alertaItems}
-              historial
-              loading={notificaciones.isPending}
-              error={
-                notificaciones.isError ? "No se pudo cargar el historial." : ""
-              }
-              onRetry={() => void notificaciones.refetch()}
-              onOpen={abrirNotificacion}
-              page={paginaNotificaciones}
-              totalPages={notificaciones.data?.totalPages ?? 0}
-              total={notificaciones.data?.total ?? 0}
-              onPageChange={setPaginaNotificaciones}
-            />
-          ) : (
-            <SeccionAuditoria
-              items={auditoriaGlobal.data ?? []}
-              loading={auditoriaGlobal.isPending}
-              error={
-                auditoriaGlobal.isError ? "No se pudo cargar la auditoría." : ""
-              }
-              onRetry={() => void auditoriaGlobal.refetch()}
-            />
-          )}
-        </section>
-      ) : (
-        <section className="space-y-4">
+            <Tabs.ListContainer>
+              <Tabs.List aria-label="Tipo de historial">
+                <Tabs.Tab id="notificaciones">
+                  Generaciones de alertas
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+                <Tabs.Tab id="configuraciones">
+                  <Tabs.Separator />
+                  Cambios de configuración
+                  <Tabs.Indicator />
+                </Tabs.Tab>
+              </Tabs.List>
+            </Tabs.ListContainer>
+            <Tabs.Panel className="pt-4" id="notificaciones">
+              <SeccionNotificaciones
+                items={alertaItems}
+                historial
+                loading={notificaciones.isPending}
+                error={
+                  notificaciones.isError
+                    ? "No se pudo cargar el historial."
+                    : ""
+                }
+                onRetry={() => void notificaciones.refetch()}
+                onOpen={abrirNotificacion}
+                page={paginaNotificaciones}
+                totalPages={notificaciones.data?.totalPages ?? 0}
+                total={notificaciones.data?.total ?? 0}
+                onPageChange={setPaginaNotificaciones}
+              />
+            </Tabs.Panel>
+            <Tabs.Panel className="pt-4" id="configuraciones">
+              <SeccionAuditoria
+                items={auditoriaGlobal.data ?? []}
+                loading={auditoriaGlobal.isPending}
+                error={
+                  auditoriaGlobal.isError
+                    ? "No se pudo cargar la auditoría."
+                    : ""
+                }
+                onRetry={() => void auditoriaGlobal.refetch()}
+              />
+            </Tabs.Panel>
+          </Tabs>
+        </Tabs.Panel>
+
+        <Tabs.Panel className="space-y-4 pt-4" id="configuraciones">
           {configuraciones.isError && (
             <ErrorPanel
               mensaje="No se pudieron cargar las configuraciones."
@@ -489,98 +501,85 @@ function Alertas() {
               detalle="Aquí se administran las reglas automáticas ligadas a la fecha de finalización del proyecto."
             />
           ) : (
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <caption className="sr-only">
-                    Configuraciones de alertas
-                  </caption>
-                  <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
-                    <tr>
-                      {[
-                        "Alerta",
-                        "Proyecto",
-                        "Anticipación",
-                        "Frecuencia",
-                        "Estado",
-                        "Acciones",
-                      ].map((label) => (
-                        <th key={label} className="px-4 py-3 font-semibold">
-                          {label}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {configItems.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="border-t border-gray-100 align-top"
-                      >
-                        <td className="px-4 py-4">
-                          <p className="font-semibold text-gray-900">
-                            {item.nombre}
-                          </p>
-                          <p className="mt-1 max-w-xs text-gray-500">
-                            {item.descripcion || "Sin descripción"}
-                          </p>
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-4">
-                          {item.proyecto.nombre}
-                        </td>
-                        <td className="whitespace-nowrap px-4 py-4">
-                          {item.diasAntes} días antes
-                        </td>
-                        <td className="px-4 py-4">
-                          {textoFrecuencia[item.frecuencia]}
-                          {item.frecuencia === "CADA_N_DIAS"
-                            ? ` · ${item.cadaNDias} días`
-                            : item.frecuencia === "DIAS_ESPECIFICOS"
-                              ? ` · ${item.diasEspecificos.map((d) => DIAS.find((itemDia) => itemDia.valor === d)?.etiqueta).join(", ")}`
-                              : ""}
-                        </td>
-                        <td className="px-4 py-4">
-                          <EstadoPill
-                            activo={
-                              item.activa && item.proyecto.estado === "ACTIVO"
-                            }
-                          />
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              className="font-medium text-blue-700 hover:underline"
-                              onClick={() => setConfiguracionHistorial(item)}
-                            >
-                              Auditoría
-                            </button>
-                            {puedeEditar && (
+            <Table>
+              <Table.ScrollContainer>
+                <Table.Content
+                  aria-label="Configuraciones de alertas"
+                  className="min-w-[760px]"
+                >
+                  <Table.Header>
+                    <Table.Column isRowHeader>Alerta</Table.Column>
+                    <Table.Column>Proyecto</Table.Column>
+                    <Table.Column>Anticipación</Table.Column>
+                    <Table.Column>Frecuencia</Table.Column>
+                    <Table.Column>Estado</Table.Column>
+                    <Table.Column>Acciones</Table.Column>
+                  </Table.Header>
+                  <Table.Body>
+                    <Table.Collection items={configItems}>
+                      {(item) => (
+                        <Table.Row key={item.id}>
+                          <Table.Cell>
+                            <p className="font-semibold text-gray-900">
+                              {item.nombre}
+                            </p>
+                            <p className="mt-1 max-w-xs text-gray-500">
+                              {item.descripcion || "Sin descripción"}
+                            </p>
+                          </Table.Cell>
+                          <Table.Cell>{item.proyecto.nombre}</Table.Cell>
+                          <Table.Cell>{item.diasAntes} días antes</Table.Cell>
+                          <Table.Cell>
+                            {textoFrecuencia[item.frecuencia]}
+                            {item.frecuencia === "CADA_N_DIAS"
+                              ? ` · ${item.cadaNDias} días`
+                              : item.frecuencia === "DIAS_ESPECIFICOS"
+                                ? ` · ${item.diasEspecificos.map((d) => DIAS.find((itemDia) => itemDia.valor === d)?.etiqueta).join(", ")}`
+                                : ""}
+                          </Table.Cell>
+                          <Table.Cell>
+                            <EstadoPill
+                              activo={
+                                item.activa && item.proyecto.estado === "ACTIVO"
+                              }
+                            />
+                          </Table.Cell>
+                          <Table.Cell>
+                            <div className="flex flex-wrap gap-2">
                               <button
-                                className="font-medium text-gray-700 hover:underline"
-                                onClick={() => abrirEdicion(item)}
+                                className="font-medium text-blue-700 hover:underline"
+                                onClick={() => setConfiguracionHistorial(item)}
                               >
-                                Editar
+                                Auditoría
                               </button>
-                            )}
-                            {puedeEditar && (
-                              <button
-                                className="font-medium text-red-700 hover:underline"
-                                onClick={() => borrarConfiguracion(item)}
-                              >
-                                Eliminar
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                              {puedeEditar && (
+                                <button
+                                  className="font-medium text-gray-700 hover:underline"
+                                  onClick={() => abrirEdicion(item)}
+                                >
+                                  Editar
+                                </button>
+                              )}
+                              {puedeEditar && (
+                                <button
+                                  className="font-medium text-red-700 hover:underline"
+                                  onClick={() => borrarConfiguracion(item)}
+                                >
+                                  Eliminar
+                                </button>
+                              )}
+                            </div>
+                          </Table.Cell>
+                        </Table.Row>
+                      )}
+                    </Table.Collection>
+                  </Table.Body>
+                </Table.Content>
+              </Table.ScrollContainer>
+            </Table>
           )}
-        </section>
-      )}
+        </Tabs.Panel>
+      </Tabs>
 
       {notificacionBorrador && (
         <Dialogo
@@ -588,34 +587,36 @@ function Alertas() {
           onClose={() => setNotificacionBorrador(null)}
         >
           <form className="space-y-4" onSubmit={enviarNotificacion}>
-            <Campo etiqueta="Proyecto" requerido>
-              <select
-                required
-                value={notificacionBorrador.proyectoId}
-                onChange={(event) =>
-                  setNotificacionBorrador({
-                    ...notificacionBorrador,
-                    proyectoId: event.target.value,
-                    alcance: "TODOS",
-                    empleadoIds: [],
-                  })
-                }
-                className={inputClass}
-              >
-                <option value="">Selecciona un proyecto</option>
-                {(proyectosNotificacion.data ?? []).map((proyecto) => (
-                  <option key={proyecto.id} value={proyecto.id}>
-                    {proyecto.nombre}
-                  </option>
-                ))}
-              </select>
-              {!proyectosNotificacion.isPending &&
-                proyectosNotificacion.data?.length === 0 && (
-                  <p className="mt-1 text-xs text-amber-700">
-                    No tienes proyectos activos asignados para crear alertas.
-                  </p>
-                )}
-            </Campo>
+            <SelectedField
+              label="Proyecto"
+              isRequired
+              placeholder="Selecciona un proyecto"
+              selectedKey={notificacionBorrador.proyectoId || null}
+              onSelectionChange={(key) =>
+                setNotificacionBorrador({
+                  ...notificacionBorrador,
+                  proyectoId: String(key ?? ""),
+                  alcance: "TODOS",
+                  empleadoIds: [],
+                })
+              }
+            >
+              {(proyectosNotificacion.data ?? []).map((proyecto) => (
+                <ListBox.Item
+                  key={proyecto.id}
+                  id={String(proyecto.id)}
+                  textValue={proyecto.nombre}
+                >
+                  {proyecto.nombre}
+                </ListBox.Item>
+              ))}
+            </SelectedField>
+            {!proyectosNotificacion.isPending &&
+              proyectosNotificacion.data?.length === 0 && (
+                <p className="text-xs text-amber-700">
+                  No tienes proyectos activos asignados para crear alertas.
+                </p>
+              )}
             {proyectoNotificacionSeleccionado && (
               <fieldset className="space-y-3 rounded-lg border border-gray-200 p-4">
                 <legend className="px-1 text-sm font-medium text-gray-800">
@@ -672,12 +673,12 @@ function Alertas() {
                                 ...notificacionBorrador,
                                 empleadoIds: event.target.checked
                                   ? [
-                                    ...notificacionBorrador.empleadoIds,
-                                    String(empleado.id),
-                                  ]
+                                      ...notificacionBorrador.empleadoIds,
+                                      String(empleado.id),
+                                    ]
                                   : notificacionBorrador.empleadoIds.filter(
-                                    (id) => id !== String(empleado.id),
-                                  ),
+                                      (id) => id !== String(empleado.id),
+                                    ),
                               })
                             }
                           />
@@ -712,40 +713,36 @@ function Alertas() {
                   )}
               </fieldset>
             )}
-            <Campo etiqueta="Título" requerido>
-              <input
-                autoFocus
-                required
-                minLength={2}
-                maxLength={120}
-                value={notificacionBorrador.nombre}
-                onChange={(event) =>
-                  setNotificacionBorrador({
-                    ...notificacionBorrador,
-                    nombre: event.target.value,
-                  })
-                }
-                className={inputClass}
-                placeholder="Ej. Faltan materiales para continuar"
-              />
-            </Campo>
-            <Campo etiqueta="Detalle" requerido>
-              <textarea
-                required
-                minLength={2}
-                maxLength={2000}
-                rows={4}
-                value={notificacionBorrador.descripcion}
-                onChange={(event) =>
-                  setNotificacionBorrador({
-                    ...notificacionBorrador,
-                    descripcion: event.target.value,
-                  })
-                }
-                className={inputClass}
-                placeholder="Describe qué hace falta o qué debe revisar el técnico."
-              />
-            </Campo>
+            <InputField
+              label="Título"
+              autoFocus
+              isRequired
+              minLength={2}
+              maxLength={120}
+              value={notificacionBorrador.nombre}
+              onChange={(event) =>
+                setNotificacionBorrador({
+                  ...notificacionBorrador,
+                  nombre: event.target.value,
+                })
+              }
+              placeholder="Ej. Faltan materiales para continuar"
+            />
+            <TextAreaField
+              label="Detalle"
+              isRequired
+              minLength={2}
+              maxLength={2000}
+              rows={4}
+              value={notificacionBorrador.descripcion}
+              onChange={(event) =>
+                setNotificacionBorrador({
+                  ...notificacionBorrador,
+                  descripcion: event.target.value,
+                })
+              }
+              placeholder="Describe qué hace falta o qué debe revisar el técnico."
+            />
             <p className="rounded-lg bg-blue-50 p-3 text-sm text-blue-900">
               Cada destinatario recibirá su propia notificación y podrá
               atenderla sin cambiar el estado de los demás.
@@ -788,62 +785,60 @@ function Alertas() {
           onClose={() => setBorrador(null)}
         >
           <form className="space-y-4" onSubmit={guardar}>
-            <Campo etiqueta="Nombre" requerido>
-              <input
-                autoFocus
-                required
-                maxLength={120}
-                value={borrador.nombre}
-                onChange={(event) =>
-                  setBorrador({ ...borrador, nombre: event.target.value })
-                }
-                className={inputClass}
-                placeholder="Ej. Próxima fecha de finalización"
-              />
-            </Campo>
-            <Campo etiqueta="Descripción">
-              <textarea
-                maxLength={2000}
-                rows={2}
-                value={borrador.descripcion}
-                onChange={(event) =>
-                  setBorrador({ ...borrador, descripcion: event.target.value })
-                }
-                className={inputClass}
-                placeholder="Describe qué debe revisar el equipo"
-              />
-            </Campo>
-            <Campo etiqueta="Proyecto" requerido>
-              <select
-                required
-                value={borrador.proyectoId}
-                onChange={(event) =>
-                  setBorrador({ ...borrador, proyectoId: event.target.value })
-                }
-                className={inputClass}
-              >
-                <option value="">Selecciona un proyecto activo</option>
-                {proyectosFormulario.map((proyecto) => (
-                  <option key={proyecto.id} value={proyecto.id}>
-                    {proyecto.nombre}
-                    {proyecto.estado !== "ACTIVO"
-                      ? " · proyecto finalizado"
-                      : ""}{" "}
-                    · finaliza{" "}
-                    {proyecto.fechaFin
-                      ? new Intl.DateTimeFormat("es-SV", {
+            <InputField
+              label="Nombre"
+              autoFocus
+              isRequired
+              maxLength={120}
+              value={borrador.nombre}
+              onChange={(event) =>
+                setBorrador({ ...borrador, nombre: event.target.value })
+              }
+              placeholder="Ej. Próxima fecha de finalización"
+            />
+            <TextAreaField
+              label="Descripción"
+              maxLength={2000}
+              rows={2}
+              value={borrador.descripcion}
+              onChange={(event) =>
+                setBorrador({ ...borrador, descripcion: event.target.value })
+              }
+              placeholder="Describe qué debe revisar el equipo"
+            />
+            <SelectedField
+              label="Proyecto"
+              isRequired
+              placeholder="Selecciona un proyecto activo"
+              selectedKey={borrador.proyectoId || null}
+              onSelectionChange={(key) =>
+                setBorrador({ ...borrador, proyectoId: String(key ?? "") })
+              }
+            >
+              {proyectosFormulario.map((proyecto) => (
+                <ListBox.Item
+                  key={proyecto.id}
+                  id={String(proyecto.id)}
+                  textValue={proyecto.nombre}
+                >
+                  {proyecto.nombre}
+                  {proyecto.estado !== "ACTIVO"
+                    ? " · proyecto finalizado"
+                    : ""}{" "}
+                  · finaliza{" "}
+                  {proyecto.fechaFin
+                    ? new Intl.DateTimeFormat("es-SV", {
                         timeZone: "UTC",
                       }).format(new Date(proyecto.fechaFin))
-                      : "sin fecha"}
-                  </option>
-                ))}
-              </select>
-              {proyectosActivos.length === 0 && (
-                <p className="mt-1 text-xs text-amber-700">
-                  No hay proyectos activos con fecha de finalización.
-                </p>
-              )}
-            </Campo>
+                    : "sin fecha"}
+                </ListBox.Item>
+              ))}
+            </SelectedField>
+            {proyectosActivos.length === 0 && (
+              <p className="text-xs text-amber-700">
+                No hay proyectos activos con fecha de finalización.
+              </p>
+            )}
             {!configuracionEditada && (
               <Campo etiqueta="Plantilla de vencimiento">
                 <div className="flex flex-wrap gap-2">
@@ -873,60 +868,55 @@ function Alertas() {
               </Campo>
             )}
             <div className="grid gap-4 sm:grid-cols-2">
-              <Campo etiqueta="Anticipación" requerido>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    min={0}
-                    max={3650}
-                    required
-                    value={borrador.diasAntes}
-                    onChange={(event) =>
-                      setBorrador({
-                        ...borrador,
-                        diasAntes: event.target.value,
-                      })
-                    }
-                    className={inputClass}
-                  />
+              <InputField
+                label="Anticipación"
+                type="number"
+                min={0}
+                max={3650}
+                isRequired
+                value={borrador.diasAntes}
+                onChange={(event) =>
+                  setBorrador({
+                    ...borrador,
+                    diasAntes: event.target.value,
+                  })
+                }
+                endContent={
                   <span className="shrink-0 text-sm text-gray-600">
                     días antes del fin
                   </span>
-                </div>
-              </Campo>
-              <Campo etiqueta="Repetición" requerido>
-                <select
-                  value={borrador.frecuencia}
-                  onChange={(event) =>
-                    setBorrador({
-                      ...borrador,
-                      frecuencia: event.target.value as FrecuenciaAlerta,
-                    })
-                  }
-                  className={inputClass}
-                >
-                  {Object.entries(textoFrecuencia).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </Campo>
+                }
+              />
+              <SelectedField
+                label="Repetición"
+                isRequired
+                selectedKey={borrador.frecuencia}
+                onSelectionChange={(key) =>
+                  setBorrador({
+                    ...borrador,
+                    frecuencia: key as FrecuenciaAlerta,
+                  })
+                }
+              >
+                {Object.entries(textoFrecuencia).map(([value, label]) => (
+                  <ListBox.Item key={value} id={value} textValue={label}>
+                    {label}
+                  </ListBox.Item>
+                ))}
+              </SelectedField>
             </div>
             {borrador.frecuencia === "CADA_N_DIAS" && (
-              <Campo etiqueta="Cada cuántos días" requerido>
-                <input
-                  type="number"
-                  min={1}
-                  max={365}
-                  required
-                  value={borrador.cadaNDias}
-                  onChange={(event) =>
-                    setBorrador({ ...borrador, cadaNDias: event.target.value })
-                  }
-                  className={inputClass}
-                />
-              </Campo>
+              <InputField
+                label="Cada cuántos días"
+                type="number"
+                min={1}
+                max={365}
+                isRequired
+                value={borrador.cadaNDias}
+                onChange={(event) =>
+                  setBorrador({ ...borrador, cadaNDias: event.target.value })
+                }
+              />
             )}
             {borrador.frecuencia === "DIAS_ESPECIFICOS" && (
               <Campo etiqueta="Días de la semana" requerido>
@@ -947,8 +937,8 @@ function Alertas() {
                               dia.valor,
                             )
                               ? borrador.diasEspecificos.filter(
-                                (d) => d !== dia.valor,
-                              )
+                                  (d) => d !== dia.valor,
+                                )
                               : [...borrador.diasEspecificos, dia.valor],
                           })
                         }
@@ -1156,8 +1146,6 @@ function Alertas() {
   );
 }
 
-const inputClass =
-  "w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-gray-700 focus:ring-2 focus:ring-gray-100";
 function Campo({
   etiqueta,
   requerido,
