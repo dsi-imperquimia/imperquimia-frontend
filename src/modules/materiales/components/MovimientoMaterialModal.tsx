@@ -7,6 +7,7 @@ import { Label } from "@heroui/react/label";
 import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
+import { nuevaClaveOperacion as nuevaClave } from "@lib/uuid";
 import type { Material } from "@modules/materiales/types/material";
 import type { Proyecto } from "@modules/proyectos/types/proyectos";
 import { useEffect, useState, type FormEvent } from "react";
@@ -19,6 +20,7 @@ import {
   type ExistenciaMaterial,
   type MotivoMovimientoMaterial,
 } from "../types/inventario-material";
+import { MaterialComboBoxControl } from "./MaterialComboBoxControl";
 
 type TipoFormulario = "ENTRADA" | "SALIDA";
 
@@ -26,8 +28,6 @@ const MOTIVOS: Record<TipoFormulario, MotivoMovimientoMaterial[]> = {
   ENTRADA: ["COMPRA", "DEVOLUCION_PROYECTO"],
   SALIDA: ["USO_PROYECTO", "VENTA"],
 };
-
-const nuevaClave = () => globalThis.crypto.randomUUID();
 
 function searchable(value: string) {
   return value
@@ -272,10 +272,7 @@ export function MovimientoMaterialModal({
                   isRequired
                 >
                   <Label>Material</Label>
-                  <ComboBox.InputGroup>
-                    <ComboBox.Value placeholder="Busca por nombre, código, descripción o unidad" />
-                    <ComboBox.Trigger />
-                  </ComboBox.InputGroup>
+                  <MaterialComboBoxControl placeholder="Busca por nombre, código, descripción o unidad" />
                   <ComboBox.Popover>
                     <ListBox items={materialesVisibles}>
                       {(material) => (

@@ -57,7 +57,11 @@ function ReasignarEmpleadoModal({
     if (!destinoId) return;
     setEnviando(true);
     try {
-      await reasignarEmpleadoProyecto(proyecto.id, empleadoId, Number(destinoId));
+      await reasignarEmpleadoProyecto(
+        proyecto.id,
+        empleadoId,
+        Number(destinoId),
+      );
       await Promise.all([
         client.invalidateQueries({ queryKey: ["proyectos"] }),
         client.invalidateQueries({ queryKey: ["empleados", "asignaciones"] }),
@@ -95,8 +99,7 @@ function ReasignarEmpleadoModal({
               <p className="mb-4 text-sm text-gray-600">
                 Mueve a <strong>{nombreEmpleado}</strong> de{" "}
                 <strong>{proyecto.nombre}</strong> a otro proyecto activo. El
-                jefe de este proyecto será notificado por correo y por
-                sistema.
+                jefe de este proyecto será notificado por correo y por sistema.
               </p>
               <SelectedField
                 label="Proyecto destino"
@@ -105,7 +108,11 @@ function ReasignarEmpleadoModal({
                 onChange={(value) => setDestinoId(String(value))}
               >
                 {destinosDisponibles.map((p) => (
-                  <ListBox.Item key={p.id} id={String(p.id)} textValue={p.nombre}>
+                  <ListBox.Item
+                    key={p.id}
+                    id={String(p.id)}
+                    textValue={p.nombre}
+                  >
                     {p.nombre}
                     <ListBox.ItemIndicator />
                   </ListBox.Item>
@@ -145,7 +152,7 @@ export function AsignarEmpleadosProyecto({
 }) {
   const client = useQueryClient();
   const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
-  const puedeAsignar = puedeEditar && proyecto.estado !== "CANCELADO";
+  const puedeAsignar = puedeEditar && proyecto.estado === "ACTIVO";
   const [pendiente, setPendiente] = useState<number | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [cargoFiltro, setCargoFiltro] = useState("");
@@ -285,9 +292,7 @@ export function AsignarEmpleadosProyecto({
                         placeholder="Todas las habilidades"
                         className="min-w-48"
                         value={habilidadFiltro}
-                        onChange={(value) =>
-                          setHabilidadFiltro(String(value))
-                        }
+                        onChange={(value) => setHabilidadFiltro(String(value))}
                       >
                         <ListBox.Item id="" textValue="Todas las habilidades">
                           Todas las habilidades

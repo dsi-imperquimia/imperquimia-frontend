@@ -3,7 +3,7 @@ import type { Material } from "../types/material";
 export const MAX_MATERIALES_REPORTE = 10;
 
 export function getUnidadMaterial(material: Material) {
-  return material.unidad ?? "unidad";
+  return material.unidad;
 }
 
 export function getEstadoMaterialLabel(estado: boolean) {

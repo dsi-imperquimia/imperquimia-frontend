@@ -1,10 +1,10 @@
-import { EstadoHerramienta } from '@/modules/herramientas/types/herramientas';
+import type { EstadoHerramienta } from "@/modules/herramientas/types/herramientas";
 
 export enum AreaMovimiento {
-  BODEGA = 'BODEGA',
-  PROYECTO = 'PROYECTO',
-  TALLER = 'TALLER',
-  DESECHO = 'DESECHO',
+  BODEGA = "BODEGA",
+  PROYECTO = "PROYECTO",
+  TALLER = "TALLER",
+  DESECHO = "DESECHO",
 }
 
 export interface MovimientoHerramienta {

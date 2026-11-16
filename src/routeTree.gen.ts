@@ -32,6 +32,7 @@ import { Route as AuthenticatedHerramientasTiposRouteImport } from './routes/_au
 import { Route as AuthenticatedIncidenciasIndexRouteImport } from './routes/_authenticated/incidencias/index'
 import { Route as AuthenticatedIncidenciasIncidenciaIdRouteImport } from './routes/_authenticated/incidencias/$incidenciaId'
 import { Route as AuthenticatedIncidenciasCreateRouteImport } from './routes/_authenticated/incidencias/create'
+import { Route as AuthenticatedJornadaHerramientasIndexRouteImport } from './routes/_authenticated/jornada-herramientas/index'
 import { Route as AuthenticatedMaterialesIndexRouteImport } from './routes/_authenticated/materiales/index'
 import { Route as AuthenticatedMaterialesGestionRouteImport } from './routes/_authenticated/materiales/gestion'
 import { Route as AuthenticatedMaterialesInventarioRouteImport } from './routes/_authenticated/materiales/inventario'
@@ -185,6 +186,12 @@ const AuthenticatedIncidenciasCreateRoute =
     path: '/incidencias/create',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedJornadaHerramientasIndexRoute =
+  AuthenticatedJornadaHerramientasIndexRouteImport.update({
+    id: '/jornada-herramientas/',
+    path: '/jornada-herramientas/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMaterialesIndexRoute =
   AuthenticatedMaterialesIndexRouteImport.update({
     id: '/materiales/',
@@ -335,6 +342,7 @@ export interface FileRoutesByFullPath {
   '/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas/': typeof AuthenticatedHerramientasIndexRoute
   '/incidencias/': typeof AuthenticatedIncidenciasIndexRoute
+  '/jornada-herramientas/': typeof AuthenticatedJornadaHerramientasIndexRoute
   '/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos/': typeof AuthenticatedProyectosIndexRoute
@@ -379,6 +387,7 @@ export interface FileRoutesByTo {
   '/empleados': typeof AuthenticatedEmpleadosIndexRoute
   '/herramientas': typeof AuthenticatedHerramientasIndexRoute
   '/incidencias': typeof AuthenticatedIncidenciasIndexRoute
+  '/jornada-herramientas': typeof AuthenticatedJornadaHerramientasIndexRoute
   '/materiales': typeof AuthenticatedMaterialesIndexRoute
   '/mis-proyectos': typeof AuthenticatedMisProyectosIndexRoute
   '/proyectos': typeof AuthenticatedProyectosIndexRoute
@@ -425,6 +434,7 @@ export interface FileRoutesById {
   '/_authenticated/empleados/': typeof AuthenticatedEmpleadosIndexRoute
   '/_authenticated/herramientas/': typeof AuthenticatedHerramientasIndexRoute
   '/_authenticated/incidencias/': typeof AuthenticatedIncidenciasIndexRoute
+  '/_authenticated/jornada-herramientas/': typeof AuthenticatedJornadaHerramientasIndexRoute
   '/_authenticated/materiales/': typeof AuthenticatedMaterialesIndexRoute
   '/_authenticated/mis-proyectos/': typeof AuthenticatedMisProyectosIndexRoute
   '/_authenticated/proyectos/': typeof AuthenticatedProyectosIndexRoute
@@ -471,6 +481,7 @@ export interface FileRouteTypes {
     | '/empleados/'
     | '/herramientas/'
     | '/incidencias/'
+    | '/jornada-herramientas/'
     | '/materiales/'
     | '/mis-proyectos/'
     | '/proyectos/'
@@ -515,6 +526,7 @@ export interface FileRouteTypes {
     | '/empleados'
     | '/herramientas'
     | '/incidencias'
+    | '/jornada-herramientas'
     | '/materiales'
     | '/mis-proyectos'
     | '/proyectos'
@@ -560,6 +572,7 @@ export interface FileRouteTypes {
     | '/_authenticated/empleados/'
     | '/_authenticated/herramientas/'
     | '/_authenticated/incidencias/'
+    | '/_authenticated/jornada-herramientas/'
     | '/_authenticated/materiales/'
     | '/_authenticated/mis-proyectos/'
     | '/_authenticated/proyectos/'
@@ -743,6 +756,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIncidenciasCreateRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/jornada-herramientas/': {
+      id: '/_authenticated/jornada-herramientas/'
+      path: '/jornada-herramientas'
+      fullPath: '/jornada-herramientas/'
+      preLoaderRoute: typeof AuthenticatedJornadaHerramientasIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/materiales/': {
       id: '/_authenticated/materiales/'
       path: '/materiales'
@@ -915,6 +935,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEmpleadosIndexRoute: typeof AuthenticatedEmpleadosIndexRoute
   AuthenticatedHerramientasIndexRoute: typeof AuthenticatedHerramientasIndexRoute
   AuthenticatedIncidenciasIndexRoute: typeof AuthenticatedIncidenciasIndexRoute
+  AuthenticatedJornadaHerramientasIndexRoute: typeof AuthenticatedJornadaHerramientasIndexRoute
   AuthenticatedMaterialesIndexRoute: typeof AuthenticatedMaterialesIndexRoute
   AuthenticatedMisProyectosIndexRoute: typeof AuthenticatedMisProyectosIndexRoute
   AuthenticatedProyectosIndexRoute: typeof AuthenticatedProyectosIndexRoute
@@ -967,6 +988,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEmpleadosIndexRoute: AuthenticatedEmpleadosIndexRoute,
   AuthenticatedHerramientasIndexRoute: AuthenticatedHerramientasIndexRoute,
   AuthenticatedIncidenciasIndexRoute: AuthenticatedIncidenciasIndexRoute,
+  AuthenticatedJornadaHerramientasIndexRoute:
+    AuthenticatedJornadaHerramientasIndexRoute,
   AuthenticatedMaterialesIndexRoute: AuthenticatedMaterialesIndexRoute,
   AuthenticatedMisProyectosIndexRoute: AuthenticatedMisProyectosIndexRoute,
   AuthenticatedProyectosIndexRoute: AuthenticatedProyectosIndexRoute,
