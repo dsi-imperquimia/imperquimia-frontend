@@ -7,8 +7,46 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ActividadesDiariasPage } from "../../../routes/_authenticated/actividades-diarias/index";
+import { ActividadesDiariasPage } from "./ActividadesDiariasPage";
 import { fechaHoyIso, restarDiasIso } from "../types/actividad-diaria";
+
+// El DatePickerField (HeroUI) reemplaza el <input type="date"> nativo por un
+// DateField segmentado (mes/día/año, cada uno con role="spinbutton"); estos
+// helpers simulan la escritura real de dígitos y leen el valor compuesto.
+function grupoFecha(etiqueta: string) {
+  return screen.getByText(etiqueta).closest('[data-slot="date-picker"]')!;
+}
+
+function escribirFecha(etiqueta: string, iso: string) {
+  const [anio, mes, dia] = iso.split("-");
+  const grupo = grupoFecha(etiqueta);
+  function tipear(indice: number, caracteres: string) {
+    for (const caracter of caracteres) {
+      const segs = grupo.querySelectorAll('[role="spinbutton"]');
+      fireEvent(
+        segs[indice],
+        new InputEvent("beforeinput", {
+          inputType: "insertText",
+          data: caracter,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }
+  }
+  tipear(0, mes);
+  tipear(1, dia);
+  tipear(2, anio);
+}
+
+function leerFecha(etiqueta: string): string {
+  const segs = grupoFecha(etiqueta).querySelectorAll('[role="spinbutton"]');
+  const [mes, dia, anio] = Array.from(segs).map((s) =>
+    s.getAttribute("aria-valuenow"),
+  );
+  if (!mes || !dia || !anio) return "";
+  return `${anio.padStart(4, "0")}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+}
 
 const mocks = vi.hoisted(() => ({
   listarProyectos: vi.fn(),
@@ -323,13 +361,8 @@ describe("ActividadesDiariasPage", () => {
       expect(mocks.listarActividades).toHaveBeenLastCalledWith(10),
     );
 
-    const inputInicio = screen.getByLabelText(
-      "Fecha inicio",
-    ) as HTMLInputElement;
-    const inputFin = screen.getByLabelText("Fecha fin") as HTMLInputElement;
-
-    fireEvent.change(inputInicio, { target: { value: "2026-11-01" } });
-    fireEvent.change(inputFin, { target: { value: "2026-11-10" } });
+    escribirFecha("Fecha inicio", "2026-11-01");
+    escribirFecha("Fecha fin", "2026-11-10");
 
     await waitFor(() =>
       expect(mocks.listarActividades).toHaveBeenLastCalledWith({
@@ -343,8 +376,8 @@ describe("ActividadesDiariasPage", () => {
     const hoyIso = fechaHoyIso();
     const inicioSemana = restarDiasIso(7, hoyIso);
 
-    expect(inputInicio.value).toBe(inicioSemana);
-    expect(inputFin.value).toBe(hoyIso);
+    expect(leerFecha("Fecha inicio")).toBe(inicioSemana);
+    expect(leerFecha("Fecha fin")).toBe(hoyIso);
     await waitFor(() =>
       expect(mocks.listarActividades).toHaveBeenLastCalledWith({
         proyectoId: 10,
@@ -353,8 +386,8 @@ describe("ActividadesDiariasPage", () => {
       }),
     );
 
-    fireEvent.change(inputInicio, { target: { value: "2026-11-14" } });
-    fireEvent.change(inputFin, { target: { value: "2026-11-01" } });
+    escribirFecha("Fecha inicio", "2026-11-14");
+    escribirFecha("Fecha fin", "2026-11-01");
 
     expect(
       screen.getByText(
@@ -392,12 +425,8 @@ describe("ActividadesDiariasPage", () => {
       expect(mocks.listarActividades).toHaveBeenLastCalledWith(10),
     );
 
-    fireEvent.change(screen.getByLabelText("Fecha inicio"), {
-      target: { value: "2026-11-07" },
-    });
-    fireEvent.change(screen.getByLabelText("Fecha fin"), {
-      target: { value: "2026-11-14" },
-    });
+    escribirFecha("Fecha inicio", "2026-11-07");
+    escribirFecha("Fecha fin", "2026-11-14");
 
     await waitFor(() =>
       expect(mocks.listarActividades).toHaveBeenLastCalledWith({

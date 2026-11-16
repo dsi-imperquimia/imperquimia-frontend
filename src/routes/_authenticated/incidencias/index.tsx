@@ -1,4 +1,5 @@
 import { SelectedField } from "@components/fields/SelectedField";
+import { Card } from "@heroui/react/card";
 import { Spinner } from "@heroui/react";
 import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
@@ -78,7 +79,7 @@ function IncidenciasPage() {
         </div>
       </div>
 
-      <div className="grid items-end gap-4 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-4">
+      <Card className="grid items-end gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <SelectedField
           label="Proyecto"
           placeholder="Todos los proyectos"
@@ -146,7 +147,7 @@ function IncidenciasPage() {
             </Button>
           </div>
         )}
-      </div>
+      </Card>
 
       {query.isError && (
         <div role="alert">

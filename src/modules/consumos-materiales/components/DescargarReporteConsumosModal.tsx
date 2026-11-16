@@ -1,4 +1,4 @@
-import { InputField } from "@components/fields/InputField";
+import { DatePickerField } from "@components/fields/DatePickerField";
 import { Button } from "@heroui/react/button";
 import { Modal } from "@heroui/react/modal";
 import { toast } from "@heroui/react/toast";
@@ -68,17 +68,15 @@ export function DescargarReporteConsumosModal({
             <form onSubmit={submit}>
               <Modal.Body className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <InputField
+                  <DatePickerField
                     label="Desde"
-                    type="date"
                     value={desde}
-                    onChange={(event) => setDesde(event.target.value)}
+                    onChange={setDesde}
                   />
-                  <InputField
+                  <DatePickerField
                     label="Hasta"
-                    type="date"
                     value={hasta}
-                    onChange={(event) => setHasta(event.target.value)}
+                    onChange={setHasta}
                   />
                 </div>
                 {error && (

@@ -1,3 +1,4 @@
+import { Card } from "@heroui/react/card";
 import { Button } from "@heroui/react/button";
 import { ListBox } from "@heroui/react/list-box";
 import { Table } from "@heroui/react/table";
@@ -67,7 +68,7 @@ function Proyectos() {
           )}
         </div>
       </div>
-      <div className="grid gap-4 rounded-xl border border-gray-200 bg-white p-4 sm:grid-cols-[minmax(0,1fr)_14rem]">
+      <Card className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_14rem]">
         <InputField
           label="Buscar proyecto"
           type="search"
@@ -96,7 +97,7 @@ function Proyectos() {
             </ListBox.Item>
           ))}
         </SelectedField>
-      </div>
+      </Card>
       {isPending ? (
         <p role="status">Cargando proyectos…</p>
       ) : isError ? (

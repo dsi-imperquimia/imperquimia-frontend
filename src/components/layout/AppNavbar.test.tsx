@@ -94,7 +94,9 @@ describe("AppNavbar", () => {
     );
     expect(window.sessionStorage.getItem(BIENVENIDA_SESSION_KEY)).toBe("7");
 
-    fireEvent.click(screen.getByText("Actividades diarias"));
+    // Hay dos trails de breadcrumbs en el DOM (desktop y mobile, alternados por CSS);
+    // cualquiera de los dos navega igual.
+    fireEvent.click(screen.getAllByText("Actividades diarias")[0]);
     expect(mocks.navigate).toHaveBeenCalledWith({ to: "/actividades-diarias" });
 
     firstRender.unmount();

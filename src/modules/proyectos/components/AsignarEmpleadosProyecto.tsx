@@ -1,6 +1,7 @@
 import { InputField } from "@components/fields/InputField";
 import { SelectedField } from "@components/fields/SelectedField";
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
 import { Chip } from "@heroui/react/chip";
 import { ListBox } from "@heroui/react/list-box";
 import { Modal } from "@heroui/react/modal";
@@ -142,13 +143,14 @@ function ReasignarEmpleadoModal({
 export function AsignarEmpleadosProyecto({
   proyecto,
   editable = true,
-  className = "rounded-xl border border-gray-200 bg-white p-6",
+  variant = "card",
 }: {
   proyecto: ProyectoDetalle;
   /** En la vista de solo lectura (detalle del proyecto) no se permite editar. */
   editable?: boolean;
-  /** Permite fundir el bloque dentro de otro contenedor (p. ej. el formulario de edición). */
-  className?: string;
+  /** "card" lo envuelve en una Card independiente (detalle del proyecto);
+   * "embedded" lo funde como sección dentro de otro contenedor (formulario de edición). */
+  variant?: "card" | "embedded";
 }) {
   const client = useQueryClient();
   const puedeEditar = editable && userActions.hasPermission("PROYECTO_UPDATE");
@@ -232,171 +234,158 @@ export function AsignarEmpleadosProyecto({
         (empleado.cargo?.nombre ?? "").toLowerCase().includes(texto)),
   );
 
-  return (
-    <section className={className}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-lg font-semibold">
-          <Users className="size-5 text-gray-400" />
-          Técnicos asignados
-        </h2>
-        {puedeAsignar && (
-          <Modal>
-            <Button type="button" variant="outline" size="sm">
-              <UserPlus className="size-4" />
-              Asignar técnico
-            </Button>
-            <Modal.Backdrop>
-              <Modal.Container>
-                <Modal.Dialog className="max-w-6xl w-full">
-                  <Modal.CloseTrigger />
-                  <Modal.Header className="flex flex-row items-center gap-3">
-                    <Modal.Icon className="bg-gray-100 text-gray-500">
-                      <Wrench className="size-5" />
-                    </Modal.Icon>
-                    <Modal.Heading>Asignar técnico</Modal.Heading>
-                  </Modal.Header>
-                  <Modal.Body className="max-h-[34rem] overflow-y-auto p-0">
-                    <div className="flex flex-wrap gap-3  px-0 py-4">
-                      <InputField
-                        label="Buscar"
-                        placeholder="Nombre, DUI o cargo"
-                        className="min-w-48 flex-1"
-                        startContent={<Search className="size-4" />}
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                      />
-                      <SelectedField
-                        label="Cargo"
-                        placeholder="Todos los cargos"
-                        className="min-w-48"
-                        value={cargoFiltro}
-                        onChange={(value) => setCargoFiltro(String(value))}
-                      >
-                        <ListBox.Item id="" textValue="Todos los cargos">
-                          Todos los cargos
-                          <ListBox.ItemIndicator />
-                        </ListBox.Item>
-                        {cargosDisponibles.map((cargo) => (
-                          <ListBox.Item
-                            key={cargo}
-                            id={cargo}
-                            textValue={cargo}
-                          >
-                            {cargo}
-                            <ListBox.ItemIndicator />
-                          </ListBox.Item>
-                        ))}
-                      </SelectedField>
-                      <SelectedField
-                        label="Habilidad"
-                        placeholder="Todas las habilidades"
-                        className="min-w-48"
-                        value={habilidadFiltro}
-                        onChange={(value) => setHabilidadFiltro(String(value))}
-                      >
-                        <ListBox.Item id="" textValue="Todas las habilidades">
-                          Todas las habilidades
-                          <ListBox.ItemIndicator />
-                        </ListBox.Item>
-                        {habilidadesDisponibles.map((habilidad) => (
-                          <ListBox.Item
-                            key={habilidad.id}
-                            id={String(habilidad.id)}
-                            textValue={habilidad.nombre}
-                          >
-                            {habilidad.nombre}
-                            <ListBox.ItemIndicator />
-                          </ListBox.Item>
-                        ))}
-                      </SelectedField>
-                    </div>
-                    {empleadosFiltrados.length ? (
-                      <Table>
-                        <Table.ScrollContainer>
-                          <Table.Content
-                            aria-label="Empleados disponibles"
-                            className="min-w-full"
-                          >
-                            <Table.Header>
-                              <Table.Column isRowHeader>Empleado</Table.Column>
-                              <Table.Column>DUI</Table.Column>
-                              <Table.Column>Cargo</Table.Column>
-                              <Table.Column>Habilidades</Table.Column>
-                              <Table.Column>Registro</Table.Column>
-                              <Table.Column>Acciones</Table.Column>
-                            </Table.Header>
-                            <Table.Body>
-                              <Table.Collection items={empleadosFiltrados}>
-                                {(empleado) => (
-                                  <Table.Row key={empleado.id}>
-                                    <Table.Cell>
-                                      {empleado.nombreCompleto}
-                                    </Table.Cell>
-                                    <Table.Cell>{empleado.dui}</Table.Cell>
-                                    <Table.Cell>
-                                      {empleado.cargo?.nombre ?? "Sin cargo"}
-                                    </Table.Cell>
-                                    <Table.Cell>
-                                      {empleado.habilidades.length ? (
-                                        <div className="flex flex-wrap gap-1">
-                                          {empleado.habilidades.map((h) => (
-                                            <Chip key={h.habilidadId} size="sm">
-                                              {h.habilidad.nombre}
-                                            </Chip>
-                                          ))}
-                                        </div>
-                                      ) : (
-                                        <span className="text-gray-400">
-                                          Sin habilidades
-                                        </span>
-                                      )}
-                                    </Table.Cell>
-                                    <Table.Cell>
-                                      {new Date(
-                                        empleado.fechaRegistro,
-                                      ).toLocaleDateString("es-ES")}
-                                    </Table.Cell>
-                                    <Table.Cell>
-                                      <Button
-                                        type="button"
-                                        size="sm"
-                                        isDisabled={pendiente !== null}
-                                        isPending={pendiente === empleado.id}
-                                        onClick={() =>
-                                          handleAsignar(empleado.id)
-                                        }
-                                      >
-                                        <UserPlus className="size-4" />
-                                        Asignar
-                                      </Button>
-                                    </Table.Cell>
-                                  </Table.Row>
+  const botonAsignar = puedeAsignar && (
+    <Modal>
+      <Button type="button" variant="outline" size="sm">
+        <UserPlus className="size-4" />
+        Asignar técnico
+      </Button>
+      <Modal.Backdrop>
+        <Modal.Container>
+          <Modal.Dialog className="max-w-6xl w-full">
+            <Modal.CloseTrigger />
+            <Modal.Header className="flex flex-row items-center gap-3">
+              <Modal.Icon className="bg-gray-100 text-gray-500">
+                <Wrench className="size-5" />
+              </Modal.Icon>
+              <Modal.Heading>Asignar técnico</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body className="max-h-[34rem] overflow-y-auto p-0">
+              <div className="flex flex-wrap gap-3  px-0 py-4">
+                <InputField
+                  label="Buscar"
+                  placeholder="Nombre, DUI o cargo"
+                  className="min-w-48 flex-1"
+                  startContent={<Search className="size-4" />}
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+                <SelectedField
+                  label="Cargo"
+                  placeholder="Todos los cargos"
+                  className="min-w-48"
+                  value={cargoFiltro}
+                  onChange={(value) => setCargoFiltro(String(value))}
+                >
+                  <ListBox.Item id="" textValue="Todos los cargos">
+                    Todos los cargos
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                  {cargosDisponibles.map((cargo) => (
+                    <ListBox.Item key={cargo} id={cargo} textValue={cargo}>
+                      {cargo}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </SelectedField>
+                <SelectedField
+                  label="Habilidad"
+                  placeholder="Todas las habilidades"
+                  className="min-w-48"
+                  value={habilidadFiltro}
+                  onChange={(value) => setHabilidadFiltro(String(value))}
+                >
+                  <ListBox.Item id="" textValue="Todas las habilidades">
+                    Todas las habilidades
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                  {habilidadesDisponibles.map((habilidad) => (
+                    <ListBox.Item
+                      key={habilidad.id}
+                      id={String(habilidad.id)}
+                      textValue={habilidad.nombre}
+                    >
+                      {habilidad.nombre}
+                      <ListBox.ItemIndicator />
+                    </ListBox.Item>
+                  ))}
+                </SelectedField>
+              </div>
+              {empleadosFiltrados.length ? (
+                <Table>
+                  <Table.ScrollContainer>
+                    <Table.Content
+                      aria-label="Empleados disponibles"
+                      className="min-w-full"
+                    >
+                      <Table.Header>
+                        <Table.Column isRowHeader>Empleado</Table.Column>
+                        <Table.Column>DUI</Table.Column>
+                        <Table.Column>Cargo</Table.Column>
+                        <Table.Column>Habilidades</Table.Column>
+                        <Table.Column>Registro</Table.Column>
+                        <Table.Column>Acciones</Table.Column>
+                      </Table.Header>
+                      <Table.Body>
+                        <Table.Collection items={empleadosFiltrados}>
+                          {(empleado) => (
+                            <Table.Row key={empleado.id}>
+                              <Table.Cell>{empleado.nombreCompleto}</Table.Cell>
+                              <Table.Cell>{empleado.dui}</Table.Cell>
+                              <Table.Cell>
+                                {empleado.cargo?.nombre ?? "Sin cargo"}
+                              </Table.Cell>
+                              <Table.Cell>
+                                {empleado.habilidades.length ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {empleado.habilidades.map((h) => (
+                                      <Chip key={h.habilidadId} size="sm">
+                                        {h.habilidad.nombre}
+                                      </Chip>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400">
+                                    Sin habilidades
+                                  </span>
                                 )}
-                              </Table.Collection>
-                            </Table.Body>
-                          </Table.Content>
-                        </Table.ScrollContainer>
-                      </Table>
-                    ) : (
-                      <p className="flex items-center gap-2 px-6 py-4 text-gray-500">
-                        <UserX className="size-5 text-gray-400" />
-                        {empleadosDisponibles.length
-                          ? "Ningún empleado coincide con el filtro."
-                          : "No hay empleados disponibles para asignar."}
-                      </p>
-                    )}
-                  </Modal.Body>
-                  <Modal.Footer>
-                    <Button slot="close" variant="secondary">
-                      Cerrar
-                    </Button>
-                  </Modal.Footer>
-                </Modal.Dialog>
-              </Modal.Container>
-            </Modal.Backdrop>
-          </Modal>
-        )}
-      </div>
+                              </Table.Cell>
+                              <Table.Cell>
+                                {new Date(
+                                  empleado.fechaRegistro,
+                                ).toLocaleDateString("es-ES")}
+                              </Table.Cell>
+                              <Table.Cell>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  isDisabled={pendiente !== null}
+                                  isPending={pendiente === empleado.id}
+                                  onClick={() => handleAsignar(empleado.id)}
+                                >
+                                  <UserPlus className="size-4" />
+                                  Asignar
+                                </Button>
+                              </Table.Cell>
+                            </Table.Row>
+                          )}
+                        </Table.Collection>
+                      </Table.Body>
+                    </Table.Content>
+                  </Table.ScrollContainer>
+                </Table>
+              ) : (
+                <p className="flex items-center gap-2 px-6 py-4 text-gray-500">
+                  <UserX className="size-5 text-gray-400" />
+                  {empleadosDisponibles.length
+                    ? "Ningún empleado coincide con el filtro."
+                    : "No hay empleados disponibles para asignar."}
+                </p>
+              )}
+            </Modal.Body>
+            <Modal.Footer>
+              <Button slot="close" variant="secondary">
+                Cerrar
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
+  );
+
+  const listaAsignados = (
+    <>
       {asignados.length ? (
         <ul className="divide-y divide-gray-200">
           {asignados.map((a) => (
@@ -454,6 +443,34 @@ export function AsignarEmpleadosProyecto({
           Este proyecto todavía no tiene técnicos asignados.
         </p>
       )}
-    </section>
+    </>
+  );
+
+  if (variant === "embedded") {
+    return (
+      <section className="space-y-4 border-t border-gray-200 pt-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <Users className="size-5 text-gray-400" />
+            Técnicos asignados
+          </h2>
+          {botonAsignar}
+        </div>
+        {listaAsignados}
+      </section>
+    );
+  }
+
+  return (
+    <Card className="w-full">
+      <Card.Header className="flex flex-row items-center justify-between gap-2 text-lg font-medium">
+        <span className="flex items-center gap-2">
+          <Users className="text-muted inline size-5" />
+          Técnicos asignados
+        </span>
+        {botonAsignar}
+      </Card.Header>
+      <Card.Content>{listaAsignados}</Card.Content>
+    </Card>
   );
 }

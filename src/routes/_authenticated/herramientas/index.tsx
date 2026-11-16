@@ -1,5 +1,6 @@
 import { ListBox, Select, Spinner, toast } from "@heroui/react";
 import { Button } from "@heroui/react/button";
+import { Card } from "@heroui/react/card";
 import { Table } from "@heroui/react/table";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -154,7 +155,7 @@ function RouteComponent() {
       </div>
 
       {/* Contenedor de Filtros */}
-      <div className="flex flex-wrap gap-4 bg-gray-50 border border-gray-200 rounded-xl p-4 items-center mb-6">
+      <Card className="flex-row flex-wrap items-center gap-4 mb-6">
         <div className="flex flex-col gap-1 min-w-[200px]">
           <span className="text-xs font-semibold text-gray-600">
             Filtrar por Estado
@@ -234,7 +235,7 @@ function RouteComponent() {
             </Select>
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Tabla Oficial de Inventario */}
       <Table>

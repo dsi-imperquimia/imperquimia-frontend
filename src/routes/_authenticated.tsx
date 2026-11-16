@@ -1,5 +1,6 @@
 import { AppNavbar } from "@/components/layout/AppNavbar";
-import { AppSidebar } from "@/components/layout/AppSidebar";
+import { AppSidebar, MobileSidebar } from "@/components/layout/AppSidebar";
+import { useSidebarToggle } from "@/components/layout/hooks/useSidebarToggle";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -15,12 +16,20 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthenticatedLayout() {
+  const {
+    isOpen: isSidebarOpen,
+    setIsOpen: setIsSidebarOpen,
+    isCollapsed: isSidebarCollapsed,
+    toggle: handleSidebarToggle,
+  } = useSidebarToggle();
+
   return (
     <div className="flex h-full">
-      <AppSidebar />
+      <AppSidebar collapsed={isSidebarCollapsed} />
+      <MobileSidebar isOpen={isSidebarOpen} onOpenChange={setIsSidebarOpen} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <AppNavbar />
-        <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+        <AppNavbar onSidebarToggle={handleSidebarToggle} />
+        <main className="flex-1 overflow-y-auto bg-gray-50 p-4 md:p-6">
           <Outlet />
         </main>
       </div>

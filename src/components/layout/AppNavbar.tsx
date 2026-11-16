@@ -110,44 +110,65 @@ function marcarBienvenidaEnSesion(userId: number): void {
   }
 }
 
+function CrumbTrail({
+  crumbs,
+  onNavigate,
+  className,
+}: {
+  crumbs: Crumb[];
+  onNavigate: (to: string) => void;
+  className?: string;
+}) {
+  return (
+    <Breadcrumbs className={className}>
+      {crumbs.map((crumb) => {
+        const destino = crumb.to;
+        return (
+          <Breadcrumbs.Item
+            key={crumb.label}
+            onPress={destino ? () => onNavigate(destino) : undefined}
+          >
+            {crumb.icon && <crumb.icon size={16} className="mr-1 shrink-0" />}
+            <span className="max-w-40 truncate sm:max-w-none">{crumb.label}</span>
+          </Breadcrumbs.Item>
+        );
+      })}
+    </Breadcrumbs>
+  );
+}
+
 export function AppNavbar({ onSidebarToggle }: AppNavbarProps) {
   const navigate = useNavigate();
   const state = useRouterState();
   const pathname = state.location.pathname;
   const crumbs = getBreadcrumbs(pathname);
+  const mobileCrumbs = crumbs.length > 2 ? crumbs.slice(-2) : crumbs;
+  const handleNavigate = (to: string) => void navigate({ to });
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-gray-100 bg-white px-4">
       <button
         onClick={onSidebarToggle}
-        className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 hidden"
-        aria-label="Toggle sidebar"
+        className="shrink-0 rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+        aria-label="Alternar menú de navegación"
       >
         <PanelLeft size={20} />
       </button>
 
-      <Breadcrumbs>
-        {crumbs.map((crumb) => {
-          const destino = crumb.to;
-          return (
-            <Breadcrumbs.Item
-              key={crumb.label}
-              onPress={
-                destino
-                  ? () => {
-                      void navigate({ to: destino });
-                    }
-                  : undefined
-              }
-            >
-              {crumb.icon && <crumb.icon size={16} className="mr-1" />}
-              {crumb.label}
-            </Breadcrumbs.Item>
-          );
-        })}
-      </Breadcrumbs>
+      <div className="min-w-0 flex-1 overflow-hidden">
+        <CrumbTrail
+          crumbs={crumbs}
+          onNavigate={handleNavigate}
+          className="hidden sm:flex"
+        />
+        <CrumbTrail
+          crumbs={mobileCrumbs}
+          onNavigate={handleNavigate}
+          className="flex sm:hidden"
+        />
+      </div>
 
-      <div className="ml-auto flex items-center gap-1">
+      <div className="ml-auto flex shrink-0 items-center gap-1">
         <AlertasShortcut />
         <UserDropdown />
       </div>

@@ -1,3 +1,4 @@
+import { DatePickerField } from "@components/fields/DatePickerField";
 import { InputField } from "@components/fields/InputField";
 import { TextAreaField } from "@components/fields/TextAreaField";
 import { Button } from "@heroui/react/button";
@@ -242,11 +243,10 @@ export function RegistrarConsumoModal({
                     onChange={(event) => setCantidad(event.target.value)}
                     isRequired
                   />
-                  <InputField
+                  <DatePickerField
                     label="Fecha de jornada"
-                    type="date"
                     value={fechaJornada}
-                    onChange={(event) => setFechaJornada(event.target.value)}
+                    onChange={setFechaJornada}
                     isRequired
                   />
                 </div>
